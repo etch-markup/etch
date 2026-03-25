@@ -1,0 +1,21 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "This line ends with trailing spaces.  \nThis next line also ends with trailing spaces.  \nThis line is still part of the same paragraph."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
