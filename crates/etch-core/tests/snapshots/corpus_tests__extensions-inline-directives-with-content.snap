@@ -1,0 +1,35 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The guide left a "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "tooltip",
+            "content": [
+              {
+                "type": "Text",
+                "value": "hover over this text"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " beside the map legend."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

@@ -1,0 +1,56 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The tooltip says "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "tooltip",
+            "content": [
+              {
+                "type": "Text",
+                "value": "use ] to close early"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the parser guide."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "The note reads "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "note",
+            "content": [
+              {
+                "type": "Text",
+                "value": "this has one [ extra bracket"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

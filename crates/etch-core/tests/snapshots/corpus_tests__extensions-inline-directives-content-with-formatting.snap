@@ -1,0 +1,62 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The margin note says "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "tooltip",
+            "content": [
+              {
+                "type": "Strong",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " and "
+              },
+              {
+                "type": "Emphasis",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "italic"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " content"
+              }
+            ],
+            "attrs": {
+              "pairs": {
+                "text": "extra info"
+              }
+            }
+          },
+          {
+            "type": "Text",
+            "value": " beside the chart."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

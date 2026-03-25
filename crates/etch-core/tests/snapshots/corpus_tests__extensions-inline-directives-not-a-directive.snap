@@ -1,0 +1,57 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Dear friend: I have news from the harbor."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "The time is 3:00pm when the bell rings."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "See "
+          },
+          {
+            "type": "AutoLink",
+            "url": "https://example.com"
+          },
+          {
+            "type": "Text",
+            "value": " for the route map."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "Note: this is important before you leave."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "He said: 'hello' and waved from the gate."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

@@ -1,0 +1,72 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "At noon, "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "character",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Sable"
+              }
+            ],
+            "attrs": {
+              "pairs": {
+                "species": "fox"
+              }
+            }
+          },
+          {
+            "type": "Text",
+            "value": " pointed at "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "tooltip",
+            "content": [
+              {
+                "type": "Text",
+                "value": "the old tower"
+              }
+            ],
+            "attrs": {
+              "pairs": {
+                "text": "watch the stairs"
+              }
+            }
+          },
+          {
+            "type": "Text",
+            "value": " and said the meeting was on "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "date",
+            "attrs": {
+              "pairs": {
+                "format": "long"
+              }
+            }
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

@@ -200,6 +200,14 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
                 text_start = index;
                 continue;
             }
+
+            if let Some(next_index) = try_parse_escaped_literal(input, index) {
+                push_text(&mut nodes, &input[text_start..index]);
+                push_text(&mut nodes, &input[index + 1..next_index]);
+                index = next_index;
+                text_start = index;
+                continue;
+            }
         }
 
         if let Some(next_index) = try_parse_soft_break(input, index) {
@@ -240,6 +248,22 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
             push_text(&mut nodes, &input[text_start..index]);
 
             if let Some((inline, next_index)) = try_parse_link(input, index) {
+                nodes.push(inline);
+                index = next_index;
+                text_start = index;
+                continue;
+            }
+
+            push_text(&mut nodes, &input[index..index + 1]);
+            index += 1;
+            text_start = index;
+            continue;
+        }
+
+        if byte == b':' {
+            push_text(&mut nodes, &input[text_start..index]);
+
+            if let Some((inline, next_index)) = try_parse_inline_directive(input, index) {
                 nodes.push(inline);
                 index = next_index;
                 text_start = index;
@@ -325,6 +349,13 @@ fn try_parse_hard_break(input: &str, index: usize) -> Option<usize> {
         .then_some(index + "\\\n".len())
 }
 
+fn try_parse_escaped_literal(input: &str, index: usize) -> Option<usize> {
+    let escaped = char_after(input, index + 1)?;
+
+    matches!(escaped, '*' | '~' | '^' | '=' | '+' | '[' | ']' | '\\')
+        .then_some(index + 1 + escaped.len_utf8())
+}
+
 fn try_parse_soft_break(input: &str, index: usize) -> Option<usize> {
     let remainder = input.get(index..)?;
 
@@ -403,6 +434,54 @@ fn try_parse_image(input: &str, index: usize) -> Option<(Inline, usize)> {
             attrs,
         },
         next_index,
+    ))
+}
+
+fn try_parse_inline_directive(input: &str, index: usize) -> Option<(Inline, usize)> {
+    if input.as_bytes().get(index).copied()? != b':' {
+        return None;
+    }
+
+    let mut remainder = input.get(index + 1..)?;
+    if !remainder
+        .chars()
+        .next()
+        .is_some_and(|ch| ch.is_ascii_alphabetic())
+    {
+        return None;
+    }
+
+    let name_len = parse_inline_directive_name_length(remainder)?;
+    if name_len == 0 {
+        return None;
+    }
+
+    let name = remainder[..name_len].to_string();
+    remainder = &remainder[name_len..];
+
+    let mut content = None;
+    if remainder.starts_with('[') {
+        let (content_text, next_remainder) =
+            super::directive::parse_balanced_bracket_segment(remainder)?;
+        content = Some(parse_inlines(content_text));
+        remainder = next_remainder;
+    }
+
+    let mut attrs = None;
+    if remainder.starts_with('{') {
+        let (parsed_attrs, next_remainder) =
+            super::attributes::parse_attributes_segment(remainder)?;
+        attrs = Some(parsed_attrs);
+        remainder = next_remainder;
+    }
+
+    Some((
+        Inline::InlineDirective {
+            name,
+            content,
+            attrs,
+        },
+        input.len() - remainder.len(),
     ))
 }
 
@@ -486,6 +565,29 @@ fn parse_delimiter(input: &str, index: usize) -> Option<Delimiter> {
         },
         _ => None,
     }
+}
+
+fn parse_inline_directive_name_length(input: &str) -> Option<usize> {
+    let mut length = 0;
+
+    for (index, ch) in input.char_indices() {
+        if ch.is_ascii_alphabetic() || ch == '-' {
+            length = index + ch.len_utf8();
+            continue;
+        }
+
+        if matches!(ch, '[' | '{') || is_inline_directive_boundary(ch) {
+            return Some(length);
+        }
+
+        return None;
+    }
+
+    Some(length)
+}
+
+fn is_inline_directive_boundary(ch: char) -> bool {
+    ch.is_whitespace() || !(ch.is_ascii_alphanumeric() || ch == '_')
 }
 
 fn can_open(input: &str, index: usize, delimiter: Delimiter) -> bool {
@@ -1180,6 +1282,128 @@ mod tests {
             parse_inlines("Path \\ server"),
             vec![Inline::Text {
                 value: "Path \\ server".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn parses_inline_directives_with_content_and_attributes() {
+        let mut expected_pairs = HashMap::new();
+        expected_pairs.insert("species".to_string(), "fox".to_string());
+        expected_pairs.insert("mood".to_string(), "playful".to_string());
+
+        assert_eq!(
+            parse_inlines("I met :character[Sable]{species=fox mood=playful} nearby."),
+            vec![
+                Inline::Text {
+                    value: "I met ".to_string(),
+                },
+                Inline::InlineDirective {
+                    name: "character".to_string(),
+                    content: Some(vec![Inline::Text {
+                        value: "Sable".to_string(),
+                    }]),
+                    attrs: Some(Attributes {
+                        id: None,
+                        classes: Vec::new(),
+                        pairs: expected_pairs,
+                    }),
+                },
+                Inline::Text {
+                    value: " nearby.".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_bare_inline_directives() {
+        assert_eq!(
+            parse_inlines("Insert :pagebreak here.\n:toc"),
+            vec![
+                Inline::Text {
+                    value: "Insert ".to_string(),
+                },
+                Inline::InlineDirective {
+                    name: "pagebreak".to_string(),
+                    content: None,
+                    attrs: None,
+                },
+                Inline::Text {
+                    value: " here.".to_string(),
+                },
+                Inline::SoftBreak,
+                Inline::InlineDirective {
+                    name: "toc".to_string(),
+                    content: None,
+                    attrs: None,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_inline_directive_content_with_formatting_and_escaped_brackets() {
+        let mut expected_pairs = HashMap::new();
+        expected_pairs.insert("text".to_string(), "extra info".to_string());
+
+        assert_eq!(
+            parse_inlines(":tooltip[**bold** and use \\] plus \\[ too]{text=\"extra info\"}"),
+            vec![Inline::InlineDirective {
+                name: "tooltip".to_string(),
+                content: Some(vec![
+                    Inline::Strong {
+                        content: vec![Inline::Text {
+                            value: "bold".to_string(),
+                        }],
+                    },
+                    Inline::Text {
+                        value: " and use ] plus [ too".to_string(),
+                    },
+                ]),
+                attrs: Some(Attributes {
+                    id: None,
+                    classes: Vec::new(),
+                    pairs: expected_pairs,
+                }),
+            }]
+        );
+    }
+
+    #[test]
+    fn leaves_colon_sequences_without_a_letter_as_plain_text() {
+        assert_eq!(
+            parse_inlines("Note: this is 3:00pm and https://example.com stays linked."),
+            vec![
+                Inline::Text {
+                    value: "Note: this is 3:00pm and ".to_string(),
+                },
+                Inline::AutoLink {
+                    url: "https://example.com".to_string(),
+                },
+                Inline::Text {
+                    value: " stays linked.".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn leaves_invalid_inline_directive_names_literal() {
+        assert_eq!(
+            parse_inlines(":widget_v2 :col3"),
+            vec![Inline::Text {
+                value: ":widget_v2 :col3".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn treats_escaped_formatting_markers_as_literal_text() {
+        assert_eq!(
+            parse_inlines("\\*not italic\\* and \\~not sub\\~"),
+            vec![Inline::Text {
+                value: "*not italic* and ~not sub~".to_string(),
             }]
         );
     }

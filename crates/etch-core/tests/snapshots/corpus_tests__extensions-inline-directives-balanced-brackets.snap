@@ -1,0 +1,56 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The tooltip reads "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "tooltip",
+            "content": [
+              {
+                "type": "Text",
+                "value": "array[0] is the first element"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the lesson notes."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "The code sample shows "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "code",
+            "content": [
+              {
+                "type": "Text",
+                "value": "fn(a, b) -> Result<Vec<[u8]>>"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the margin."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
