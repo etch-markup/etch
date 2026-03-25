@@ -1,6 +1,5 @@
 ---
 source: crates/etch-core/tests/corpus_tests.rs
-assertion_line: 393
 expression: result
 ---
 {
@@ -12,22 +11,21 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "Browse the "
+            "value": "Read the "
           },
           {
             "type": "Link",
-            "url": "https://docs.etch-lang.dev/reference/core-syntax",
-            "title": "Core syntax reference",
+            "url": "https://docs.etch-lang.dev/guide/getting-started",
             "content": [
               {
                 "type": "Text",
-                "value": "Etch syntax reference"
+                "value": "Etch getting started guide"
               }
             ]
           },
           {
             "type": "Text",
-            "value": " for the full block and inline rules."
+            "value": " before writing your first document."
           }
         ]
       }

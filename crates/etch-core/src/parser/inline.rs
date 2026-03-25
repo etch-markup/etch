@@ -192,6 +192,22 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
 
         let byte = input.as_bytes()[index];
 
+        if byte == b'!' && input.as_bytes().get(index + 1).copied() == Some(b'[') {
+            push_text(&mut nodes, &input[text_start..index]);
+
+            if let Some((inline, next_index)) = try_parse_image(input, index) {
+                nodes.push(inline);
+                index = next_index;
+                text_start = index;
+                continue;
+            }
+
+            push_text(&mut nodes, &input[index..index + 1]);
+            index += 1;
+            text_start = index;
+            continue;
+        }
+
         if byte == b'[' {
             push_text(&mut nodes, &input[text_start..index]);
 
@@ -294,6 +310,45 @@ fn try_parse_link(input: &str, index: usize) -> Option<(Inline, usize)> {
             attrs: None,
         },
         destination_end + 1,
+    ))
+}
+
+fn try_parse_image(input: &str, index: usize) -> Option<(Inline, usize)> {
+    if input.as_bytes().get(index).copied()? != b'!'
+        || input.as_bytes().get(index + 1).copied()? != b'['
+    {
+        return None;
+    }
+
+    let alt_start = index + 2;
+    let alt_end = find_balanced_closing(input, alt_start, '[', ']')?;
+    let paren_start = alt_end + 1;
+
+    if input.as_bytes().get(paren_start).copied()? != b'(' {
+        return None;
+    }
+
+    let destination_start = paren_start + 1;
+    let destination_end = find_balanced_closing(input, destination_start, '(', ')')?;
+    let (url, title) = parse_link_destination(&input[destination_start..destination_end])?;
+    let mut next_index = destination_end + 1;
+    let mut attrs = None;
+
+    if let Some((parsed_attrs, remainder)) =
+        super::attributes::parse_attributes_segment(&input[next_index..])
+    {
+        attrs = Some(parsed_attrs);
+        next_index = input.len() - remainder.len();
+    }
+
+    Some((
+        Inline::Image {
+            url,
+            alt: input[alt_start..alt_end].to_string(),
+            title,
+            attrs,
+        },
+        next_index,
     ))
 }
 
@@ -497,7 +552,8 @@ fn push_text(nodes: &mut Vec<Inline>, value: &str) {
 #[cfg(test)]
 mod tests {
     use super::parse_inlines;
-    use crate::Inline;
+    use crate::{Attributes, Inline};
+    use std::collections::HashMap;
 
     #[test]
     fn parses_emphasis() {
@@ -856,11 +912,47 @@ mod tests {
     }
 
     #[test]
-    fn does_not_parse_images_as_links() {
+    fn parses_basic_images() {
         assert_eq!(
             parse_inlines("![alt](https://docs.etch-lang.dev/image.png)"),
-            vec![Inline::Text {
-                value: "![alt](https://docs.etch-lang.dev/image.png)".to_string(),
+            vec![Inline::Image {
+                url: "https://docs.etch-lang.dev/image.png".to_string(),
+                alt: "alt".to_string(),
+                title: None,
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parses_images_with_titles() {
+        assert_eq!(
+            parse_inlines("![alt](https://docs.etch-lang.dev/image.png \"Camp marker\")"),
+            vec![Inline::Image {
+                url: "https://docs.etch-lang.dev/image.png".to_string(),
+                alt: "alt".to_string(),
+                title: Some("Camp marker".to_string()),
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parses_images_with_attributes() {
+        let mut expected_pairs = HashMap::new();
+        expected_pairs.insert("width".to_string(), "80%".to_string());
+
+        assert_eq!(
+            parse_inlines("![alt](https://docs.etch-lang.dev/image.png){width=80% .rounded}"),
+            vec![Inline::Image {
+                url: "https://docs.etch-lang.dev/image.png".to_string(),
+                alt: "alt".to_string(),
+                title: None,
+                attrs: Some(Attributes {
+                    id: None,
+                    classes: vec!["rounded".to_string()],
+                    pairs: expected_pairs,
+                }),
             }]
         );
     }

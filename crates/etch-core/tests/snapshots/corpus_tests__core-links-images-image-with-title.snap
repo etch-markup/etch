@@ -1,0 +1,23 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Image",
+            "url": "photos/river-overlook.jpg",
+            "alt": "River overlook",
+            "title": "Morning light over the valley"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

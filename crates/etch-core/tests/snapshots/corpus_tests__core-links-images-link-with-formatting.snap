@@ -1,6 +1,5 @@
 ---
 source: crates/etch-core/tests/corpus_tests.rs
-assertion_line: 388
 expression: result
 ---
 {
