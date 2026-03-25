@@ -27,6 +27,64 @@ impl StarDelimiter {
     }
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum TildeDelimiter {
+    Subscript,
+    Strikethrough,
+}
+
+impl TildeDelimiter {
+    fn len(self) -> usize {
+        match self {
+            Self::Subscript => 1,
+            Self::Strikethrough => 2,
+        }
+    }
+
+    fn wrap(self, content: Vec<Inline>) -> Inline {
+        match self {
+            Self::Subscript => Inline::Subscript { content },
+            Self::Strikethrough => Inline::Strikethrough { content },
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum Delimiter {
+    Star(StarDelimiter),
+    Tilde(TildeDelimiter),
+}
+
+impl Delimiter {
+    fn len(self) -> usize {
+        match self {
+            Self::Star(delimiter) => delimiter.len(),
+            Self::Tilde(delimiter) => delimiter.len(),
+        }
+    }
+
+    fn marker(self) -> u8 {
+        match self {
+            Self::Star(_) => b'*',
+            Self::Tilde(_) => b'~',
+        }
+    }
+
+    fn wrap(self, content: Vec<Inline>) -> Inline {
+        match self {
+            Self::Star(delimiter) => delimiter.wrap(content),
+            Self::Tilde(delimiter) => delimiter.wrap(content),
+        }
+    }
+
+    fn matches_run(self, run_len: usize) -> bool {
+        match self {
+            Self::Star(delimiter) => run_len >= delimiter.len(),
+            Self::Tilde(delimiter) => run_len == delimiter.len(),
+        }
+    }
+}
+
 struct ParseResult {
     nodes: Vec<Inline>,
     next_index: usize,
@@ -38,7 +96,7 @@ pub(crate) fn parse_inlines(input: &str) -> Vec<Inline> {
     parse_segment(input, 0, None).nodes
 }
 
-fn parse_segment(input: &str, mut index: usize, stop: Option<StarDelimiter>) -> ParseResult {
+fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> ParseResult {
     let mut nodes = Vec::new();
     let mut text_start = index;
 
@@ -60,17 +118,19 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<StarDelimiter>) -> 
             }
         }
 
-        if input.as_bytes()[index] == b'*' {
+        let byte = input.as_bytes()[index];
+
+        if byte == b'*' || byte == b'~' {
             push_text(&mut nodes, &input[text_start..index]);
 
-            if let Some((inline, next_index)) = try_parse_star_run(input, index) {
+            if let Some((inline, next_index)) = try_parse_delimiter_run(input, index) {
                 nodes.push(inline);
                 index = next_index;
                 text_start = index;
                 continue;
             }
 
-            push_text(&mut nodes, "*");
+            push_text(&mut nodes, &input[index..index + 1]);
             index += 1;
             text_start = index;
             continue;
@@ -88,14 +148,8 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<StarDelimiter>) -> 
     }
 }
 
-fn try_parse_star_run(input: &str, index: usize) -> Option<(Inline, usize)> {
-    let run_len = count_stars(input, index);
-    let delimiter = match run_len {
-        1 => StarDelimiter::Emphasis,
-        2 => StarDelimiter::Strong,
-        3 => StarDelimiter::StrongEmphasis,
-        _ => return None,
-    };
+fn try_parse_delimiter_run(input: &str, index: usize) -> Option<(Inline, usize)> {
+    let delimiter = parse_delimiter(input, index)?;
 
     if !can_open(input, index, delimiter) {
         return None;
@@ -110,20 +164,39 @@ fn try_parse_star_run(input: &str, index: usize) -> Option<(Inline, usize)> {
     None
 }
 
-fn can_open(input: &str, index: usize, delimiter: StarDelimiter) -> bool {
+fn parse_delimiter(input: &str, index: usize) -> Option<Delimiter> {
+    let byte = input.as_bytes().get(index).copied()?;
+
+    match byte {
+        b'*' => match count_delimiters(input, index, byte) {
+            1 => Some(Delimiter::Star(StarDelimiter::Emphasis)),
+            2 => Some(Delimiter::Star(StarDelimiter::Strong)),
+            3 => Some(Delimiter::Star(StarDelimiter::StrongEmphasis)),
+            _ => None,
+        },
+        b'~' => match count_delimiters(input, index, byte) {
+            1 => Some(Delimiter::Tilde(TildeDelimiter::Subscript)),
+            2 => Some(Delimiter::Tilde(TildeDelimiter::Strikethrough)),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn can_open(input: &str, index: usize, delimiter: Delimiter) -> bool {
     char_after(input, index + delimiter.len()).is_some_and(|ch| !ch.is_whitespace())
 }
 
-fn can_close(input: &str, index: usize, delimiter: StarDelimiter, empty_content: bool) -> bool {
+fn can_close(input: &str, index: usize, delimiter: Delimiter, empty_content: bool) -> bool {
     !empty_content
-        && count_stars(input, index) >= delimiter.len()
+        && delimiter.matches_run(count_delimiters(input, index, delimiter.marker()))
         && char_before(input, index).is_some_and(|ch| !ch.is_whitespace())
 }
 
-fn count_stars(input: &str, index: usize) -> usize {
+fn count_delimiters(input: &str, index: usize, byte: u8) -> usize {
     input[index..]
         .bytes()
-        .take_while(|byte| *byte == b'*')
+        .take_while(|candidate| *candidate == byte)
         .count()
 }
 
@@ -255,6 +328,48 @@ mod tests {
                     },
                 ],
             }]
+        );
+    }
+
+    #[test]
+    fn parses_strikethrough() {
+        assert_eq!(
+            parse_inlines("before ~~struck~~ after"),
+            vec![
+                Inline::Text {
+                    value: "before ".to_string(),
+                },
+                Inline::Strikethrough {
+                    content: vec![Inline::Text {
+                        value: "struck".to_string(),
+                    }],
+                },
+                Inline::Text {
+                    value: " after".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn distinguishes_strikethrough_from_subscript() {
+        assert_eq!(
+            parse_inlines("~~struck~~ and ~sub~"),
+            vec![
+                Inline::Strikethrough {
+                    content: vec![Inline::Text {
+                        value: "struck".to_string(),
+                    }],
+                },
+                Inline::Text {
+                    value: " and ".to_string(),
+                },
+                Inline::Subscript {
+                    content: vec![Inline::Text {
+                        value: "sub".to_string(),
+                    }],
+                },
+            ]
         );
     }
 
