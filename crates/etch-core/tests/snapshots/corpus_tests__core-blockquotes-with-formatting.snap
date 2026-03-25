@@ -1,0 +1,26 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockQuote",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The guide called the ridge **safe enough** by noon.\nShe marked the eastern path as *muddy* after the storm.\n- Pack an extra scarf\n- Leave the `radio` on channel three"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

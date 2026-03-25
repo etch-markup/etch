@@ -4,6 +4,7 @@ mod frontmatter;
 mod inline;
 
 use crate::{Block, Document, Inline, ParseResult};
+use std::iter::Peekable;
 
 pub fn parse(input: &str) -> ParseResult {
     let body = skip_leading_comment(input);
@@ -21,7 +22,7 @@ pub fn parse(input: &str) -> ParseResult {
 fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> {
     let mut blocks = Vec::new();
     let mut current = Vec::new();
-    let mut lines = input.lines().enumerate();
+    let mut lines = input.lines().enumerate().peekable();
 
     while let Some((line_index, line)) = lines.next() {
         if line.trim().is_empty() {
@@ -39,6 +40,12 @@ fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> 
             flush_paragraph(&mut blocks, &mut current);
 
             blocks.push(heading);
+            continue;
+        }
+
+        if is_blockquote_line(line) {
+            flush_paragraph(&mut blocks, &mut current);
+            blocks.push(blockquote_from_lines(line, &mut lines));
             continue;
         }
 
@@ -85,6 +92,34 @@ where
         content: content.join("\n"),
         attrs: None,
     }
+}
+
+fn blockquote_from_lines<'a, I>(first_line: &'a str, lines: &mut Peekable<I>) -> Block
+where
+    I: Iterator<Item = (usize, &'a str)>,
+{
+    let mut content = vec![strip_blockquote_marker(first_line)];
+
+    while let Some((_, line)) = lines.next_if(|(_, line)| is_blockquote_line(line)) {
+        content.push(strip_blockquote_marker(line));
+    }
+
+    Block::BlockQuote {
+        content: parse_blocks(&content.join("\n"), false),
+        attrs: None,
+    }
+}
+
+fn is_blockquote_line(line: &str) -> bool {
+    line.starts_with('>')
+}
+
+fn strip_blockquote_marker(line: &str) -> &str {
+    let Some(remainder) = line.strip_prefix('>') else {
+        return line;
+    };
+
+    remainder.strip_prefix(' ').unwrap_or(remainder)
 }
 
 fn heading_from_line(line: &str) -> Option<Block> {
@@ -334,6 +369,98 @@ mod tests {
                     attrs: None,
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn parse_detects_blockquotes_before_paragraph_fallback() {
+        let result = parse("> quoted\n\noutside");
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::BlockQuote {
+                    content: vec![Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "quoted".to_string(),
+                        }],
+                        attrs: None,
+                    }],
+                    attrs: None,
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "outside".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_splits_blockquote_paragraphs_on_quoted_blank_lines() {
+        let result = parse("> first paragraph\n>\n> second paragraph");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::BlockQuote {
+                content: vec![
+                    Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "first paragraph".to_string(),
+                        }],
+                        attrs: None,
+                    },
+                    Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "second paragraph".to_string(),
+                        }],
+                        attrs: None,
+                    },
+                ],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_supports_nested_blockquotes_by_recursively_parsing_stripped_content() {
+        let result = parse("> outer\n>> inner\n>>> deepest");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::BlockQuote {
+                content: vec![
+                    Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "outer".to_string(),
+                        }],
+                        attrs: None,
+                    },
+                    Block::BlockQuote {
+                        content: vec![
+                            Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "inner".to_string(),
+                                }],
+                                attrs: None,
+                            },
+                            Block::BlockQuote {
+                                content: vec![Block::Paragraph {
+                                    content: vec![Inline::Text {
+                                        value: "deepest".to_string(),
+                                    }],
+                                    attrs: None,
+                                }],
+                                attrs: None,
+                            },
+                        ],
+                        attrs: None,
+                    },
+                ],
+                attrs: None,
+            }]
         );
     }
 

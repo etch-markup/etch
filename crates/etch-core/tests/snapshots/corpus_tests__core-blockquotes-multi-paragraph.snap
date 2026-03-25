@@ -1,0 +1,35 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockQuote",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The harbor bell rang once before dawn.\nFishing boats shifted against the pier."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "By sunrise the market square was already awake.\nBread smoke drifted between the stalls."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
