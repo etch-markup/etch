@@ -1,0 +1,36 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 373
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Read the "
+          },
+          {
+            "type": "Link",
+            "url": "https://docs.etch-lang.dev/guide/getting-started",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Etch getting started guide"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " before writing your first document."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

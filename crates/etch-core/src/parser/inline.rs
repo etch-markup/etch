@@ -192,6 +192,22 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
 
         let byte = input.as_bytes()[index];
 
+        if byte == b'[' {
+            push_text(&mut nodes, &input[text_start..index]);
+
+            if let Some((inline, next_index)) = try_parse_link(input, index) {
+                nodes.push(inline);
+                index = next_index;
+                text_start = index;
+                continue;
+            }
+
+            push_text(&mut nodes, &input[index..index + 1]);
+            index += 1;
+            text_start = index;
+            continue;
+        }
+
         if byte == b'`' {
             push_text(&mut nodes, &input[text_start..index]);
             let run_len = count_delimiters(input, index, b'`');
@@ -251,6 +267,34 @@ fn try_parse_delimiter_run(input: &str, index: usize) -> Option<(Inline, usize)>
     }
 
     None
+}
+
+fn try_parse_link(input: &str, index: usize) -> Option<(Inline, usize)> {
+    if char_before(input, index) == Some('!') {
+        return None;
+    }
+
+    let text_start = index + 1;
+    let text_end = find_balanced_closing(input, text_start, '[', ']')?;
+    let paren_start = text_end + 1;
+
+    if input.as_bytes().get(paren_start).copied()? != b'(' {
+        return None;
+    }
+
+    let destination_start = paren_start + 1;
+    let destination_end = find_balanced_closing(input, destination_start, '(', ')')?;
+    let (url, title) = parse_link_destination(&input[destination_start..destination_end])?;
+
+    Some((
+        Inline::Link {
+            url,
+            title,
+            content: parse_inlines(&input[text_start..text_end]),
+            attrs: None,
+        },
+        destination_end + 1,
+    ))
 }
 
 fn try_parse_inline_code(input: &str, index: usize) -> Option<(Inline, usize)> {
@@ -330,6 +374,93 @@ fn find_closing_backticks(input: &str, mut index: usize, delimiter_len: usize) -
     }
 
     None
+}
+
+fn find_balanced_closing(input: &str, mut index: usize, open: char, close: char) -> Option<usize> {
+    let mut depth = 1;
+    let mut escaped = false;
+
+    while index < input.len() {
+        let ch = char_after(input, index)?;
+
+        if escaped {
+            escaped = false;
+            index += ch.len_utf8();
+            continue;
+        }
+
+        match ch {
+            '\\' => escaped = true,
+            candidate if candidate == open => depth += 1,
+            candidate if candidate == close => {
+                depth -= 1;
+
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+
+        index += ch.len_utf8();
+    }
+
+    None
+}
+
+fn parse_link_destination(input: &str) -> Option<(String, Option<String>)> {
+    let trimmed = input.trim();
+
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let split_at = trimmed
+        .char_indices()
+        .find_map(|(index, ch)| ch.is_whitespace().then_some(index))
+        .unwrap_or(trimmed.len());
+
+    let url = trimmed[..split_at].trim();
+
+    if url.is_empty() {
+        return None;
+    }
+
+    let remainder = trimmed[split_at..].trim();
+
+    if remainder.is_empty() {
+        return Some((url.to_string(), None));
+    }
+
+    let title = parse_quoted_link_title(remainder)?;
+    Some((url.to_string(), Some(title)))
+}
+
+fn parse_quoted_link_title(input: &str) -> Option<String> {
+    let inner = input.strip_prefix('"')?.strip_suffix('"')?;
+    let mut title = String::with_capacity(inner.len());
+    let mut escaped = false;
+
+    for ch in inner.chars() {
+        if escaped {
+            title.push(ch);
+            escaped = false;
+            continue;
+        }
+
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+
+        title.push(ch);
+    }
+
+    if escaped {
+        title.push('\\');
+    }
+
+    Some(title)
 }
 
 fn next_char_len(input: &str, index: usize) -> usize {
@@ -655,6 +786,91 @@ mod tests {
             parse_inlines("** **** * text* *text * == ++++ ++ text++ ++text ++"),
             vec![Inline::Text {
                 value: "** **** * text* *text * == ++++ ++ text++ ++text ++".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn parses_basic_links() {
+        assert_eq!(
+            parse_inlines("Read the [Etch guide](https://docs.etch-lang.dev/guide)."),
+            vec![
+                Inline::Text {
+                    value: "Read the ".to_string(),
+                },
+                Inline::Link {
+                    url: "https://docs.etch-lang.dev/guide".to_string(),
+                    title: None,
+                    content: vec![Inline::Text {
+                        value: "Etch guide".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Inline::Text {
+                    value: ".".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_links_with_titles() {
+        assert_eq!(
+            parse_inlines("[reference](https://docs.etch-lang.dev \"Core syntax reference\")"),
+            vec![Inline::Link {
+                url: "https://docs.etch-lang.dev".to_string(),
+                title: Some("Core syntax reference".to_string()),
+                content: vec![Inline::Text {
+                    value: "reference".to_string(),
+                }],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parses_links_with_formatted_text() {
+        assert_eq!(
+            parse_inlines("[**Etch** *quickstart*](https://docs.etch-lang.dev/guide)"),
+            vec![Inline::Link {
+                url: "https://docs.etch-lang.dev/guide".to_string(),
+                title: None,
+                content: vec![
+                    Inline::Strong {
+                        content: vec![Inline::Text {
+                            value: "Etch".to_string(),
+                        }],
+                    },
+                    Inline::Text {
+                        value: " ".to_string(),
+                    },
+                    Inline::Emphasis {
+                        content: vec![Inline::Text {
+                            value: "quickstart".to_string(),
+                        }],
+                    },
+                ],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn does_not_parse_images_as_links() {
+        assert_eq!(
+            parse_inlines("![alt](https://docs.etch-lang.dev/image.png)"),
+            vec![Inline::Text {
+                value: "![alt](https://docs.etch-lang.dev/image.png)".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn does_not_parse_footnote_references_as_links() {
+        assert_eq!(
+            parse_inlines("See [^guide] later"),
+            vec![Inline::Text {
+                value: "See [^guide] later".to_string(),
             }]
         );
     }

@@ -1,0 +1,58 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 388
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Open the "
+          },
+          {
+            "type": "Link",
+            "url": "https://docs.etch-lang.dev/guide/quickstart?view=full#first-document",
+            "content": [
+              {
+                "type": "Strong",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Etch"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " "
+              },
+              {
+                "type": "Emphasis",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "quickstart"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " guide"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " to see formatted link text in one link."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

@@ -1,0 +1,37 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 393
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Browse the "
+          },
+          {
+            "type": "Link",
+            "url": "https://docs.etch-lang.dev/reference/core-syntax",
+            "title": "Core syntax reference",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Etch syntax reference"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " for the full block and inline rules."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
