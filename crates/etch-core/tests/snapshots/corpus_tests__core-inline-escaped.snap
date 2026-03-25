@@ -1,0 +1,36 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 311
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "*not italic* stays literal at the start."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This sentence keeps ~not sub~, ^not super^, and ==not highlight== literal."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This sentence ends with ++not insert++."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

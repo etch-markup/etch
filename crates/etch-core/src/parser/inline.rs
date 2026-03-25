@@ -1438,9 +1438,33 @@ mod tests {
     #[test]
     fn treats_escaped_formatting_markers_as_literal_text() {
         assert_eq!(
-            parse_inlines("\\*not italic\\* and \\~not sub\\~"),
+            parse_inlines(
+                "\\*not italic\\* \\~not sub\\~ \\^not super\\^ \\=\\=not highlight\\=\\= \\+\\+not insert\\+\\+ \\[brackets\\] \\\\"
+            ),
             vec![Inline::Text {
-                value: "*not italic* and ~not sub~".to_string(),
+                value: "*not italic* ~not sub~ ^not super^ ==not highlight== ++not insert++ [brackets] \\".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn treats_escaped_markers_as_literal_inside_formatted_content() {
+        assert_eq!(
+            parse_inlines("*literal \\* star and \\[brackets\\]*"),
+            vec![Inline::Emphasis {
+                content: vec![Inline::Text {
+                    value: "literal * star and [brackets]".to_string(),
+                }],
+            }]
+        );
+    }
+
+    #[test]
+    fn does_not_process_escapes_inside_code_spans() {
+        assert_eq!(
+            parse_inlines("`\\*not italic\\* and \\[literal\\] \\\\`"),
+            vec![Inline::InlineCode {
+                value: "\\*not italic\\* and \\[literal\\] \\\\".to_string(),
             }]
         );
     }
