@@ -1,0 +1,17 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "CodeBlock",
+        "language": "rust",
+        "content": "fn main() {\n    let title = \"Etch\";\n    println!(\"Hello from {title}\");\n}"
+      }
+    ]
+  },
+  "errors": []
+}

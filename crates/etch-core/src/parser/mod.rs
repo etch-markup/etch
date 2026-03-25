@@ -21,10 +21,17 @@ pub fn parse(input: &str) -> ParseResult {
 fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> {
     let mut blocks = Vec::new();
     let mut current = Vec::new();
+    let mut lines = input.lines().enumerate();
 
-    for (line_index, line) in input.lines().enumerate() {
+    while let Some((line_index, line)) = lines.next() {
         if line.trim().is_empty() {
             flush_paragraph(&mut blocks, &mut current);
+            continue;
+        }
+
+        if let Some(language) = code_block_language_from_line(line) {
+            flush_paragraph(&mut blocks, &mut current);
+            blocks.push(code_block_from_lines(language, &mut lines));
             continue;
         }
 
@@ -48,6 +55,36 @@ fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> 
     flush_paragraph(&mut blocks, &mut current);
 
     blocks
+}
+
+fn code_block_language_from_line(line: &str) -> Option<Option<String>> {
+    if !line.starts_with("```") {
+        return None;
+    }
+
+    let language = line[3..].trim();
+    Some((!language.is_empty()).then_some(language.to_string()))
+}
+
+fn code_block_from_lines<'a, I>(language: Option<String>, lines: &mut I) -> Block
+where
+    I: Iterator<Item = (usize, &'a str)>,
+{
+    let mut content = Vec::new();
+
+    for (_, line) in lines {
+        if line == "```" {
+            break;
+        }
+
+        content.push(line);
+    }
+
+    Block::CodeBlock {
+        language,
+        content: content.join("\n"),
+        attrs: None,
+    }
 }
 
 fn heading_from_line(line: &str) -> Option<Block> {
@@ -269,6 +306,62 @@ mod tests {
                     attrs: None,
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn parse_detects_fenced_code_blocks_before_paragraph_fallback() {
+        let result = parse("before\n\n```rust\nfn main() {}\n```\n\nafter");
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "before".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Block::CodeBlock {
+                    language: Some("rust".to_string()),
+                    content: "fn main() {}".to_string(),
+                    attrs: None,
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "after".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_keeps_fenced_code_block_content_raw() {
+        let result = parse("```\n**bold**\n:note[keep literal]\n{~ not a comment ~}\n```");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::CodeBlock {
+                language: None,
+                content: "**bold**\n:note[keep literal]\n{~ not a comment ~}".to_string(),
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_supports_empty_fenced_code_blocks() {
+        let result = parse("```\n```");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::CodeBlock {
+                language: None,
+                content: String::new(),
+                attrs: None,
+            }]
         );
     }
 

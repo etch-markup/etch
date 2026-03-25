@@ -1,0 +1,16 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "CodeBlock",
+        "content": "Use `etch validate` before publishing.\nThe setting key is `render.mode`.\nSingle ` backticks stay part of the code."
+      }
+    ]
+  },
+  "errors": []
+}

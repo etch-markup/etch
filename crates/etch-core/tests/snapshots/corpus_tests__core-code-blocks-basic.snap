@@ -1,0 +1,16 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "CodeBlock",
+        "content": "function greet(name) {\n  return \"Hello, \" + name;\n}\nconsole.log(greet(\"Etch\"));"
+      }
+    ]
+  },
+  "errors": []
+}

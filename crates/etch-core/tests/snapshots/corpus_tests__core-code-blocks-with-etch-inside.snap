@@ -1,0 +1,16 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "CodeBlock",
+        "content": "status = \"**draft**\"\n:note[remember this]\n{~ hidden in code ~}"
+      }
+    ]
+  },
+  "errors": []
+}
