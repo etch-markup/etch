@@ -161,49 +161,31 @@ pub enum Block {
 #[serde(tag = "type")]
 pub enum Inline {
     /// Plain text with no formatting.
-    Text {
-        value: String,
-    },
+    Text { value: String },
 
     /// *italic* — emphasis.
-    Emphasis {
-        content: Vec<Inline>,
-    },
+    Emphasis { content: Vec<Inline> },
 
     /// **bold** — strong emphasis.
-    Strong {
-        content: Vec<Inline>,
-    },
+    Strong { content: Vec<Inline> },
 
     /// ~~struck~~ — strikethrough.
-    Strikethrough {
-        content: Vec<Inline>,
-    },
+    Strikethrough { content: Vec<Inline> },
 
     /// `code` — inline code. Content is raw text (no nested formatting).
-    InlineCode {
-        value: String,
-    },
+    InlineCode { value: String },
 
     /// ^super^ — superscript.
-    Superscript {
-        content: Vec<Inline>,
-    },
+    Superscript { content: Vec<Inline> },
 
     /// ~sub~ — subscript.
-    Subscript {
-        content: Vec<Inline>,
-    },
+    Subscript { content: Vec<Inline> },
 
     /// ==marked== — highlighted text.
-    Highlight {
-        content: Vec<Inline>,
-    },
+    Highlight { content: Vec<Inline> },
 
     /// ++inserted++ — inserted text.
-    Insert {
-        content: Vec<Inline>,
-    },
+    Insert { content: Vec<Inline> },
 
     /// [text](url "title") — a hyperlink.
     Link {
@@ -232,9 +214,7 @@ pub enum Inline {
     },
 
     /// A bare URL that was auto-linked (http:// or https:// only).
-    AutoLink {
-        url: String,
-    },
+    AutoLink { url: String },
 
     /// :name[content]{attrs} — an inline directive.
     InlineDirective {
@@ -249,9 +229,7 @@ pub enum Inline {
     },
 
     /// [^label] — a reference to a footnote.
-    FootnoteReference {
-        label: String,
-    },
+    FootnoteReference { label: String },
 
     /// A soft line break (newline within a paragraph, typically rendered as a space).
     SoftBreak,
