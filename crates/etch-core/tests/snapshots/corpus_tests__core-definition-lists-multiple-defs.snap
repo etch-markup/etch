@@ -1,0 +1,49 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "DefinitionList",
+        "items": [
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Draft"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "A current of cold air near a door or window."
+                    }
+                  ]
+                }
+              ],
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "An unfinished version of a document."
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

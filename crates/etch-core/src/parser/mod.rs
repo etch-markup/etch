@@ -2,6 +2,7 @@ mod attributes;
 mod blockquote;
 mod code_block;
 mod comment;
+mod definition_list;
 mod directive;
 mod footnote;
 mod frontmatter;
@@ -20,6 +21,7 @@ use self::{
     blockquote::{blockquote_from_lines, is_blockquote_line},
     code_block::{code_block_from_lines, code_block_language_from_line},
     comment::strip_comments,
+    definition_list::{definition_list_from_lines, definition_list_starts_with},
     directive::{
         block_directive_from_lines, block_directive_opening_from_line,
         container_directive_from_lines, container_directive_named_close_from_line,
@@ -89,7 +91,7 @@ pub(crate) fn parse_blocks_from_lines<'a, I>(
     container_name: Option<&str>,
 ) -> (Vec<Block>, Option<ContainerClose>)
 where
-    I: Iterator<Item = (usize, &'a str)>,
+    I: Iterator<Item = (usize, &'a str)> + Clone,
 {
     let mut blocks = Vec::new();
 
@@ -192,6 +194,15 @@ where
             continue;
         }
 
+        if current.is_empty() && definition_list_starts_with(line, lines) {
+            flush_paragraph(&mut blocks, current);
+            blocks.push(
+                definition_list_from_lines(line, lines, errors)
+                    .expect("definition list start already validated"),
+            );
+            continue;
+        }
+
         current.push(line);
     }
 
@@ -212,7 +223,7 @@ fn flush_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>) {
 #[cfg(test)]
 mod tests {
     use super::parse;
-    use crate::{Attributes, Block, Inline, ListItem, ParseError, ParseErrorKind};
+    use crate::{Attributes, Block, DefinitionItem, Inline, ListItem, ParseError, ParseErrorKind};
     use serde_yaml::{Mapping, Value};
     use std::collections::HashMap;
 
@@ -538,6 +549,75 @@ mod tests {
                     ],
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn parse_detects_definition_lists_before_paragraph_fallback() {
+        let result = parse("Lantern\n: A portable light used on the trail after sunset.");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::DefinitionList {
+                items: vec![DefinitionItem {
+                    term: vec![Inline::Text {
+                        value: "Lantern".to_string(),
+                    }],
+                    definitions: vec![vec![Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "A portable light used on the trail after sunset.".to_string(),
+                        }],
+                        attrs: None,
+                    }]],
+                }],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_groups_multiple_definition_list_terms_into_one_block() {
+        let result = parse(
+            "Draft\n: A current of cold air.\n: An unfinished version of a document.\n\nLantern\n: A portable light.",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::DefinitionList {
+                items: vec![
+                    DefinitionItem {
+                        term: vec![Inline::Text {
+                            value: "Draft".to_string(),
+                        }],
+                        definitions: vec![
+                            vec![Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "A current of cold air.".to_string(),
+                                }],
+                                attrs: None,
+                            }],
+                            vec![Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "An unfinished version of a document.".to_string(),
+                                }],
+                                attrs: None,
+                            }],
+                        ],
+                    },
+                    DefinitionItem {
+                        term: vec![Inline::Text {
+                            value: "Lantern".to_string(),
+                        }],
+                        definitions: vec![vec![Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "A portable light.".to_string(),
+                            }],
+                            attrs: None,
+                        }]],
+                    },
+                ],
+                attrs: None,
+            }]
         );
     }
 

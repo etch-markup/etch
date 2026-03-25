@@ -84,7 +84,7 @@ pub(crate) fn block_directive_from_lines<'a, I>(
     errors: &mut Vec<ParseError>,
 ) -> Block
 where
-    I: Iterator<Item = (usize, &'a str)>,
+    I: Iterator<Item = (usize, &'a str)> + Clone,
 {
     let mut body_lines = Vec::new();
 
@@ -111,7 +111,7 @@ pub(crate) fn container_directive_from_lines<'a, I>(
     errors: &mut Vec<ParseError>,
 ) -> Block
 where
-    I: Iterator<Item = (usize, &'a str)>,
+    I: Iterator<Item = (usize, &'a str)> + Clone,
 {
     let mut current = Vec::new();
     let (body, close) = super::parse_blocks_from_lines(

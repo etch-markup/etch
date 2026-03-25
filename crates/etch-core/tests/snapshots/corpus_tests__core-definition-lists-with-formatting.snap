@@ -1,0 +1,111 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "DefinitionList",
+        "items": [
+          {
+            "term": [
+              {
+                "type": "Strong",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Storm warning"
+                  }
+                ]
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "A notice marked "
+                    },
+                    {
+                      "type": "Emphasis",
+                      "content": [
+                        {
+                          "type": "Text",
+                          "value": "urgent"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Text",
+                      "value": " before the harbor closes."
+                    }
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Field kit"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "Includes a "
+                    },
+                    {
+                      "type": "Strong",
+                      "content": [
+                        {
+                          "type": "Text",
+                          "value": "map"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Text",
+                      "value": ", a "
+                    },
+                    {
+                      "type": "Emphasis",
+                      "content": [
+                        {
+                          "type": "Text",
+                          "value": "whistle"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Text",
+                      "value": ", and spare "
+                    },
+                    {
+                      "type": "InlineCode",
+                      "value": "batteries"
+                    },
+                    {
+                      "type": "Text",
+                      "value": "."
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

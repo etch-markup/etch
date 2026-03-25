@@ -1,0 +1,80 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "DefinitionList",
+        "items": [
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Compass"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "A tool for finding direction."
+                    }
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Ration"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "A measured portion of food for a journey."
+                    }
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Watchfire"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "A small fire kept burning through the night."
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
