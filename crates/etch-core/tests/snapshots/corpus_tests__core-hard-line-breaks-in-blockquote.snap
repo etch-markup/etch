@@ -1,0 +1,40 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockQuote",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The snow started before dawn"
+              },
+              {
+                "type": "HardBreak"
+              },
+              {
+                "type": "Text",
+                "value": "and kept falling through breakfast"
+              },
+              {
+                "type": "HardBreak"
+              },
+              {
+                "type": "Text",
+                "value": "until the road signs disappeared."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

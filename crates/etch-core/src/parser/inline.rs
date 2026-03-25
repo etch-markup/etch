@@ -192,6 +192,16 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
 
         let byte = input.as_bytes()[index];
 
+        if byte == b'\\' {
+            if let Some(next_index) = try_parse_hard_break(input, index) {
+                push_text(&mut nodes, &input[text_start..index]);
+                nodes.push(Inline::HardBreak);
+                index = next_index;
+                text_start = index;
+                continue;
+            }
+        }
+
         if byte == b'h' {
             if let Some((inline, next_index)) = try_parse_autolink(input, index) {
                 push_text(&mut nodes, &input[text_start..index]);
@@ -293,6 +303,18 @@ fn try_parse_delimiter_run(input: &str, index: usize) -> Option<(Inline, usize)>
     }
 
     None
+}
+
+fn try_parse_hard_break(input: &str, index: usize) -> Option<usize> {
+    let remainder = input.get(index..)?;
+
+    if remainder.starts_with("\\\r\n") {
+        return Some(index + "\\\r\n".len());
+    }
+
+    remainder
+        .starts_with("\\\n")
+        .then_some(index + "\\\n".len())
 }
 
 fn try_parse_link(input: &str, index: usize) -> Option<(Inline, usize)> {
@@ -1055,6 +1077,60 @@ mod tests {
             parse_inlines("example.com ftp://files.etch-lang.dev/releases/latest.zip"),
             vec![Inline::Text {
                 value: "example.com ftp://files.etch-lang.dev/releases/latest.zip".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn parses_hard_breaks_from_trailing_backslashes() {
+        assert_eq!(
+            parse_inlines("123 Main Street\\\nApartment 4B"),
+            vec![
+                Inline::Text {
+                    value: "123 Main Street".to_string(),
+                },
+                Inline::HardBreak,
+                Inline::Text {
+                    value: "Apartment 4B".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_hard_breaks_inside_formatted_content() {
+        assert_eq!(
+            parse_inlines("*Starts here\\\nand ends here*"),
+            vec![Inline::Emphasis {
+                content: vec![
+                    Inline::Text {
+                        value: "Starts here".to_string(),
+                    },
+                    Inline::HardBreak,
+                    Inline::Text {
+                        value: "and ends here".to_string(),
+                    },
+                ],
+            }]
+        );
+    }
+
+    #[test]
+    fn does_not_treat_two_trailing_spaces_as_hard_breaks() {
+        assert_eq!(
+            parse_inlines("First line  \nSecond line"),
+            vec![Inline::Text {
+                value: "First line  \nSecond line".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn leaves_non_trailing_backslashes_literal() {
+        assert_eq!(
+            parse_inlines("Path \\ server"),
+            vec![Inline::Text {
+                value: "Path \\ server".to_string(),
             }]
         );
     }
