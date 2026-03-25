@@ -14,7 +14,21 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "Winter teaches patience better than any sermon.\nThe quiet does half the work for you.\n— Mira Holloway"
+                "value": "Winter teaches patience better than any sermon."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "The quiet does half the work for you."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "— Mira Holloway"
               }
             ]
           }

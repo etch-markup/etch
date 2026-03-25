@@ -11,7 +11,21 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "This paragraph starts on one line\ncontinues on the next line\nand ends on a third line."
+            "value": "This paragraph starts on one line"
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "continues on the next line"
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "and ends on a third line."
           }
         ]
       }

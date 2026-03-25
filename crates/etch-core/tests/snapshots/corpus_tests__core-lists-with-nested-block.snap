@@ -17,7 +17,14 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "Camp briefing for the new arrivals.\nBring dry socks and a flashlight."
+                    "value": "Camp briefing for the new arrivals."
+                  },
+                  {
+                    "type": "SoftBreak"
+                  },
+                  {
+                    "type": "Text",
+                    "value": "Bring dry socks and a flashlight."
                   }
                 ]
               },
@@ -29,7 +36,14 @@ expression: result
                     "content": [
                       {
                         "type": "Text",
-                        "value": "Check in before sunset.\nKeep your permit visible."
+                        "value": "Check in before sunset."
+                      },
+                      {
+                        "type": "SoftBreak"
+                      },
+                      {
+                        "type": "Text",
+                        "value": "Keep your permit visible."
                       }
                     ]
                   }

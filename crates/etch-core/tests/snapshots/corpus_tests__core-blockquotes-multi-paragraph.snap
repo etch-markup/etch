@@ -14,7 +14,14 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "The harbor bell rang once before dawn.\nFishing boats shifted against the pier."
+                "value": "The harbor bell rang once before dawn."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "Fishing boats shifted against the pier."
               }
             ]
           },
@@ -23,7 +30,14 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "By sunrise the market square was already awake.\nBread smoke drifted between the stalls."
+                "value": "By sunrise the market square was already awake."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "Bread smoke drifted between the stalls."
               }
             ]
           }

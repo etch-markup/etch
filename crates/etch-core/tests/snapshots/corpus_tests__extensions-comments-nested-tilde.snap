@@ -11,7 +11,33 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "Water is H~2~O in the field notes  and the stove emits CO~2~."
+            "value": "Water is H"
+          },
+          {
+            "type": "Subscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "O in the field notes  and the stove emits CO"
+          },
+          {
+            "type": "Subscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "."
           }
         ]
       }

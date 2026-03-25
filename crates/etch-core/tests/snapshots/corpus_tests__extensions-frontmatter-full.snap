@@ -7,20 +7,20 @@ expression: result
     "frontmatter": {
       "raw": "title: \"Chronicle of the Ridge\"\nauthor: \"foxwriter42\"\nchapter: 7\ntags: [travel, winter, field-notes]\nseries:\n  name: \"Northern Passages\"\n  part: 3\ndraft: true\nword_count: auto\n",
       "fields": {
+        "author": "foxwriter42",
         "chapter": 7,
+        "draft": true,
         "series": {
           "name": "Northern Passages",
           "part": 3
         },
-        "word_count": "auto",
-        "draft": true,
-        "author": "foxwriter42",
-        "title": "Chronicle of the Ridge",
         "tags": [
           "travel",
           "winter",
           "field-notes"
-        ]
+        ],
+        "title": "Chronicle of the Ridge",
+        "word_count": "auto"
       }
     },
     "body": [

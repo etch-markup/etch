@@ -11,7 +11,21 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "These tokens stay literal: ** and **** in plain text.\nThese tokens stay literal too: ~~ and ^^ in plain text.\nThese tokens also stay literal: == and ++++ in plain text."
+            "value": "These tokens stay literal: ** and **** in plain text."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "These tokens stay literal too: ~~ and ^^ in plain text."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "These tokens also stay literal: == and ++++ in plain text."
           }
         ]
       }

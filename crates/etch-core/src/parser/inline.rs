@@ -202,6 +202,14 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
             }
         }
 
+        if let Some(next_index) = try_parse_soft_break(input, index) {
+            push_text(&mut nodes, &input[text_start..index]);
+            nodes.push(Inline::SoftBreak);
+            index = next_index;
+            text_start = index;
+            continue;
+        }
+
         if byte == b'h' {
             if let Some((inline, next_index)) = try_parse_autolink(input, index) {
                 push_text(&mut nodes, &input[text_start..index]);
@@ -315,6 +323,20 @@ fn try_parse_hard_break(input: &str, index: usize) -> Option<usize> {
     remainder
         .starts_with("\\\n")
         .then_some(index + "\\\n".len())
+}
+
+fn try_parse_soft_break(input: &str, index: usize) -> Option<usize> {
+    let remainder = input.get(index..)?;
+
+    if remainder.starts_with("\r\n") {
+        return Some(index + "\r\n".len());
+    }
+
+    if remainder.starts_with('\n') || remainder.starts_with('\r') {
+        return Some(index + 1);
+    }
+
+    None
 }
 
 fn try_parse_link(input: &str, index: usize) -> Option<(Inline, usize)> {
@@ -1064,8 +1086,29 @@ mod tests {
                 Inline::AutoLink {
                     url: "https://example.com/path".to_string(),
                 },
+                Inline::SoftBreak,
                 Inline::Text {
-                    value: "\nThen read more".to_string(),
+                    value: "Then read more".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_soft_breaks_from_newlines() {
+        assert_eq!(
+            parse_inlines("First line\nSecond line\r\nThird line"),
+            vec![
+                Inline::Text {
+                    value: "First line".to_string(),
+                },
+                Inline::SoftBreak,
+                Inline::Text {
+                    value: "Second line".to_string(),
+                },
+                Inline::SoftBreak,
+                Inline::Text {
+                    value: "Third line".to_string(),
                 },
             ]
         );
@@ -1119,9 +1162,15 @@ mod tests {
     fn does_not_treat_two_trailing_spaces_as_hard_breaks() {
         assert_eq!(
             parse_inlines("First line  \nSecond line"),
-            vec![Inline::Text {
-                value: "First line  \nSecond line".to_string(),
-            }]
+            vec![
+                Inline::Text {
+                    value: "First line  ".to_string(),
+                },
+                Inline::SoftBreak,
+                Inline::Text {
+                    value: "Second line".to_string(),
+                },
+            ]
         );
     }
 

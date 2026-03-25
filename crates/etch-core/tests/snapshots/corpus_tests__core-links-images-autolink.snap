@@ -19,7 +19,14 @@ expression: result
           },
           {
             "type": "Text",
-            "value": " for details.\nCheck "
+            "value": " for details."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "Check "
           },
           {
             "type": "AutoLink",
@@ -27,7 +34,21 @@ expression: result
           },
           {
             "type": "Text",
-            "value": " for the older guide.\nThe bare domain example.com should stay plain text.\nThe file is at ftp://files.etch-lang.dev/releases/latest.zip and should stay plain text."
+            "value": " for the older guide."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "The bare domain example.com should stay plain text."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "The file is at ftp://files.etch-lang.dev/releases/latest.zip and should stay plain text."
           }
         ]
       }

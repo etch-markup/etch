@@ -11,7 +11,21 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "This line ends with trailing spaces.  \nThis next line also ends with trailing spaces.  \nThis line is still part of the same paragraph."
+            "value": "This line ends with trailing spaces.  "
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This next line also ends with trailing spaces.  "
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This line is still part of the same paragraph."
           }
         ]
       }

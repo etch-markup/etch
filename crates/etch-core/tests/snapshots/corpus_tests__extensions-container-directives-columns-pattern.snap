@@ -11,8 +11,8 @@ expression: result
         "name": "columns",
         "attrs": {
           "pairs": {
-            "gap": "1rem",
-            "count": "2"
+            "count": "2",
+            "gap": "1rem"
           }
         },
         "body": [

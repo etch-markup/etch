@@ -24,7 +24,34 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "\\int_0^1 x^2 \\, dx = \\frac{1}{3}\nE = mc^2\n\\nabla \\cdot \\vec{F} = 0"
+                "value": "\\int_0"
+              },
+              {
+                "type": "Superscript",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "1 x"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": "2 \\, dx = \\frac{1}{3}"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "E = mc^2"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "\\nabla \\cdot \\vec{F} = 0"
               }
             ]
           }

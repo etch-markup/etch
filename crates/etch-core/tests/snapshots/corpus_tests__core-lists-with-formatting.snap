@@ -17,7 +17,20 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "Review the **safety checklist** before departure."
+                    "value": "Review the "
+                  },
+                  {
+                    "type": "Strong",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "safety checklist"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Text",
+                    "value": " before departure."
                   }
                 ]
               }
@@ -30,7 +43,20 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "Leave the *fragile maps* on the top shelf."
+                    "value": "Leave the "
+                  },
+                  {
+                    "type": "Emphasis",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "fragile maps"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Text",
+                    "value": " on the top shelf."
                   }
                 ]
               }
@@ -43,7 +69,15 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "Run `etch validate notes.etch` before publishing."
+                    "value": "Run "
+                  },
+                  {
+                    "type": "InlineCode",
+                    "value": "etch validate notes.etch"
+                  },
+                  {
+                    "type": "Text",
+                    "value": " before publishing."
                   }
                 ]
               }
@@ -56,7 +90,21 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "Read the [field guide](https://docs.etch-lang.dev/guide/field-notes) on the train."
+                    "value": "Read the "
+                  },
+                  {
+                    "type": "Link",
+                    "url": "https://docs.etch-lang.dev/guide/field-notes",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "field guide"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Text",
+                    "value": " on the train."
                   }
                 ]
               }

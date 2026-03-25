@@ -20,8 +20,9 @@ expression: result
             "type": "Paragraph",
             "content": [
               {
-                "type": "Text",
-                "value": "![North ridge overlook](photos/north-ridge.jpg)"
+                "type": "Image",
+                "url": "photos/north-ridge.jpg",
+                "alt": "North ridge overlook"
               }
             ]
           }

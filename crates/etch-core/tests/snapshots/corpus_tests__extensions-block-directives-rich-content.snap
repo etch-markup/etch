@@ -78,7 +78,20 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "The third paragraph ends with **bold** emphasis."
+                "value": "The third paragraph ends with "
+              },
+              {
+                "type": "Strong",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " emphasis."
               }
             ]
           }

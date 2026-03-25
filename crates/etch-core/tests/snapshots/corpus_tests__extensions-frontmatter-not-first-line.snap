@@ -14,15 +14,6 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "{~ note: --- is only frontmatter on the very first line ~}"
-          }
-        ]
-      },
-      {
-        "type": "Paragraph",
-        "content": [
-          {
-            "type": "Text",
             "value": "This file starts with a blank line, so the dashes above must be a thematic break."
           }
         ]

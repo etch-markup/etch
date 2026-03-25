@@ -349,15 +349,25 @@ mod tests {
     }
 
     #[test]
-    fn parse_keeps_multiline_paragraph_text_together() {
+    fn parse_emits_soft_breaks_for_multiline_paragraphs() {
         let result = parse("line one  \nline two\nline three");
 
         assert_eq!(
             result.document.body,
             vec![Block::Paragraph {
-                content: vec![Inline::Text {
-                    value: "line one  \nline two\nline three".to_string(),
-                }],
+                content: vec![
+                    Inline::Text {
+                        value: "line one  ".to_string(),
+                    },
+                    Inline::SoftBreak,
+                    Inline::Text {
+                        value: "line two".to_string(),
+                    },
+                    Inline::SoftBreak,
+                    Inline::Text {
+                        value: "line three".to_string(),
+                    },
+                ],
                 attrs: None,
             }]
         );
@@ -713,9 +723,19 @@ mod tests {
         assert_eq!(
             result.document.body,
             vec![Block::Paragraph {
-                content: vec![Inline::Text {
-                    value: "::note2\nBody\n::".to_string(),
-                }],
+                content: vec![
+                    Inline::Text {
+                        value: "::note2".to_string(),
+                    },
+                    Inline::SoftBreak,
+                    Inline::Text {
+                        value: "Body".to_string(),
+                    },
+                    Inline::SoftBreak,
+                    Inline::Text {
+                        value: "::".to_string(),
+                    },
+                ],
                 attrs: None,
             }]
         );
@@ -883,9 +903,15 @@ mod tests {
         assert_eq!(
             result.document.body,
             vec![Block::Paragraph {
-                content: vec![Inline::Text {
-                    value: "--\n-*-".to_string(),
-                }],
+                content: vec![
+                    Inline::Text {
+                        value: "--".to_string(),
+                    },
+                    Inline::SoftBreak,
+                    Inline::Text {
+                        value: "-*-".to_string(),
+                    },
+                ],
                 attrs: None,
             }]
         );
@@ -1015,10 +1041,15 @@ mod tests {
                 items: vec![ListItem {
                     content: vec![
                         Block::Paragraph {
-                            content: vec![Inline::Text {
-                                value: "Camp briefing for the new arrivals.\nBring dry socks, a flashlight, and a map."
-                                    .to_string(),
-                            }],
+                            content: vec![
+                                Inline::Text {
+                                    value: "Camp briefing for the new arrivals.".to_string(),
+                                },
+                                Inline::SoftBreak,
+                                Inline::Text {
+                                    value: "Bring dry socks, a flashlight, and a map.".to_string(),
+                                }
+                            ],
                             attrs: None,
                         },
                         Block::Paragraph {
@@ -1048,18 +1079,28 @@ mod tests {
                 items: vec![ListItem {
                     content: vec![
                         Block::Paragraph {
-                            content: vec![Inline::Text {
-                                value: "Camp briefing for the new arrivals.\nBring dry socks and a flashlight."
-                                    .to_string(),
-                            }],
+                            content: vec![
+                                Inline::Text {
+                                    value: "Camp briefing for the new arrivals.".to_string(),
+                                },
+                                Inline::SoftBreak,
+                                Inline::Text {
+                                    value: "Bring dry socks and a flashlight.".to_string(),
+                                },
+                            ],
                             attrs: None,
                         },
                         Block::BlockQuote {
                             content: vec![Block::Paragraph {
-                                content: vec![Inline::Text {
-                                    value: "Check in before sunset.\nKeep your permit visible."
-                                        .to_string(),
-                                }],
+                                content: vec![
+                                    Inline::Text {
+                                        value: "Check in before sunset.".to_string(),
+                                    },
+                                    Inline::SoftBreak,
+                                    Inline::Text {
+                                        value: "Keep your permit visible.".to_string(),
+                                    },
+                                ],
                                 attrs: None,
                             }],
                             attrs: None,

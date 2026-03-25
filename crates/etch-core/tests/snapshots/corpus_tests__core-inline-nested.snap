@@ -33,7 +33,14 @@ expression: result
           },
           {
             "type": "Text",
-            "value": " appears at the start.\nThis sentence has "
+            "value": " appears at the start."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This sentence has "
           },
           {
             "type": "Emphasis",
@@ -59,7 +66,14 @@ expression: result
           },
           {
             "type": "Text",
-            "value": " in the middle.\nThis sentence ends with "
+            "value": " in the middle."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This sentence ends with "
           },
           {
             "type": "Strikethrough",

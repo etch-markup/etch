@@ -33,7 +33,14 @@ expression: result
           },
           {
             "type": "Text",
-            "value": " starts this line.\nThis line has "
+            "value": " starts this line."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This line has "
           },
           {
             "type": "Highlight",
@@ -64,7 +71,14 @@ expression: result
           },
           {
             "type": "Text",
-            "value": " in the middle.\nThis line ends with "
+            "value": " in the middle."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This line ends with "
           },
           {
             "type": "Superscript",

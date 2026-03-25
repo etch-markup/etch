@@ -14,7 +14,21 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "The road vanished under the first snow.\nLantern light flickered across the fence posts.\nNobody spoke until the wind settled."
+                "value": "The road vanished under the first snow."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "Lantern light flickered across the fence posts."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "Nobody spoke until the wind settled."
               }
             ]
           }

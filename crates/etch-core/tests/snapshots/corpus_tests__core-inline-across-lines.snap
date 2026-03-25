@@ -14,33 +14,60 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "Starts on this line\nand ends on the next"
+                "value": "Starts on this line"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "and ends on the next"
               }
             ]
           },
           {
             "type": "Text",
-            "value": " in the same paragraph.\n"
+            "value": " in the same paragraph."
+          },
+          {
+            "type": "SoftBreak"
           },
           {
             "type": "Strong",
             "content": [
               {
                 "type": "Text",
-                "value": "Bold starts here\nand ends here"
+                "value": "Bold starts here"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "and ends here"
               }
             ]
           },
           {
             "type": "Text",
-            "value": " in the same paragraph too.\n"
+            "value": " in the same paragraph too."
+          },
+          {
+            "type": "SoftBreak"
           },
           {
             "type": "Strikethrough",
             "content": [
               {
                 "type": "Text",
-                "value": "Strike starts here\nand ends here"
+                "value": "Strike starts here"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "and ends here"
               }
             ]
           },

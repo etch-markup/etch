@@ -17,7 +17,14 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "Camp briefing for the new arrivals.\nBring dry socks, a flashlight, and a printed map."
+                    "value": "Camp briefing for the new arrivals."
+                  },
+                  {
+                    "type": "SoftBreak"
+                  },
+                  {
+                    "type": "Text",
+                    "value": "Bring dry socks, a flashlight, and a printed map."
                   }
                 ]
               },
@@ -39,7 +46,14 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "Kitchen prep for tomorrow's hike.\nSlice the bread and label each container."
+                    "value": "Kitchen prep for tomorrow's hike."
+                  },
+                  {
+                    "type": "SoftBreak"
+                  },
+                  {
+                    "type": "Text",
+                    "value": "Slice the bread and label each container."
                   }
                 ]
               },

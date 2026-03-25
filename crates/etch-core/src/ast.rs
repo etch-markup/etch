@@ -4,7 +4,7 @@
 // This file defines every node type the parser can produce.
 // All types derive Serialize so they can be snapshot-tested as JSON.
 
-use serde::Serialize;
+use serde::{Serialize, Serializer, ser::SerializeMap};
 use std::collections::HashMap;
 
 // ─────────────────────────────────────────────
@@ -32,6 +32,7 @@ pub struct Frontmatter {
     pub raw: String,
     /// Parsed key-value pairs. Values can be strings, numbers, arrays, or nested objects.
     /// We use serde_yaml::Value to represent arbitrary YAML.
+    #[serde(serialize_with = "serialize_ordered_map")]
     pub fields: HashMap<String, serde_yaml::Value>,
 }
 
@@ -254,7 +255,25 @@ pub struct Attributes {
     /// Key-value pairs (key=value, key="quoted value").
     /// Values with escaped quotes are stored unescaped.
     #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(serialize_with = "serialize_ordered_map")]
     pub pairs: HashMap<String, String>,
+}
+
+fn serialize_ordered_map<S, V>(value: &HashMap<String, V>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+    V: Serialize,
+{
+    let mut entries: Vec<_> = value.iter().collect();
+    entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+
+    let mut map = serializer.serialize_map(Some(entries.len()))?;
+
+    for (key, entry) in entries {
+        map.serialize_entry(key, entry)?;
+    }
+
+    map.end()
 }
 
 /// A table cell containing inline content.

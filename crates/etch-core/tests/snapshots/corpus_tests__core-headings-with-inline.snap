@@ -12,7 +12,20 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "A **bold** heading"
+            "value": "A "
+          },
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Text",
+                "value": "bold"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " heading"
           }
         ]
       },
@@ -22,7 +35,20 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "An *italic* heading"
+            "value": "An "
+          },
+          {
+            "type": "Emphasis",
+            "content": [
+              {
+                "type": "Text",
+                "value": "italic"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " heading"
           }
         ]
       },
@@ -32,7 +58,15 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "A `code` heading"
+            "value": "A "
+          },
+          {
+            "type": "InlineCode",
+            "value": "code"
+          },
+          {
+            "type": "Text",
+            "value": " heading"
           }
         ]
       }

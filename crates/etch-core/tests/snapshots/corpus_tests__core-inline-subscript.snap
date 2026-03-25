@@ -20,7 +20,14 @@ expression: result
           },
           {
             "type": "Text",
-            "value": " opens this sentence.\nThis sentence includes H"
+            "value": " opens this sentence."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This sentence includes H"
           },
           {
             "type": "Subscript",
@@ -33,7 +40,14 @@ expression: result
           },
           {
             "type": "Text",
-            "value": "O in the middle.\nThis line ends with CO"
+            "value": "O in the middle."
+          },
+          {
+            "type": "SoftBreak"
+          },
+          {
+            "type": "Text",
+            "value": "This line ends with CO"
           },
           {
             "type": "Subscript",

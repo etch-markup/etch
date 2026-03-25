@@ -14,7 +14,40 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "The guide called the ridge **safe enough** by noon.\nShe marked the eastern path as *muddy* after the storm."
+                "value": "The guide called the ridge "
+              },
+              {
+                "type": "Strong",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "safe enough"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " by noon."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "She marked the eastern path as "
+              },
+              {
+                "type": "Emphasis",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "muddy"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " after the storm."
               }
             ]
           },
@@ -42,7 +75,15 @@ expression: result
                     "content": [
                       {
                         "type": "Text",
-                        "value": "Leave the `radio` on channel three"
+                        "value": "Leave the "
+                      },
+                      {
+                        "type": "InlineCode",
+                        "value": "radio"
+                      },
+                      {
+                        "type": "Text",
+                        "value": " on channel three"
                       }
                     ]
                   }
