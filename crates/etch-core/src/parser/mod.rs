@@ -24,10 +24,9 @@ enum ContainerClose {
 
 pub fn parse(input: &str) -> ParseResult {
     let (frontmatter, input_without_frontmatter) = parse_frontmatter(input);
-    let body = skip_leading_comment(input_without_frontmatter);
-    let body_starts_at_document_start =
-        frontmatter.is_none() && std::ptr::eq(body.as_ptr(), input.as_ptr());
-    let body_line_offset = input[..input.len() - body.len()]
+    let body = strip_comments(input_without_frontmatter);
+    let body_starts_at_document_start = frontmatter.is_none();
+    let body_line_offset = input[..input.len() - input_without_frontmatter.len()]
         .bytes()
         .filter(|byte| *byte == b'\n')
         .count();
@@ -37,7 +36,7 @@ pub fn parse(input: &str) -> ParseResult {
         document: Document {
             frontmatter,
             body: parse_blocks(
-                body,
+                &body,
                 body_starts_at_document_start,
                 body_line_offset,
                 &mut errors,
@@ -857,31 +856,61 @@ fn flush_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>) {
     current.clear();
 }
 
-fn skip_leading_comment(input: &str) -> &str {
-    if !input.starts_with("{~") {
-        return input;
-    }
+fn strip_comments(input: &str) -> String {
+    let mut stripped = String::with_capacity(input.len());
+    let mut index = 0;
+    let mut in_comment = false;
+    let mut in_code_block = false;
 
-    let Some(comment_end) = input.find("~}") else {
-        return input;
-    };
+    while index < input.len() {
+        let remainder = &input[index..];
 
-    let mut remainder = &input[comment_end + 2..];
+        if in_comment {
+            if remainder.starts_with("~}") {
+                in_comment = false;
+                index += 2;
+                continue;
+            }
 
-    while let Some(next_line_end) = remainder.find('\n') {
-        let line = &remainder[..next_line_end];
-        if !line.trim().is_empty() {
-            break;
+            let ch = remainder.chars().next().unwrap();
+            if ch == '\n' || ch == '\r' {
+                stripped.push(ch);
+            }
+            index += ch.len_utf8();
+            continue;
         }
 
-        remainder = &remainder[next_line_end + 1..];
+        if is_code_fence_start(remainder) {
+            let line_end = remainder
+                .find('\n')
+                .map(|offset| offset + 1)
+                .unwrap_or(remainder.len());
+            stripped.push_str(&remainder[..line_end]);
+            in_code_block = !in_code_block;
+            index += line_end;
+            continue;
+        }
+
+        if !in_code_block && remainder.starts_with("{~") {
+            in_comment = true;
+            index += 2;
+            continue;
+        }
+
+        let ch = remainder.chars().next().unwrap();
+        stripped.push(ch);
+        index += ch.len_utf8();
     }
 
-    if remainder.trim().is_empty() {
-        ""
-    } else {
-        remainder
+    stripped
+}
+
+fn is_code_fence_start(input: &str) -> bool {
+    if !input.starts_with("```") {
+        return false;
     }
+
+    input == "```" || input.starts_with("```\n") || input.starts_with("```\r\n")
 }
 
 #[cfg(test)]
@@ -1237,6 +1266,91 @@ mod tests {
                 attrs: None,
             }]
         );
+    }
+
+    #[test]
+    fn parse_strips_inline_comments_from_paragraph_text() {
+        let result = parse("Text before {~ this is hidden ~} text after.");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Text before  text after.".to_string(),
+                }],
+                attrs: None,
+            }]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_strips_full_line_comments_between_blocks() {
+        let result = parse("Paragraph before.\n\n{~ hidden line ~}\n\nParagraph after.");
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Paragraph before.".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Paragraph after.".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_strips_multi_line_comments_between_blocks() {
+        let result = parse(
+            "Paragraph before.\n\n{~\nHidden line one.\nHidden line two.\n~}\n\nParagraph after.",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Paragraph before.".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Paragraph after.".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_treats_comment_openers_inside_comments_as_literal_text() {
+        let result = parse(
+            "Before {~ outer comment {~ this looks like inner ~} but the comment closed at the first ~} and this is visible text ~}.",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Before  but the comment closed at the first ~} and this is visible text ~}."
+                        .to_string(),
+                }],
+                attrs: None,
+            }]
+        );
+        assert!(result.errors.is_empty());
     }
 
     #[test]

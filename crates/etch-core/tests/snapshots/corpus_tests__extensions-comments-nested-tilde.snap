@@ -1,0 +1,21 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Water is H~2~O in the field notes  and the stove emits CO~2~."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
