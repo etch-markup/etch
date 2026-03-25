@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "crates/etch-core",
+    "crates/etch-cli",
+]
+resolver = "3"
