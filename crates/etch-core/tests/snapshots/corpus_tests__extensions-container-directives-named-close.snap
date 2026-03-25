@@ -1,0 +1,33 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "ContainerDirective",
+        "name": "chapter",
+        "attrs": {
+          "pairs": {
+            "title": "One"
+          }
+        },
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The named close should match the opening directive."
+              }
+            ]
+          }
+        ],
+        "named_close": true
+      }
+    ]
+  },
+  "errors": []
+}

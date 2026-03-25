@@ -1,4 +1,7 @@
-use crate::{Attributes, Block, Document, Frontmatter, Inline, ListItem, ParseResult};
+use crate::{
+    Attributes, Block, Document, Frontmatter, Inline, ListItem, ParseError, ParseErrorKind,
+    ParseResult,
+};
 use std::{collections::HashMap, iter::Peekable};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -7,10 +10,16 @@ enum ListMarker {
     Ordered,
 }
 
-struct BlockDirectiveOpening {
+struct DirectiveOpening {
     name: String,
     label: Option<Vec<Inline>>,
     attrs: Option<Attributes>,
+    line: usize,
+}
+
+enum ContainerClose {
+    Anonymous,
+    Named,
 }
 
 pub fn parse(input: &str) -> ParseResult {
@@ -18,13 +27,23 @@ pub fn parse(input: &str) -> ParseResult {
     let body = skip_leading_comment(input_without_frontmatter);
     let body_starts_at_document_start =
         frontmatter.is_none() && std::ptr::eq(body.as_ptr(), input.as_ptr());
+    let body_line_offset = input[..input.len() - body.len()]
+        .bytes()
+        .filter(|byte| *byte == b'\n')
+        .count();
+    let mut errors = Vec::new();
 
     ParseResult {
         document: Document {
             frontmatter,
-            body: parse_blocks(body, body_starts_at_document_start),
+            body: parse_blocks(
+                body,
+                body_starts_at_document_start,
+                body_line_offset,
+                &mut errors,
+            ),
         },
-        errors: Vec::new(),
+        errors,
     }
 }
 
@@ -74,7 +93,12 @@ fn split_first_line(input: &str) -> Option<(&str, &str, usize)> {
     Some((input.strip_suffix('\r').unwrap_or(input), "", input.len()))
 }
 
-fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> {
+fn parse_blocks(
+    input: &str,
+    body_starts_at_document_start: bool,
+    line_offset: usize,
+    errors: &mut Vec<ParseError>,
+) -> Vec<Block> {
     let mut current = Vec::new();
     let mut lines = input.lines().enumerate().peekable();
 
@@ -83,7 +107,11 @@ fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> 
         body_starts_at_document_start,
         false,
         &mut current,
+        line_offset,
+        errors,
+        None,
     )
+    .0
 }
 
 fn parse_blocks_from_lines<'a, I>(
@@ -91,13 +119,43 @@ fn parse_blocks_from_lines<'a, I>(
     body_starts_at_document_start: bool,
     allow_indented_list_starts: bool,
     current: &mut Vec<&'a str>,
-) -> Vec<Block>
+    line_offset: usize,
+    errors: &mut Vec<ParseError>,
+    container_name: Option<&str>,
+) -> (Vec<Block>, Option<ContainerClose>)
 where
     I: Iterator<Item = (usize, &'a str)>,
 {
     let mut blocks = Vec::new();
 
     while let Some((line_index, line)) = lines.next() {
+        let line_number = line_offset + line_index + 1;
+
+        if let Some(expected_container_name) = container_name {
+            if line == ":::" {
+                flush_paragraph(&mut blocks, current);
+                return (blocks, Some(ContainerClose::Anonymous));
+            }
+
+            if let Some(close_name) = container_directive_named_close_from_line(line) {
+                flush_paragraph(&mut blocks, current);
+
+                if close_name != expected_container_name {
+                    errors.push(ParseError {
+                        kind: ParseErrorKind::Error,
+                        message: format!(
+                            "Mismatched container close: expected ':::/{}', found ':::/{}'",
+                            expected_container_name, close_name
+                        ),
+                        line: line_number,
+                        column: Some(1),
+                    });
+                }
+
+                return (blocks, Some(ContainerClose::Named));
+            }
+        }
+
         if line.trim().is_empty() {
             flush_paragraph(&mut blocks, current);
             continue;
@@ -109,9 +167,20 @@ where
             continue;
         }
 
-        if let Some(opening) = block_directive_opening_from_line(line) {
+        if let Some(opening) = container_directive_opening_from_line(line, line_number) {
             flush_paragraph(&mut blocks, current);
-            blocks.push(block_directive_from_lines(opening, lines));
+            blocks.push(container_directive_from_lines(
+                opening,
+                lines,
+                line_offset,
+                errors,
+            ));
+            continue;
+        }
+
+        if let Some(opening) = block_directive_opening_from_line(line, line_number) {
+            flush_paragraph(&mut blocks, current);
+            blocks.push(block_directive_from_lines(opening, lines, errors));
             continue;
         }
 
@@ -124,7 +193,7 @@ where
 
         if is_blockquote_line(line) {
             flush_paragraph(&mut blocks, current);
-            blocks.push(blockquote_from_lines(line, lines));
+            blocks.push(blockquote_from_lines(line, lines, errors));
             continue;
         }
 
@@ -139,7 +208,7 @@ where
             list_parent_indent_for_block_start(line, allow_indented_list_starts)
         {
             flush_paragraph(&mut blocks, current);
-            blocks.push(list_from_lines(line, parent_indent, lines));
+            blocks.push(list_from_lines(line, parent_indent, lines, errors));
             continue;
         }
 
@@ -148,7 +217,7 @@ where
 
     flush_paragraph(&mut blocks, current);
 
-    blocks
+    (blocks, None)
 }
 
 fn code_block_language_from_line(line: &str) -> Option<Option<String>> {
@@ -181,12 +250,27 @@ where
     }
 }
 
-fn block_directive_opening_from_line(line: &str) -> Option<BlockDirectiveOpening> {
+fn block_directive_opening_from_line(line: &str, line_number: usize) -> Option<DirectiveOpening> {
     if line.starts_with(":::") {
         return None;
     }
 
-    let mut remainder = line.strip_prefix("::")?;
+    directive_opening_from_line(line, "::", line_number)
+}
+
+fn container_directive_opening_from_line(
+    line: &str,
+    line_number: usize,
+) -> Option<DirectiveOpening> {
+    directive_opening_from_line(line, ":::", line_number)
+}
+
+fn directive_opening_from_line(
+    line: &str,
+    prefix: &str,
+    line_number: usize,
+) -> Option<DirectiveOpening> {
+    let mut remainder = line.strip_prefix(prefix)?;
     if !remainder
         .chars()
         .next()
@@ -219,14 +303,18 @@ fn block_directive_opening_from_line(line: &str) -> Option<BlockDirectiveOpening
         remainder = next_remainder;
     }
 
-    remainder
-        .is_empty()
-        .then_some(BlockDirectiveOpening { name, label, attrs })
+    remainder.is_empty().then_some(DirectiveOpening {
+        name,
+        label,
+        attrs,
+        line: line_number,
+    })
 }
 
 fn block_directive_from_lines<'a, I>(
-    opening: BlockDirectiveOpening,
+    opening: DirectiveOpening,
     lines: &mut Peekable<I>,
+    errors: &mut Vec<ParseError>,
 ) -> Block
 where
     I: Iterator<Item = (usize, &'a str)>,
@@ -245,8 +333,53 @@ where
         name: opening.name,
         label: opening.label,
         attrs: opening.attrs,
-        body: parse_blocks(&body_lines.join("\n"), false),
+        body: parse_blocks(&body_lines.join("\n"), false, 0, errors),
     }
+}
+
+fn container_directive_from_lines<'a, I>(
+    opening: DirectiveOpening,
+    lines: &mut Peekable<I>,
+    line_offset: usize,
+    errors: &mut Vec<ParseError>,
+) -> Block
+where
+    I: Iterator<Item = (usize, &'a str)>,
+{
+    let mut current = Vec::new();
+    let (body, close) = parse_blocks_from_lines(
+        lines,
+        false,
+        false,
+        &mut current,
+        line_offset,
+        errors,
+        Some(&opening.name),
+    );
+
+    if close.is_none() {
+        errors.push(ParseError {
+            kind: ParseErrorKind::Error,
+            message: format!("Unclosed container directive ':::{}'", opening.name),
+            line: opening.line,
+            column: Some(1),
+        });
+    }
+
+    Block::ContainerDirective {
+        name: opening.name,
+        label: opening.label,
+        attrs: opening.attrs,
+        body,
+        named_close: matches!(close, Some(ContainerClose::Named)),
+    }
+}
+
+fn container_directive_named_close_from_line(line: &str) -> Option<&str> {
+    let remainder = line.strip_prefix(":::/")?;
+    let name_len = directive_name_length(remainder)?;
+
+    (name_len > 0 && name_len == remainder.len()).then_some(&remainder[..name_len])
 }
 
 fn directive_name_length(input: &str) -> Option<usize> {
@@ -441,7 +574,11 @@ fn unescape_quoted_attribute_value(value: &str) -> String {
     unescaped
 }
 
-fn blockquote_from_lines<'a, I>(first_line: &'a str, lines: &mut Peekable<I>) -> Block
+fn blockquote_from_lines<'a, I>(
+    first_line: &'a str,
+    lines: &mut Peekable<I>,
+    errors: &mut Vec<ParseError>,
+) -> Block
 where
     I: Iterator<Item = (usize, &'a str)>,
 {
@@ -452,7 +589,7 @@ where
     }
 
     Block::BlockQuote {
-        content: parse_blocks(&content.join("\n"), false),
+        content: parse_blocks(&content.join("\n"), false, 0, errors),
         attrs: None,
     }
 }
@@ -502,6 +639,7 @@ fn list_from_lines<'a, I>(
     first_line: &'a str,
     parent_indent: Option<usize>,
     lines: &mut Peekable<I>,
+    errors: &mut Vec<ParseError>,
 ) -> Block
 where
     I: Iterator<Item = (usize, &'a str)>,
@@ -529,6 +667,7 @@ where
             parent_indent,
             marker,
             lines,
+            errors,
         ));
     }
 
@@ -544,6 +683,7 @@ fn list_item_from_lines<'a, I>(
     parent_indent: Option<usize>,
     marker: ListMarker,
     lines: &mut Peekable<I>,
+    errors: &mut Vec<ParseError>,
 ) -> ListItem
 where
     I: Iterator<Item = (usize, &'a str)>,
@@ -588,7 +728,7 @@ where
         break;
     }
 
-    let content = parse_list_item_blocks(first_content, &continuation_lines);
+    let content = parse_list_item_blocks(first_content, &continuation_lines, errors);
 
     ListItem { content, checked }
 }
@@ -596,6 +736,7 @@ where
 fn parse_list_item_blocks<'a>(
     first_content: &'a str,
     continuation_lines: &[&'a str],
+    errors: &mut Vec<ParseError>,
 ) -> Vec<Block> {
     let mut current = Vec::new();
     if !first_content.is_empty() {
@@ -603,7 +744,7 @@ fn parse_list_item_blocks<'a>(
     }
 
     let mut lines = continuation_lines.iter().copied().enumerate().peekable();
-    parse_blocks_from_lines(&mut lines, false, true, &mut current)
+    parse_blocks_from_lines(&mut lines, false, true, &mut current, 0, errors, None).0
 }
 
 fn push_item_blank_lines(lines: &mut Vec<&str>, pending_blank_lines: &mut usize) {
@@ -746,7 +887,7 @@ fn skip_leading_comment(input: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::parse;
-    use crate::{Attributes, Block, Inline, ListItem};
+    use crate::{Attributes, Block, Inline, ListItem, ParseError, ParseErrorKind};
     use serde_yaml::{Mapping, Value};
     use std::collections::HashMap;
 
@@ -1185,6 +1326,118 @@ mod tests {
                     value: "::note2\nBody\n::".to_string(),
                 }],
                 attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_supports_container_directives_with_anonymous_closes() {
+        let result = parse(":::chapter\nInside the chapter.\n:::");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::ContainerDirective {
+                name: "chapter".to_string(),
+                label: None,
+                attrs: None,
+                body: vec![Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Inside the chapter.".to_string(),
+                    }],
+                    attrs: None,
+                }],
+                named_close: false,
+            }]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_supports_container_directives_with_named_closes_and_attrs() {
+        let result =
+            parse(":::chapter[One]{#intro .wide title=\"Lantern Watch\"}\nBody\n:::/chapter");
+        let mut expected_pairs = HashMap::new();
+        expected_pairs.insert("title".to_string(), "Lantern Watch".to_string());
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::ContainerDirective {
+                name: "chapter".to_string(),
+                label: Some(vec![Inline::Text {
+                    value: "One".to_string(),
+                }]),
+                attrs: Some(Attributes {
+                    id: Some("intro".to_string()),
+                    classes: vec!["wide".to_string()],
+                    pairs: expected_pairs,
+                }),
+                body: vec![Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Body".to_string(),
+                    }],
+                    attrs: None,
+                }],
+                named_close: true,
+            }]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_supports_nested_container_directives() {
+        let result = parse(":::chapter\n:::section\nNested body.\n:::/section\n:::/chapter");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::ContainerDirective {
+                name: "chapter".to_string(),
+                label: None,
+                attrs: None,
+                body: vec![Block::ContainerDirective {
+                    name: "section".to_string(),
+                    label: None,
+                    attrs: None,
+                    body: vec![Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "Nested body.".to_string(),
+                        }],
+                        attrs: None,
+                    }],
+                    named_close: true,
+                }],
+                named_close: true,
+            }]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_reports_mismatched_container_named_closes() {
+        let result = parse(":::chapter\nBody\n:::/section");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::ContainerDirective {
+                name: "chapter".to_string(),
+                label: None,
+                attrs: None,
+                body: vec![Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Body".to_string(),
+                    }],
+                    attrs: None,
+                }],
+                named_close: true,
+            }]
+        );
+        assert_eq!(
+            result.errors,
+            vec![ParseError {
+                kind: ParseErrorKind::Error,
+                message: "Mismatched container close: expected ':::/chapter', found ':::/section'"
+                    .to_string(),
+                line: 3,
+                column: Some(1),
             }]
         );
     }

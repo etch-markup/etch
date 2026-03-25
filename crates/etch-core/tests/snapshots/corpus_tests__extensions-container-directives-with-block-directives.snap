@@ -7,58 +7,52 @@ expression: result
     "frontmatter": null,
     "body": [
       {
-        "type": "Paragraph",
-        "content": [
-          {
-            "type": "Text",
-            "value": ":::chapter{title=\"Storm Journal\"}"
+        "type": "ContainerDirective",
+        "name": "chapter",
+        "attrs": {
+          "pairs": {
+            "title": "Storm Journal"
           }
-        ]
-      },
-      {
-        "type": "BlockDirective",
-        "name": "aside",
+        },
         "body": [
           {
-            "type": "Paragraph",
-            "content": [
+            "type": "BlockDirective",
+            "name": "aside",
+            "body": [
               {
-                "type": "Text",
-                "value": "Keep the lamp away from the wet ledge."
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Keep the lamp away from the wet ledge."
+                  }
+                ]
               }
             ]
-          }
-        ]
-      },
-      {
-        "type": "BlockDirective",
-        "name": "spoiler",
-        "label": [
+          },
           {
-            "type": "Text",
-            "value": "Hidden note"
+            "type": "BlockDirective",
+            "name": "spoiler",
+            "label": [
+              {
+                "type": "Text",
+                "value": "Hidden note"
+              }
+            ],
+            "body": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "The spare key is under the blue crate."
+                  }
+                ]
+              }
+            ]
           }
         ],
-        "body": [
-          {
-            "type": "Paragraph",
-            "content": [
-              {
-                "type": "Text",
-                "value": "The spare key is under the blue crate."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "Paragraph",
-        "content": [
-          {
-            "type": "Text",
-            "value": ":::/chapter"
-          }
-        ]
+        "named_close": true
       }
     ]
   },

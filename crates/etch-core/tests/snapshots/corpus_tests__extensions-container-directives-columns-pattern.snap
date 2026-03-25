@@ -1,0 +1,77 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "ContainerDirective",
+        "name": "columns",
+        "attrs": {
+          "pairs": {
+            "gap": "1rem",
+            "count": "2"
+          }
+        },
+        "body": [
+          {
+            "type": "ContainerDirective",
+            "name": "column",
+            "body": [
+              {
+                "type": "Heading",
+                "level": 2,
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Left Notes"
+                  }
+                ]
+              },
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Pack the stove fuel and the spare wick."
+                  }
+                ]
+              }
+            ],
+            "named_close": true
+          },
+          {
+            "type": "ContainerDirective",
+            "name": "column",
+            "body": [
+              {
+                "type": "Heading",
+                "level": 2,
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Right Notes"
+                  }
+                ]
+              },
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Leave the tide chart with the dockmaster."
+                  }
+                ]
+              }
+            ],
+            "named_close": true
+          }
+        ],
+        "named_close": true
+      }
+    ]
+  },
+  "errors": []
+}

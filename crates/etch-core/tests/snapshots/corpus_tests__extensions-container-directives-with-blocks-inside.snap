@@ -1,0 +1,84 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "ContainerDirective",
+        "name": "chapter",
+        "attrs": {
+          "pairs": {
+            "title": "Lantern Watch"
+          }
+        },
+        "body": [
+          {
+            "type": "Heading",
+            "level": 1,
+            "content": [
+              {
+                "type": "Text",
+                "value": "Arrival"
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The road was clear before sunrise."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The river path stayed quiet after noon."
+              }
+            ]
+          },
+          {
+            "type": "List",
+            "ordered": false,
+            "items": [
+              {
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "Check the gate"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "Lock the storehouse"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "named_close": true
+      }
+    ]
+  },
+  "errors": []
+}
