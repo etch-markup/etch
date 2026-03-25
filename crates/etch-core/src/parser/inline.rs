@@ -971,6 +971,69 @@ mod tests {
     }
 
     #[test]
+    fn parses_adjacent_mixed_inline_formats_with_spaces() {
+        assert_eq!(
+            parse_inlines("*a* **b** `c` ~~d~~"),
+            vec![
+                Inline::Emphasis {
+                    content: vec![Inline::Text {
+                        value: "a".to_string(),
+                    }],
+                },
+                Inline::Text {
+                    value: " ".to_string(),
+                },
+                Inline::Strong {
+                    content: vec![Inline::Text {
+                        value: "b".to_string(),
+                    }],
+                },
+                Inline::Text {
+                    value: " ".to_string(),
+                },
+                Inline::InlineCode {
+                    value: "c".to_string(),
+                },
+                Inline::Text {
+                    value: " ".to_string(),
+                },
+                Inline::Strikethrough {
+                    content: vec![Inline::Text {
+                        value: "d".to_string(),
+                    }],
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_adjacent_mixed_inline_formats_without_spaces() {
+        assert_eq!(
+            parse_inlines("*a***b**`c`~~d~~"),
+            vec![
+                Inline::Emphasis {
+                    content: vec![Inline::Text {
+                        value: "a".to_string(),
+                    }],
+                },
+                Inline::Strong {
+                    content: vec![Inline::Text {
+                        value: "b".to_string(),
+                    }],
+                },
+                Inline::InlineCode {
+                    value: "c".to_string(),
+                },
+                Inline::Strikethrough {
+                    content: vec![Inline::Text {
+                        value: "d".to_string(),
+                    }],
+                },
+            ]
+        );
+    }
+
+    #[test]
     fn leaves_invalid_caret_runs_literal() {
         assert_eq!(
             parse_inlines("^^ double carets ^^"),
@@ -1248,6 +1311,86 @@ mod tests {
                 Inline::SoftBreak,
                 Inline::Text {
                     value: "Third line".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_cross_line_formatting_with_soft_breaks() {
+        assert_eq!(
+            parse_inlines("==high\nlight== ++in\nsert++ ^super\nscript^ ~sub\nscript~"),
+            vec![
+                Inline::Highlight {
+                    content: vec![
+                        Inline::Text {
+                            value: "high".to_string(),
+                        },
+                        Inline::SoftBreak,
+                        Inline::Text {
+                            value: "light".to_string(),
+                        },
+                    ],
+                },
+                Inline::Text {
+                    value: " ".to_string(),
+                },
+                Inline::Insert {
+                    content: vec![
+                        Inline::Text {
+                            value: "in".to_string(),
+                        },
+                        Inline::SoftBreak,
+                        Inline::Text {
+                            value: "sert".to_string(),
+                        },
+                    ],
+                },
+                Inline::Text {
+                    value: " ".to_string(),
+                },
+                Inline::Superscript {
+                    content: vec![
+                        Inline::Text {
+                            value: "super".to_string(),
+                        },
+                        Inline::SoftBreak,
+                        Inline::Text {
+                            value: "script".to_string(),
+                        },
+                    ],
+                },
+                Inline::Text {
+                    value: " ".to_string(),
+                },
+                Inline::Subscript {
+                    content: vec![
+                        Inline::Text {
+                            value: "sub".to_string(),
+                        },
+                        Inline::SoftBreak,
+                        Inline::Text {
+                            value: "script".to_string(),
+                        },
+                    ],
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_cross_line_inline_code_spans() {
+        assert_eq!(
+            parse_inlines("before `line one\nline two` after"),
+            vec![
+                Inline::Text {
+                    value: "before ".to_string(),
+                },
+                Inline::InlineCode {
+                    value: "line one\nline two".to_string(),
+                },
+                Inline::Text {
+                    value: " after".to_string(),
                 },
             ]
         );
