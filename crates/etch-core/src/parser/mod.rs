@@ -1,6 +1,12 @@
 use crate::{Block, Document, Inline, ListItem, ParseResult};
 use std::iter::Peekable;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ListMarker {
+    Unordered,
+    Ordered,
+}
+
 pub fn parse(input: &str) -> ParseResult {
     let body = skip_leading_comment(input);
     let body_starts_at_document_start = std::ptr::eq(body.as_ptr(), input.as_ptr());
@@ -51,9 +57,9 @@ fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> 
             continue;
         }
 
-        if is_top_level_unordered_list_item(line) {
+        if is_top_level_list_item(line) {
             flush_paragraph(&mut blocks, &mut current);
-            blocks.push(unordered_list_from_lines(line, None, &mut lines));
+            blocks.push(list_from_lines(line, None, &mut lines));
             continue;
         }
 
@@ -152,7 +158,7 @@ fn paragraph_from_lines(lines: &[&str]) -> Block {
     }
 }
 
-fn unordered_list_from_lines<'a, I>(
+fn list_from_lines<'a, I>(
     first_line: &'a str,
     parent_indent: Option<usize>,
     lines: &mut Peekable<I>,
@@ -160,6 +166,9 @@ fn unordered_list_from_lines<'a, I>(
 where
     I: Iterator<Item = (usize, &'a str)>,
 {
+    let marker = list_item_content(first_line)
+        .map(|(_, marker, _)| marker)
+        .unwrap_or(ListMarker::Unordered);
     let mut items = Vec::new();
     let mut next_first_line = Some(first_line);
 
@@ -167,7 +176,7 @@ where
         let current_line = match next_first_line.take() {
             Some(line) => line,
             None => match lines.peek().copied() {
-                Some((_, line)) if is_unordered_list_item_for_parent(line, parent_indent) => {
+                Some((_, line)) if is_list_item_for_parent(line, parent_indent, marker) => {
                     lines.next();
                     line
                 }
@@ -175,29 +184,31 @@ where
             },
         };
 
-        items.push(unordered_list_item_from_lines(
+        items.push(list_item_from_lines(
             current_line,
             parent_indent,
+            marker,
             lines,
         ));
     }
 
     Block::List {
-        ordered: false,
+        ordered: marker == ListMarker::Ordered,
         items,
         attrs: None,
     }
 }
 
-fn unordered_list_item_from_lines<'a, I>(
+fn list_item_from_lines<'a, I>(
     first_line: &'a str,
     parent_indent: Option<usize>,
+    marker: ListMarker,
     lines: &mut Peekable<I>,
 ) -> ListItem
 where
     I: Iterator<Item = (usize, &'a str)>,
 {
-    let Some((item_indent, first_content)) = unordered_list_item_content(first_line) else {
+    let Some((item_indent, _, first_content)) = list_item_content(first_line) else {
         return ListItem {
             content: Vec::new(),
             checked: None,
@@ -218,14 +229,14 @@ where
             continue;
         }
 
-        if let Some((indent, _)) = unordered_list_item_content(line) {
+        if let Some((indent, next_marker, _)) = list_item_content(line) {
             if indent >= item_indent + 2 {
                 flush_item_paragraph(&mut content, &mut current_paragraph);
-                content.push(unordered_list_from_peeked(item_indent, lines));
+                content.push(list_from_peeked(item_indent, lines));
                 continue;
             }
 
-            if is_unordered_list_item_for_parent(line, parent_indent) {
+            if next_marker == marker && is_list_item_for_parent(line, parent_indent, marker) {
                 break;
             }
         }
@@ -247,7 +258,7 @@ where
     }
 }
 
-fn unordered_list_from_peeked<'a, I>(parent_indent: usize, lines: &mut Peekable<I>) -> Block
+fn list_from_peeked<'a, I>(parent_indent: usize, lines: &mut Peekable<I>) -> Block
 where
     I: Iterator<Item = (usize, &'a str)>,
 {
@@ -259,7 +270,7 @@ where
         };
     };
 
-    unordered_list_from_lines(first_line, Some(parent_indent), lines)
+    list_from_lines(first_line, Some(parent_indent), lines)
 }
 
 fn flush_item_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>) {
@@ -271,14 +282,18 @@ fn flush_item_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>)
     current.clear();
 }
 
-fn is_top_level_unordered_list_item(line: &str) -> bool {
-    matches!(unordered_list_item_content(line), Some((0, _)))
+fn is_top_level_list_item(line: &str) -> bool {
+    matches!(list_item_content(line), Some((0, _, _)))
 }
 
-fn is_unordered_list_item_for_parent(line: &str, parent_indent: Option<usize>) -> bool {
-    let Some((indent, _)) = unordered_list_item_content(line) else {
+fn is_list_item_for_parent(line: &str, parent_indent: Option<usize>, marker: ListMarker) -> bool {
+    let Some((indent, line_marker, _)) = list_item_content(line) else {
         return false;
     };
+
+    if line_marker != marker {
+        return false;
+    }
 
     match parent_indent {
         Some(parent_indent) => indent >= parent_indent + 2,
@@ -286,11 +301,25 @@ fn is_unordered_list_item_for_parent(line: &str, parent_indent: Option<usize>) -
     }
 }
 
-fn unordered_list_item_content(line: &str) -> Option<(usize, &str)> {
+fn list_item_content(line: &str) -> Option<(usize, ListMarker, &str)> {
     let indent = count_leading_spaces(line);
-    line[indent..]
-        .strip_prefix("- ")
-        .map(|content| (indent, content))
+    let trimmed = &line[indent..];
+
+    if let Some(content) = trimmed.strip_prefix("- ") {
+        return Some((indent, ListMarker::Unordered, content));
+    }
+
+    let digits = trimmed
+        .bytes()
+        .take_while(|byte| byte.is_ascii_digit())
+        .count();
+    if digits == 0 {
+        return None;
+    }
+
+    trimmed[digits..]
+        .strip_prefix(". ")
+        .map(|content| (indent, ListMarker::Ordered, content))
 }
 
 fn count_leading_spaces(line: &str) -> usize {
@@ -891,6 +920,106 @@ mod tests {
                 ],
                 attrs: None,
             }]
+        );
+    }
+
+    #[test]
+    fn parse_detects_ordered_lists_before_paragraph_fallback() {
+        let result = parse("1. Preheat the oven\n2. Chop the carrots");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::List {
+                ordered: true,
+                items: vec![
+                    ListItem {
+                        content: vec![Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Preheat the oven".to_string(),
+                            }],
+                            attrs: None,
+                        }],
+                        checked: None,
+                    },
+                    ListItem {
+                        content: vec![Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Chop the carrots".to_string(),
+                            }],
+                            attrs: None,
+                        }],
+                        checked: None,
+                    },
+                ],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_separates_ordered_lists_paragraphs_and_unordered_lists() {
+        let result = parse(
+            "1. Boil the water\n2. Add the tea leaves\n\nThe kettle can rest here.\n\n- Fold the camp blanket\n- Lock the storage bin",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::List {
+                    ordered: true,
+                    items: vec![
+                        ListItem {
+                            content: vec![Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "Boil the water".to_string(),
+                                }],
+                                attrs: None,
+                            }],
+                            checked: None,
+                        },
+                        ListItem {
+                            content: vec![Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "Add the tea leaves".to_string(),
+                                }],
+                                attrs: None,
+                            }],
+                            checked: None,
+                        },
+                    ],
+                    attrs: None,
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "The kettle can rest here.".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Block::List {
+                    ordered: false,
+                    items: vec![
+                        ListItem {
+                            content: vec![Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "Fold the camp blanket".to_string(),
+                                }],
+                                attrs: None,
+                            }],
+                            checked: None,
+                        },
+                        ListItem {
+                            content: vec![Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "Lock the storage bin".to_string(),
+                                }],
+                                attrs: None,
+                            }],
+                            checked: None,
+                        },
+                    ],
+                    attrs: None,
+                },
+            ]
         );
     }
 }

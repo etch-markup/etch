@@ -1,0 +1,70 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "List",
+        "ordered": true,
+        "items": [
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Preheat the oven to 400F"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Chop the carrots and onions"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Season the stock with thyme"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Simmer the soup for thirty minutes"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
