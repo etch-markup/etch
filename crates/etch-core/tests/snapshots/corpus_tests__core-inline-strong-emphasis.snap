@@ -1,0 +1,71 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Emphasis",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Bold italic"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " opens this sentence.\nThis sentence has "
+          },
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Emphasis",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "bold italic"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the middle.\nThis sentence ends with "
+          },
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Emphasis",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "bold italic"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
