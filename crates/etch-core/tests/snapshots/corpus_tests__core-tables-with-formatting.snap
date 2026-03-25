@@ -1,0 +1,124 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Table",
+        "headers": [
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Feature"
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Notes"
+              }
+            ]
+          }
+        ],
+        "rows": [
+          [
+            {
+              "content": [
+                {
+                  "type": "Strong",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "Preview"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Run "
+                },
+                {
+                  "type": "InlineCode",
+                  "value": "etch render"
+                },
+                {
+                  "type": "Text",
+                  "value": " before sharing"
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Docs"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Read the "
+                },
+                {
+                  "type": "Link",
+                  "url": "https://docs.etch-lang.dev/guide/tables",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "guide"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Mode"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Use "
+                },
+                {
+                  "type": "InlineCode",
+                  "value": "--watch"
+                },
+                {
+                  "type": "Text",
+                  "value": " during edits"
+                }
+              ]
+            }
+          ]
+        ],
+        "alignments": [
+          "None",
+          "None"
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

@@ -1,0 +1,126 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Table",
+        "headers": [
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Item"
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Status"
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Count"
+              }
+            ]
+          }
+        ],
+        "rows": [
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Lanterns"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Ready"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "12"
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Blankets"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Packed"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "8"
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Maps"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Missing"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "1"
+                }
+              ]
+            }
+          ]
+        ],
+        "alignments": [
+          "Left",
+          "Center",
+          "Right"
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

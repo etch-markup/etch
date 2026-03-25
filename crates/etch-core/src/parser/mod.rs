@@ -9,6 +9,7 @@ mod heading;
 mod inline;
 mod list;
 mod paragraph;
+mod table;
 mod thematic_break;
 
 use crate::{Block, Document, ParseError, ParseErrorKind, ParseResult};
@@ -29,6 +30,7 @@ use self::{
     heading::heading_from_line,
     list::{list_from_lines, list_parent_indent_for_block_start},
     paragraph::paragraph_from_lines,
+    table::table_from_lines,
     thematic_break::thematic_break_from_line,
 };
 
@@ -181,6 +183,12 @@ where
         {
             flush_paragraph(&mut blocks, current);
             blocks.push(list_from_lines(line, parent_indent, lines, errors));
+            continue;
+        }
+
+        if let Some(table) = table_from_lines(line, lines) {
+            flush_paragraph(&mut blocks, current);
+            blocks.push(table);
             continue;
         }
 
