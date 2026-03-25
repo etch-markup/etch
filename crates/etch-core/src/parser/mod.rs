@@ -1,5 +1,5 @@
-use crate::{Block, Document, Inline, ListItem, ParseResult};
-use std::iter::Peekable;
+use crate::{Block, Document, Frontmatter, Inline, ListItem, ParseResult};
+use std::{collections::HashMap, iter::Peekable};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum ListMarker {
@@ -8,16 +8,64 @@ enum ListMarker {
 }
 
 pub fn parse(input: &str) -> ParseResult {
-    let body = skip_leading_comment(input);
-    let body_starts_at_document_start = std::ptr::eq(body.as_ptr(), input.as_ptr());
+    let (frontmatter, input_without_frontmatter) = parse_frontmatter(input);
+    let body = skip_leading_comment(input_without_frontmatter);
+    let body_starts_at_document_start =
+        frontmatter.is_none() && std::ptr::eq(body.as_ptr(), input.as_ptr());
 
     ParseResult {
         document: Document {
-            frontmatter: None,
+            frontmatter,
             body: parse_blocks(body, body_starts_at_document_start),
         },
         errors: Vec::new(),
     }
+}
+
+fn parse_frontmatter(input: &str) -> (Option<Frontmatter>, &str) {
+    let Some((first_line, rest, opener_len)) = split_first_line(input) else {
+        return (None, input);
+    };
+
+    if first_line != "---" {
+        return (None, input);
+    }
+
+    let mut remaining = rest;
+    let mut line_start = opener_len;
+
+    while let Some((line, next_rest, line_len)) = split_first_line(remaining) {
+        if line == "---" {
+            let raw = input[opener_len..line_start].to_string();
+            let fields = if raw.is_empty() {
+                HashMap::new()
+            } else {
+                serde_yaml::from_str::<HashMap<String, serde_yaml::Value>>(&raw).unwrap_or_default()
+            };
+
+            return (Some(Frontmatter { raw, fields }), next_rest);
+        }
+
+        line_start += line_len;
+        remaining = next_rest;
+    }
+
+    (None, input)
+}
+
+fn split_first_line(input: &str) -> Option<(&str, &str, usize)> {
+    if input.is_empty() {
+        return None;
+    }
+
+    if let Some(newline_index) = input.find('\n') {
+        let line = input[..newline_index]
+            .strip_suffix('\r')
+            .unwrap_or(&input[..newline_index]);
+        return Some((line, &input[newline_index + 1..], newline_index + 1));
+    }
+
+    Some((input.strip_suffix('\r').unwrap_or(input), "", input.len()))
 }
 
 fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> {
@@ -427,6 +475,7 @@ fn skip_leading_comment(input: &str) -> &str {
 mod tests {
     use super::parse;
     use crate::{Block, Inline, ListItem};
+    use serde_yaml::{Mapping, Value};
 
     #[test]
     fn parse_wraps_input_in_a_single_paragraph_text_node() {
@@ -466,6 +515,94 @@ mod tests {
                 },
             ]
         );
+    }
+
+    #[test]
+    fn parse_extracts_frontmatter_from_the_very_first_line() {
+        let result = parse("---\ntitle: \"Winter Notes\"\nauthor: trailwriter\n---\n\nBody");
+        let frontmatter = result.document.frontmatter.expect("expected frontmatter");
+
+        assert_eq!(
+            frontmatter.raw,
+            "title: \"Winter Notes\"\nauthor: trailwriter\n"
+        );
+        assert_eq!(
+            frontmatter.fields.get("title"),
+            Some(&Value::String("Winter Notes".to_string()))
+        );
+        assert_eq!(
+            frontmatter.fields.get("author"),
+            Some(&Value::String("trailwriter".to_string()))
+        );
+        assert_eq!(
+            result.document.body,
+            vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Body".to_string(),
+                }],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_supports_empty_frontmatter() {
+        let result = parse("---\n---\n\nBody");
+        let frontmatter = result.document.frontmatter.expect("expected frontmatter");
+
+        assert_eq!(frontmatter.raw, "");
+        assert!(frontmatter.fields.is_empty());
+        assert_eq!(
+            result.document.body,
+            vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Body".to_string(),
+                }],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_treats_non_first_line_frontmatter_marker_as_a_thematic_break() {
+        let result = parse("\n---\n\nBody");
+
+        assert!(result.document.frontmatter.is_none());
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::ThematicBreak,
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Body".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_supports_nested_yaml_values_in_frontmatter() {
+        let result = parse(
+            "---\nseries:\n  name: \"Northern Passages\"\n  part: 3\ndraft: true\n---\n\nBody",
+        );
+        let frontmatter = result.document.frontmatter.expect("expected frontmatter");
+        let mut expected_series = Mapping::new();
+        expected_series.insert(
+            Value::String("name".to_string()),
+            Value::String("Northern Passages".to_string()),
+        );
+        expected_series.insert(
+            Value::String("part".to_string()),
+            serde_yaml::to_value(3).expect("serializable integer"),
+        );
+
+        assert_eq!(
+            frontmatter.fields.get("series"),
+            Some(&Value::Mapping(expected_series))
+        );
+        assert_eq!(frontmatter.fields.get("draft"), Some(&Value::Bool(true)));
     }
 
     #[test]

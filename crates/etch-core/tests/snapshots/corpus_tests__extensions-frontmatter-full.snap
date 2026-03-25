@@ -1,0 +1,39 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": {
+      "raw": "title: \"Chronicle of the Ridge\"\nauthor: \"foxwriter42\"\nchapter: 7\ntags: [travel, winter, field-notes]\nseries:\n  name: \"Northern Passages\"\n  part: 3\ndraft: true\nword_count: auto\n",
+      "fields": {
+        "chapter": 7,
+        "series": {
+          "name": "Northern Passages",
+          "part": 3
+        },
+        "word_count": "auto",
+        "draft": true,
+        "author": "foxwriter42",
+        "title": "Chronicle of the Ridge",
+        "tags": [
+          "travel",
+          "winter",
+          "field-notes"
+        ]
+      }
+    },
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "This document starts after a frontmatter block using several YAML field shapes."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

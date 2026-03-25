@@ -1,0 +1,33 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "ThematicBreak"
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "{~ note: --- is only frontmatter on the very first line ~}"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "This file starts with a blank line, so the dashes above must be a thematic break."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

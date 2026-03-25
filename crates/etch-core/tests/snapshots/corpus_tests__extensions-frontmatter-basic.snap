@@ -1,0 +1,27 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": {
+      "raw": "title: \"Winter Notes\"\nauthor: trailwriter\n",
+      "fields": {
+        "author": "trailwriter",
+        "title": "Winter Notes"
+      }
+    },
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The lantern log begins after a simple frontmatter block."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

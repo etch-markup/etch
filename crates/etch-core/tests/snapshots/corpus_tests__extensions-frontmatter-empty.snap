@@ -1,0 +1,24 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": {
+      "raw": "",
+      "fields": {}
+    },
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "This document has empty frontmatter and then normal content."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
