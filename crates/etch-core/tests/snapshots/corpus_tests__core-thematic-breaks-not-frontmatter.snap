@@ -1,0 +1,43 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Heading",
+        "level": 1,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Winter Notes"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "This document starts with a heading, so frontmatter is no longer possible."
+          }
+        ]
+      },
+      {
+        "type": "ThematicBreak"
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The line above must parse as a thematic break in the middle of the document."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

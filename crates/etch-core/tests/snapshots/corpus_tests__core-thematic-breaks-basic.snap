@@ -1,0 +1,33 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The campfire burned low as the guide folded the map."
+          }
+        ]
+      },
+      {
+        "type": "ThematicBreak"
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "By morning the ashes were hidden under fresh snow."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

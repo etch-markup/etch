@@ -6,44 +6,46 @@ mod inline;
 use crate::{Block, Document, Inline, ParseResult};
 
 pub fn parse(input: &str) -> ParseResult {
+    let body = skip_leading_comment(input);
+    let body_starts_at_document_start = std::ptr::eq(body.as_ptr(), input.as_ptr());
+
     ParseResult {
         document: Document {
             frontmatter: None,
-            body: parse_blocks(skip_leading_comment(input)),
+            body: parse_blocks(body, body_starts_at_document_start),
         },
         errors: Vec::new(),
     }
 }
 
-fn parse_blocks(input: &str) -> Vec<Block> {
+fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> {
     let mut blocks = Vec::new();
     let mut current = Vec::new();
 
-    for line in input.lines() {
+    for (line_index, line) in input.lines().enumerate() {
         if line.trim().is_empty() {
-            if !current.is_empty() {
-                blocks.push(paragraph_from_lines(&current));
-                current.clear();
-            }
+            flush_paragraph(&mut blocks, &mut current);
             continue;
         }
 
         if let Some(heading) = heading_from_line(line) {
-            if !current.is_empty() {
-                blocks.push(paragraph_from_lines(&current));
-                current.clear();
-            }
+            flush_paragraph(&mut blocks, &mut current);
 
             blocks.push(heading);
+            continue;
+        }
+
+        let is_first_document_line = body_starts_at_document_start && line_index == 0;
+        if let Some(thematic_break) = thematic_break_from_line(line, is_first_document_line) {
+            flush_paragraph(&mut blocks, &mut current);
+            blocks.push(thematic_break);
             continue;
         }
 
         current.push(line);
     }
 
-    if !current.is_empty() {
-        blocks.push(paragraph_from_lines(&current));
-    }
+    flush_paragraph(&mut blocks, &mut current);
 
     blocks
 }
@@ -75,6 +77,41 @@ fn paragraph_from_lines(lines: &[&str]) -> Block {
         }],
         attrs: None,
     }
+}
+
+fn thematic_break_from_line(line: &str, is_first_document_line: bool) -> Option<Block> {
+    if is_first_document_line && line == "---" {
+        return None;
+    }
+
+    let trimmed = line.trim_matches(' ');
+    let mut characters = trimmed.chars();
+    let marker = characters.next()?;
+
+    if !matches!(marker, '-' | '*' | '_') {
+        return None;
+    }
+
+    let mut marker_count = 1;
+
+    for ch in characters {
+        match ch {
+            ' ' => {}
+            current if current == marker => marker_count += 1,
+            _ => return None,
+        }
+    }
+
+    (marker_count >= 3).then_some(Block::ThematicBreak)
+}
+
+fn flush_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>) {
+    if current.is_empty() {
+        return;
+    }
+
+    blocks.push(paragraph_from_lines(current));
+    current.clear();
 }
 
 fn skip_leading_comment(input: &str) -> &str {
@@ -208,6 +245,74 @@ mod tests {
                     attrs: None,
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn parse_detects_thematic_breaks_before_paragraph_fallback() {
+        let result = parse("before\n\n---\n\nafter");
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "before".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Block::ThematicBreak,
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "after".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_accepts_all_thematic_break_markers_with_optional_spaces() {
+        let result = parse("- - -\n***\n_ _ _ _");
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::ThematicBreak,
+                Block::ThematicBreak,
+                Block::ThematicBreak,
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_preserves_first_line_frontmatter_marker_as_non_thematic_break() {
+        let result = parse("---");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "---".to_string(),
+                }],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_treats_invalid_thematic_break_lines_as_paragraph_text() {
+        let result = parse("--\n-*-");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "--\n-*-".to_string(),
+                }],
+                attrs: None,
+            }]
         );
     }
 
