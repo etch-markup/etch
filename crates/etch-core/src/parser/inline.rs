@@ -192,6 +192,16 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
 
         let byte = input.as_bytes()[index];
 
+        if byte == b'h' {
+            if let Some((inline, next_index)) = try_parse_autolink(input, index) {
+                push_text(&mut nodes, &input[text_start..index]);
+                nodes.push(inline);
+                index = next_index;
+                text_start = index;
+                continue;
+            }
+        }
+
         if byte == b'!' && input.as_bytes().get(index + 1).copied() == Some(b'[') {
             push_text(&mut nodes, &input[text_start..index]);
 
@@ -349,6 +359,39 @@ fn try_parse_image(input: &str, index: usize) -> Option<(Inline, usize)> {
             attrs,
         },
         next_index,
+    ))
+}
+
+fn try_parse_autolink(input: &str, index: usize) -> Option<(Inline, usize)> {
+    let scheme_len = if input[index..].starts_with("https://") {
+        "https://".len()
+    } else if input[index..].starts_with("http://") {
+        "http://".len()
+    } else {
+        return None;
+    };
+
+    let mut end = index + scheme_len;
+
+    while end < input.len() {
+        let ch = char_after(input, end)?;
+
+        if ch.is_whitespace() {
+            break;
+        }
+
+        end += ch.len_utf8();
+    }
+
+    if end == index + scheme_len {
+        return None;
+    }
+
+    Some((
+        Inline::AutoLink {
+            url: input[index..end].to_string(),
+        },
+        end,
     ))
 }
 
@@ -963,6 +1006,55 @@ mod tests {
             parse_inlines("See [^guide] later"),
             vec![Inline::Text {
                 value: "See [^guide] later".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn parses_http_and_https_autolinks() {
+        assert_eq!(
+            parse_inlines("Visit https://example.com/path and http://docs.etch-lang.dev/guide"),
+            vec![
+                Inline::Text {
+                    value: "Visit ".to_string(),
+                },
+                Inline::AutoLink {
+                    url: "https://example.com/path".to_string(),
+                },
+                Inline::Text {
+                    value: " and ".to_string(),
+                },
+                Inline::AutoLink {
+                    url: "http://docs.etch-lang.dev/guide".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn autolinks_stop_at_whitespace_or_end_of_line() {
+        assert_eq!(
+            parse_inlines("See https://example.com/path\nThen read more"),
+            vec![
+                Inline::Text {
+                    value: "See ".to_string(),
+                },
+                Inline::AutoLink {
+                    url: "https://example.com/path".to_string(),
+                },
+                Inline::Text {
+                    value: "\nThen read more".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn leaves_bare_domains_and_non_http_schemes_literal() {
+        assert_eq!(
+            parse_inlines("example.com ftp://files.etch-lang.dev/releases/latest.zip"),
+            vec![Inline::Text {
+                value: "example.com ftp://files.etch-lang.dev/releases/latest.zip".to_string(),
             }]
         );
     }

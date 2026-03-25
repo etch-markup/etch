@@ -1,0 +1,37 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Visit "
+          },
+          {
+            "type": "AutoLink",
+            "url": "https://example.com/help/getting-started?lang=en#overview"
+          },
+          {
+            "type": "Text",
+            "value": " for details.\nCheck "
+          },
+          {
+            "type": "AutoLink",
+            "url": "http://docs.etch-lang.dev/guide"
+          },
+          {
+            "type": "Text",
+            "value": " for the older guide.\nThe bare domain example.com should stay plain text.\nThe file is at ftp://files.etch-lang.dev/releases/latest.zip and should stay plain text."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
