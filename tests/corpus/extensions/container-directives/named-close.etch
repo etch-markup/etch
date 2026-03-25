@@ -1,0 +1,5 @@
+{~ Tests a container directive with a named close marker. ~}
+
+:::chapter{title="One"}
+The named close should match the opening directive.
+:::/chapter

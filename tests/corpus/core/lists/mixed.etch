@@ -1,0 +1,11 @@
+{~ Tests an ordered list followed by a paragraph, then an unordered list. ~}
+
+1. Boil the water
+2. Add the tea leaves
+3. Let the pot steep
+
+The kettle can rest here before the packing checklist starts.
+
+- Fold the camp blanket
+- Tie the food bag closed
+- Lock the storage bin

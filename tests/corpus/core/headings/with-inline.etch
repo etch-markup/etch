@@ -1,0 +1,7 @@
+{~ Tests headings that contain core inline formatting like bold, italic, and code spans. ~}
+
+# A **bold** heading
+
+## An *italic* heading
+
+### A `code` heading

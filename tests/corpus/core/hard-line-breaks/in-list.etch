@@ -1,0 +1,6 @@
+{~ Tests a hard line break created by trailing backslashes inside a list item. ~}
+
+- Shipping address:\
+  Apartment 4B\
+  123 Main Street
+- Pack the signed permit

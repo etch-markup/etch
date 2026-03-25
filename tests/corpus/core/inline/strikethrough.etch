@@ -1,0 +1,5 @@
+{~ Tests ~~strikethrough~~ text at the start, middle, and end of a sentence. ~}
+
+~~Struck~~ opens this sentence.
+This sentence has ~~struck~~ in the middle.
+This sentence ends with ~~struck~~.

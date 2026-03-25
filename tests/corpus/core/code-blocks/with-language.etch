@@ -1,0 +1,8 @@
+{~ Tests a fenced code block with a rust language identifier. ~}
+
+```rust
+fn main() {
+    let title = "Etch";
+    println!("Hello from {title}");
+}
+```

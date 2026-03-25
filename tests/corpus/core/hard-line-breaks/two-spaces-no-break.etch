@@ -1,0 +1,5 @@
+{~ Note: In Etch, two trailing spaces do NOT create line breaks. Only \ does. This is a deliberate break from CommonMark. ~}
+
+These lines end with two trailing spaces.  
+They should still stay in one paragraph.  
+No hard break is created unless a backslash ends the line.

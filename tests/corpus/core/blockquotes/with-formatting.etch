@@ -1,0 +1,6 @@
+{~ Tests a blockquote containing inline formatting and a short list. ~}
+
+> The guide called the ridge **safe enough** by noon.
+> She marked the eastern path as *muddy* after the storm.
+> - Pack an extra scarf
+> - Leave the `radio` on channel three

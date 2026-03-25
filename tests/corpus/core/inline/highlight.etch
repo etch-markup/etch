@@ -1,0 +1,5 @@
+{~ Tests ==highlighted== text at the start, middle, and end of a sentence. ~}
+
+==Highlighted== opens this sentence.
+This sentence has ==highlighted== in the middle.
+This sentence ends with ==highlighted==.

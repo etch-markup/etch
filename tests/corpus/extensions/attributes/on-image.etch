@@ -1,0 +1,3 @@
+{~ Tests attributes attached directly to an image. ~}
+
+![Trail marker](photo.jpg){width=80% .rounded}

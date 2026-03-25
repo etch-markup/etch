@@ -1,0 +1,5 @@
+{~ Tests attributes attached to headings using ID, class, and key=value forms. ~}
+
+# Title {#my-id}
+
+## Subtitle {.special-class lang=en}

@@ -1,0 +1,3 @@
+{~ Tests an inline comment embedded within flowing paragraph text. ~}
+
+Text before {~ this is hidden ~} text after.

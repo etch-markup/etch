@@ -1,0 +1,5 @@
+{~ Tests a basic fenced block directive with paragraph content and an anonymous close. ~}
+
+::aside
+The lantern stayed lit long after the station closed.
+::

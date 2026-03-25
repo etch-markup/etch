@@ -1,0 +1,5 @@
+{~ Tests multiple inline formats placed directly next to each other with no spaces between them. ~}
+
+*italic***bold**`code` starts this line.
+This line has ==mark==++insert++~~gone~~ in the middle.
+This line ends with ^up^~down~*tail*.

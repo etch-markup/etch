@@ -1,0 +1,5 @@
+{~ Tests a footnote that uses a text label instead of a numeric label. ~}
+
+The final page includes a note about the missing lantern.[^my-note]
+
+[^my-note]: The lantern was later found in the supply shed.

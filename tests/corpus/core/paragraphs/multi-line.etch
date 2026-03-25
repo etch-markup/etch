@@ -1,0 +1,5 @@
+{~ Tests one paragraph continued across multiple lines without any blank line breaks. ~}
+
+This paragraph starts on one line
+continues on the next line
+and ends on a third line.

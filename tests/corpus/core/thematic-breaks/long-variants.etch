@@ -1,0 +1,15 @@
+{~ Tests that longer forms of thematic break markers are also valid when they use three or more characters on a line by themselves. ~}
+
+The first section ends here.
+
+------
+
+The second section follows a longer dash break.
+
+*****
+
+The third section follows a longer star break.
+
+_________
+
+The fourth section follows a longer underscore break.

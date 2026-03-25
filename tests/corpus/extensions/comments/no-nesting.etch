@@ -1,0 +1,3 @@
+{~ Tests that comment nesting is not supported: the first closing delimiter ends the comment, so the remaining trailing text becomes visible output. ~}
+
+Before {~ outer comment {~ this looks like inner ~} but the comment closed at the first ~} and this is visible text ~}.

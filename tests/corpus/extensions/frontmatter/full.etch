@@ -1,0 +1,13 @@
+---
+title: "Chronicle of the Ridge"
+author: "foxwriter42"
+chapter: 7
+tags: [travel, winter, field-notes]
+series:
+  name: "Northern Passages"
+  part: 3
+draft: true
+word_count: auto
+---
+
+This document starts after a frontmatter block using several YAML field shapes.

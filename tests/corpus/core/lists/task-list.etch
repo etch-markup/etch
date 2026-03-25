@@ -1,0 +1,6 @@
+{~ Tests checked and unchecked task list items in one list. ~}
+
+- [x] Reserve the campsite
+- [ ] Print the route map
+- [x] Download the offline guide
+- [ ] Pack the first-aid kit

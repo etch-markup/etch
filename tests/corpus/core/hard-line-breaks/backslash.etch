@@ -1,0 +1,13 @@
+{~ Tests trailing backslashes creating hard line breaks within paragraphs in several contexts. ~}
+
+123 Main Street\
+Apartment 4B\
+New York, NY 10001
+
+Pack wool socks\
+Pack a dry scarf\
+Pack the paper map
+
+First line of the note\
+Second line of the note\
+Final line of the note

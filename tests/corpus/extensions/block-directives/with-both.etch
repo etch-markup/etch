@@ -1,0 +1,5 @@
+{~ Tests a block directive with both label text and attributes. ~}
+
+::aside[Author's note]{.highlighted}
+This margin note should appear with highlighted styling.
+::

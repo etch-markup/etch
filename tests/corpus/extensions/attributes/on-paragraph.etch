@@ -1,0 +1,3 @@
+{~ Tests attributes attached to a paragraph. ~}
+
+A centered announcement for the station platform. {.centered}

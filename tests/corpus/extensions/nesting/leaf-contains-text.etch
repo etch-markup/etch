@@ -1,0 +1,10 @@
+{~ Tests that a leaf directive can contain rich text content without nested directives. ~}
+
+::aside
+First paragraph inside the aside.
+
+Second paragraph with **bold** and *italic* emphasis.
+
+- Pack the lantern
+- Check the rope
+::

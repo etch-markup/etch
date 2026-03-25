@@ -1,0 +1,62 @@
+---
+title: "Embers in the Snow"
+author: "foxwriter42"
+date: 2026-03-20
+tags: [drama, winter, shortform]
+rating: general
+---
+
+{~ This is the canonical example document for the Etch spec. ~}
+
+# Embers in the Snow
+
+::dedication
+For everyone who stayed up too late reading under the covers.
+::
+
+::content-warning{level=mild tags="melancholy"}
+Themes of nostalgia and gentle sadness.
+::
+
+:::chapter{number=1 title="The First Snow"}
+
+The village woke to silence. Not the silence of sleep,
+but the silence of snow — heavy, patient, ==absolute==.
+
+::aside
+The author grew up in a town like this one.
+::
+
+:character[Mira]{species=wolf} stepped onto the porch,
+breath curling like smoke. She held a letter — creased
+from folding and refolding — and read it one last time.
+
+> *"I'll come back when the embers remember how to burn."*
+>
+> — Kael's last letter {.attribution}
+
+She tucked it into her coat and walked into the white.
+
+:::/chapter
+
+---
+
+:::chapter{number=2 title="The Finding"}
+
+Three days later, she found what she was looking for.[^1]
+
+Not Kael — not exactly. But the place where he'd been,
+marked by a ring of stones and the ash of a fire
+that might have been warm ==yesterday==.
+
+The area measured roughly :math[3\text{m} \times 3\text{m}],
+with the stones arranged in a precise circle.
+
+Her address was simple:\
+42 Northwind Road\
+The Village at the Edge
+
+:::/chapter
+
+[^1]: The finding is loosely based on a Scandinavian
+folktale about returning wolves.

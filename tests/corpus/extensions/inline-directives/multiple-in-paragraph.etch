@@ -1,0 +1,3 @@
+{~ Tests several inline directives appearing in the same paragraph. ~}
+
+At noon, :character[Sable]{species=fox} pointed at :tooltip[the old tower]{text="watch the stairs"} and said the meeting was on :date{format=long}.

@@ -1,0 +1,7 @@
+{~ Tests that three blank lines between paragraphs still separate them as normal paragraphs. ~}
+
+First paragraph.
+
+
+
+Second paragraph.

@@ -1,0 +1,11 @@
+{~ Tests a multi-line comment block spanning several lines. ~}
+
+Paragraph before the comment block.
+
+{~
+This comment spans multiple lines.
+It holds author notes and reminders.
+The parser should ignore all of it.
+~}
+
+Paragraph after the comment block.

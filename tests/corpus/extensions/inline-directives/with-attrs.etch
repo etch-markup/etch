@@ -1,0 +1,3 @@
+{~ Tests an inline directive with attributes but no bracket content. ~}
+
+The station ledger shows today's date as :date{format=long}.

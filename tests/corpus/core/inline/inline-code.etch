@@ -1,0 +1,5 @@
+{~ Tests inline `code` spans, including a double-backtick form for code containing backticks. ~}
+
+`printf()` opens this sentence.
+This sentence uses `npm test` in the middle.
+This sentence ends with ``code containing `backticks` inside``.

@@ -1,0 +1,11 @@
+{~ Tests a container directive that contains nested block directives. ~}
+
+:::chapter{title="Storm Journal"}
+::aside
+Keep the lamp away from the wet ledge.
+::
+
+::spoiler[Hidden note]
+The spare key is under the blue crate.
+::
+:::/chapter

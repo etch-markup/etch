@@ -1,0 +1,9 @@
+{~ Tests a footnote definition that spans multiple indented lines and multiple paragraphs. ~}
+
+The village record mentions the flood only once.[^long-note]
+
+[^long-note]: The clerk added the note after the council meeting
+  and copied it into the winter ledger the same night.
+
+  A second paragraph explains that the bridge repairs lasted
+  until the first week of spring.

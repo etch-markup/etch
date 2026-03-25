@@ -1,0 +1,5 @@
+{~ Tests a block directive with attributes and image content. ~}
+
+::figure{caption="A scenic view" width=80%}
+![North ridge overlook](photos/north-ridge.jpg)
+::

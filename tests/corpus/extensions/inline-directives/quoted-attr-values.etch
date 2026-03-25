@@ -1,0 +1,3 @@
+{~ Tests inline directive attributes with both quoted and unquoted values. ~}
+
+Use :name{text="value with spaces" count=3 active=true} in the contact card.

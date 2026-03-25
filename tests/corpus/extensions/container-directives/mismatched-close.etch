@@ -1,0 +1,5 @@
+{~ note: mismatched named close, parser should error ~}
+
+:::chapter{title="One"}
+This container is closed with the wrong directive name.
+:::/section

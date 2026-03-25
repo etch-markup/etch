@@ -1,0 +1,8 @@
+{~ Tests inline formatting that starts on one line and ends on the next line within the same paragraph. ~}
+
+*Starts on this line
+and ends on the next* in the same paragraph.
+**Bold starts here
+and ends here** in the same paragraph too.
+~~Strike starts here
+and ends here~~ at the end of the paragraph.

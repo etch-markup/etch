@@ -1,0 +1,5 @@
+{~ Tests a hard line break created by trailing backslashes inside a blockquote. ~}
+
+> The snow started before dawn\
+> and kept falling through breakfast\
+> until the road signs disappeared.

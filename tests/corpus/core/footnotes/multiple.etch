@@ -1,0 +1,7 @@
+{~ Tests multiple footnote references and definitions in one document. ~}
+
+The ranger map marks the upper bridge,[^1] the cold spring,[^2] and the storm shelter.[^3]
+
+[^1]: The bridge was rebuilt after the thaw.
+[^2]: The spring remains drinkable year-round.
+[^3]: The shelter key hangs behind the lodge desk.

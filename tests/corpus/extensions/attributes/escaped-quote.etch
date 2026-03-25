@@ -1,0 +1,3 @@
+{~ Tests backslash escaping for literal quotes inside quoted attribute values. ~}
+
+Quoted label {key="value with \"escaped quotes\" inside"}

@@ -1,0 +1,3 @@
+{~ Tests a comment embedded on the same line as a heading. ~}
+
+# My Title {~ draft version ~}

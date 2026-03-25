@@ -1,0 +1,6 @@
+{~ Tests that bare http:// and https:// URLs auto-link, while bare domains and non-http schemes remain plain text. ~}
+
+Visit https://example.com/help/getting-started?lang=en#overview for details.
+Check http://docs.etch-lang.dev/guide for the older guide.
+The bare domain example.com should stay plain text.
+The file is at ftp://files.etch-lang.dev/releases/latest.zip and should stay plain text.

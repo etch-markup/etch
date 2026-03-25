@@ -1,0 +1,6 @@
+{~ Tests list items containing inline formatting such as bold, italic, code, and links. ~}
+
+- Review the **safety checklist** before departure.
+- Leave the *fragile maps* on the top shelf.
+- Run `etch validate notes.etch` before publishing.
+- Read the [field guide](https://docs.etch-lang.dev/guide/field-notes) on the train.

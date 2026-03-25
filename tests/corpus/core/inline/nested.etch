@@ -1,0 +1,5 @@
+{~ Tests nested inline formatting where one format appears inside another format. ~}
+
+**Bold with *italic* inside** appears at the start.
+This sentence has *italic with **bold** inside* in the middle.
+This sentence ends with ~~strike with **bold** inside~~.

@@ -1,0 +1,15 @@
+{~ Tests that ---, ***, and ___ all work as thematic breaks between paragraphs. ~}
+
+The first journal entry ends here.
+
+---
+
+The second journal entry follows the dash rule.
+
+***
+
+The third journal entry follows the star rule.
+
+___
+
+The fourth journal entry follows the underscore rule.

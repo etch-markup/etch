@@ -1,0 +1,3 @@
+{~ Tests that a comment and an attribute block next to each other are parsed as separate constructs. ~}
+
+# Title {~ note to self ~} {#my-id}

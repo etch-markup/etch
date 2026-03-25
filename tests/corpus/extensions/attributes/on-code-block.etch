@@ -1,0 +1,8 @@
+{~ Tests attributes attached to a fenced code block. ~}
+
+```rust
+fn main() {
+    println!("Etch");
+}
+```
+{.line-numbers highlight=3}

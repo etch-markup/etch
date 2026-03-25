@@ -1,0 +1,7 @@
+{~ Tests nested structural directives with named closing markers. ~}
+
+:::chapter{title="One"}
+:::section{title="North Dock"}
+The ferry rope snapped just before dawn.
+:::/section
+:::/chapter

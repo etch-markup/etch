@@ -1,0 +1,4 @@
+{~ Tests escaped brackets for unbalanced directive content. ~}
+
+The tooltip says :tooltip[use \] to close early] in the parser guide.
+The note reads :note[this has one \[ extra bracket].

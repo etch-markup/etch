@@ -1,0 +1,13 @@
+{~ Tests a fenced block directive containing multiple paragraphs, a list, and inline formatting. ~}
+
+::aside
+First paragraph inside the aside.
+
+Second paragraph still belongs to the same directive.
+
+- Pack the spare map
+- Bring the brass compass
+- Check the tide chart
+
+The third paragraph ends with **bold** emphasis.
+::

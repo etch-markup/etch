@@ -1,0 +1,7 @@
+{~ Tests left, center, and right aligned table columns using alignment markers in the separator row. ~}
+
+| Item | Status | Count |
+| :--- | :---: | ---: |
+| Lanterns | Ready | 12 |
+| Blankets | Packed | 8 |
+| Maps | Missing | 1 |

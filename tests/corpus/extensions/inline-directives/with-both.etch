@@ -1,0 +1,3 @@
+{~ Tests an inline directive with both bracket content and attributes. ~}
+
+I met :character[Sable]{species=fox mood=playful} near the winter market.

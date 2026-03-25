@@ -1,0 +1,5 @@
+{~ Tests a structural directive with multiple attributes. ~}
+
+:::columns{count=2 gap="1rem"}
+Left and right content are grouped under one container.
+:::/columns

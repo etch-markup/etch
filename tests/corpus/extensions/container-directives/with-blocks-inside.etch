@@ -1,0 +1,12 @@
+{~ Tests a container directive that holds normal block content. ~}
+
+:::chapter{title="Lantern Watch"}
+# Arrival
+
+The road was clear before sunrise.
+
+The river path stayed quiet after noon.
+
+- Check the gate
+- Lock the storehouse
+:::/chapter

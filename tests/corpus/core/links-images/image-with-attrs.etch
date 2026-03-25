@@ -1,0 +1,3 @@
+{~ Note: this tests the image+attributes interaction with an image followed by inline attributes. ~}
+
+![Author portrait](photos/author-portrait.jpg){width=80% .rounded}

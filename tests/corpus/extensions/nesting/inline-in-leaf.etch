@@ -1,0 +1,5 @@
+{~ Tests that inline directives are valid inside the text content of a leaf directive. ~}
+
+::aside
+The margin note uses :tooltip[text]{info="x"} beside :math[E=mc^2] in the same paragraph.
+::

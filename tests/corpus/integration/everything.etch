@@ -1,0 +1,77 @@
+---
+title: "Kitchen Sink"
+author: "etch-bot"
+date: 2026-03-24
+tags: [demo, integration, exhaustive]
+series:
+  name: "Spec Trials"
+  part: 2
+draft: true
+word_count: auto
+---
+{~
+This document exercises every major Etch feature at least once.
+It is meant to stay readable while still acting as an adversarial smoke test.
+~}
+# Everything Document {#everything .wide lang=en}
+This paragraph has *italic*, **bold**, ***both***, ~~strike~~, `code`, x^2^, H~2~O, ==mark==, ++insert++, \*literal asterisks\*, a [reference link](https://docs.etch-lang.dev/reference), a bare autolink https://example.com, and a footnote.[^sink]
+
+The field report mentions :name[River Cache]{role=checkpoint} and hides {~ an inline note ~} inside the sentence before the list begins.
+
+This paragraph uses paragraph-level attributes to stand apart from the rest of the page. {.lead}
+
+![Camp diagram](img/camp-diagram.png){width=80% .rounded}
+
+:pagebreak
+
+- Unordered supplies include rope and dried fruit
+- A second bullet keeps the ordinary list syntax visible
+
+1. Ordered step one checks the north gate
+2. Ordered step two seals the ledger
+
+- [x] Task list item completed before dawn
+- [ ] Task list item waiting on the weather
+
+> The old bell sounded once across the yard.
+>> The echo answered from the empty stable.
+
+| Item | State | Count |
+| :--- | :---: | ---: |
+| Lantern | ready | 3 |
+| Map | marked | 1 |
+
+Protocol
+: A written sequence of actions for the night watch.
+
+Checksum
+: A `code` value used to verify the copied record.
+```rust
+pub fn checksum(bytes: &[u8]) -> u32 {
+    bytes.iter().fold(0, |acc, b| acc + (*b as u32))
+}
+```
+{.line-numbers highlight=2}
+North Gate Lodge\
+42 Lantern Row\
+Frost Harbor
+
+---
+::aside[Field note]{.highlighted}
+This leaf block holds :tooltip[inline help]{text="shown on hover"} and :math[E = mc^2] in flowing text.
+
+It also keeps blank lines inside the fenced body without ending early.
+
+- First aside item
+::
+::math
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+::
+:::chapter{title="Night Watch" number=3}
+## First Bell
+The chapter begins with a heading and a short paragraph about the frozen dock.
+:::section{title="Inner Yard"}
+The section continues the report while the nested container stays open.
+:::/section
+:::/chapter
+[^sink]: The footnote closes the document with one last parser check.

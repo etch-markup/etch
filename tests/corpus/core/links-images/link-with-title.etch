@@ -1,0 +1,3 @@
+{~ Tests an inline link with the optional title string. ~}
+
+Browse the [Etch syntax reference](https://docs.etch-lang.dev/reference/core-syntax "Core syntax reference") for the full block and inline rules.

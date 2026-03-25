@@ -1,0 +1,5 @@
+{~ Tests a container directive with an anonymous close marker. ~}
+
+:::chapter{title="One"}
+The first chapter opens with a short paragraph.
+:::

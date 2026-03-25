@@ -1,0 +1,3 @@
+{~ Tests inline formatting nested inside link text. ~}
+
+Open the [**Etch** *quickstart* guide](https://docs.etch-lang.dev/guide/quickstart?view=full#first-document) to see formatted link text in one link.

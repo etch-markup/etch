@@ -1,0 +1,7 @@
+{~ Tests a blockquote containing two paragraphs separated by a blank quoted line. ~}
+
+> The harbor bell rang once before dawn.
+> Fishing boats shifted against the pier.
+>
+> By sunrise the market square was already awake.
+> Bread smoke drifted between the stalls.

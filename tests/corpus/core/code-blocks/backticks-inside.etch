@@ -1,0 +1,7 @@
+{~ Tests that backtick characters inside a fenced code block do not close the fence when fewer than the fence length. ~}
+
+```
+Use `etch validate` before publishing.
+The setting key is `render.mode`.
+Single ` backticks stay part of the code.
+```

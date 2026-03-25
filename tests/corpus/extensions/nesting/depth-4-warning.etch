@@ -1,0 +1,11 @@
+{~ note: valid but triggers depth-4 linter warning ~}
+
+:::chapter{title="One"}
+:::section{title="Two"}
+:::columns{count=2}
+:::column
+Deep content lives here.
+:::/column
+:::/columns
+:::/section
+:::/chapter

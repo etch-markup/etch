@@ -1,0 +1,7 @@
+{~ Tests table cells containing bold text, inline code, and links. ~}
+
+| Feature | Notes |
+| --- | --- |
+| **Preview** | Run `etch render` before sharing |
+| Docs | Read the [guide](https://docs.etch-lang.dev/guide/tables) |
+| Mode | Use `--watch` during edits |

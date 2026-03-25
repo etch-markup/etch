@@ -1,0 +1,3 @@
+{~ Tests an image with the optional title or caption string. ~}
+
+![River overlook](photos/river-overlook.jpg "Morning light over the valley")

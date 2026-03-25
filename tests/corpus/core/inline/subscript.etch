@@ -1,0 +1,5 @@
+{~ Tests ~subscript~ text in different positions within a line. ~}
+
+~Start~ opens this sentence.
+This sentence includes H~2~O in the middle.
+This line ends with CO~2~.

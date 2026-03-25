@@ -1,0 +1,6 @@
+{~ Tests a table with five columns. ~}
+
+| Day | Weather | Trail | Distance | Notes |
+| --- | --- | --- | --- | --- |
+| Monday | Clear | Ridge Walk | 7 km | Early start |
+| Tuesday | Rain | River Path | 3 km | Waterproof boots |

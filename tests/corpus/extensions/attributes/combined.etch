@@ -1,0 +1,3 @@
+{~ Tests all supported attribute forms together in one attribute set. ~}
+
+Reference card {#my-id .class1 .class2 key=value key2="quoted value with spaces"}

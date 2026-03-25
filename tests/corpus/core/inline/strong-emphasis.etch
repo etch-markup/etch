@@ -1,0 +1,5 @@
+{~ Tests ***bold italic*** as one combined formatting unit in different positions. ~}
+
+***Bold italic*** opens this sentence.
+This sentence has ***bold italic*** in the middle.
+This sentence ends with ***bold italic***.

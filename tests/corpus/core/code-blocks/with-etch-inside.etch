@@ -1,0 +1,7 @@
+{~ Tests that Etch syntax inside a fenced code block stays literal code and is not parsed as markup. ~}
+
+```
+status = "**draft**"
+:note[remember this]
+{~ hidden in code ~}
+```

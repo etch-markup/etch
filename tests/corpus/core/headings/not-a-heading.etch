@@ -1,0 +1,5 @@
+{~ Tests that lines starting with hashes but missing the required space parse as paragraphs instead of headings. ~}
+
+#no-space
+
+##also-not

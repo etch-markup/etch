@@ -1,0 +1,5 @@
+{~ Tests *italic* emphasis at the start, middle, and end of a sentence. ~}
+
+*Italic* opens this sentence.
+This sentence has *italic* in the middle.
+This sentence ends with *italic*.

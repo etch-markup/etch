@@ -1,0 +1,11 @@
+{~ note: this is a critical test — block directives are fenced ~}
+
+::aside
+First paragraph in the aside.
+
+
+
+Second paragraph still belongs to the same directive.
+
+Third paragraph also remains inside until the closing fence.
+::

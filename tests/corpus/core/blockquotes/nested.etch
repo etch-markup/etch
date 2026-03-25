@@ -1,0 +1,6 @@
+{~ Tests nested blockquotes using double and triple > markers. ~}
+
+> Outer voice speaking to the room.
+>> Inner reply from the back row.
+>>> A quiet aside beneath both speakers.
+>> The reply continues after the aside.

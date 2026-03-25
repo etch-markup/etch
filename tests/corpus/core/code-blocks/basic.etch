@@ -1,0 +1,8 @@
+{~ Tests a simple fenced code block with a few lines of plain code. ~}
+
+```
+function greet(name) {
+  return "Hello, " + name;
+}
+console.log(greet("Etch"));
+```

@@ -1,0 +1,5 @@
+{~ Tests a basic image used both as a standalone element and inside a paragraph. ~}
+
+![Snowy trail at dawn](images/snowy-trail.jpg)
+
+The travel note includes ![campfire icon](icons/campfire.png) beside the route summary.

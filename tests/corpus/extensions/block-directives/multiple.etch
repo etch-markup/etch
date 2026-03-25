@@ -1,0 +1,11 @@
+{~ Tests two block directives in sequence with a normal paragraph between them. ~}
+
+::aside
+First aside block.
+::
+
+The station clock chimed between the two side notes.
+
+::aside
+Second aside block.
+::

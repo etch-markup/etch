@@ -1,0 +1,5 @@
+{~ Tests that empty marker pairs like **, ****, ~~, ^^, ==, and ++++ do not parse as formatting and remain literal text. ~}
+
+These tokens stay literal: ** and **** in plain text.
+These tokens stay literal too: ~~ and ^^ in plain text.
+These tokens also stay literal: == and ++++ in plain text.

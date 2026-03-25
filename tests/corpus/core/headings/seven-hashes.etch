@@ -1,0 +1,3 @@
+{~ Tests that seven leading hashes exceed the maximum heading level and therefore parse as a paragraph. ~}
+
+####### Too many hashes for a valid heading

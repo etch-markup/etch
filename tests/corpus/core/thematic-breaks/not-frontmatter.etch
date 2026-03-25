@@ -1,0 +1,9 @@
+{~ Tests that --- after content has started is a thematic break rather than frontmatter. ~}
+
+# Winter Notes
+
+This document starts with a heading, so frontmatter is no longer possible.
+
+---
+
+The line above must parse as a thematic break in the middle of the document.

@@ -1,0 +1,5 @@
+{~ Tests **bold** strong text at the start, middle, and end of a sentence. ~}
+
+**Bold** opens this sentence.
+This sentence has **bold** in the middle.
+This sentence ends with **bold**.

@@ -1,0 +1,4 @@
+{~ Tests directive content parsing with balanced nested brackets. ~}
+
+The tooltip reads :tooltip[array[0] is the first element] in the lesson notes.
+The code sample shows :code[fn(a, b) -> Result<Vec<[u8]>>] in the margin.

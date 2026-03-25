@@ -1,0 +1,7 @@
+{~ Tests a basic two-column table with a header row and several data rows. ~}
+
+| Trail | Distance |
+| --- | --- |
+| Pine Loop | 4 km |
+| Ridge Walk | 7 km |
+| River Path | 3 km |

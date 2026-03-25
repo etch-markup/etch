@@ -1,0 +1,5 @@
+{~ Tests ++inserted++ text at the start, middle, and end of a sentence. ~}
+
+++Inserted++ opens this sentence.
+This sentence has ++inserted++ in the middle.
+This sentence ends with ++inserted++.

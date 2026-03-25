@@ -1,0 +1,7 @@
+{~ Tests a full-line comment placed between two paragraphs. ~}
+
+The first paragraph appears before the comment.
+
+{~ This entire line is a comment ~}
+
+The second paragraph appears after the comment.

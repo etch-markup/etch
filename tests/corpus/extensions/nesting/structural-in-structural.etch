@@ -1,0 +1,7 @@
+{~ Tests valid structural nesting where one container directive contains another. ~}
+
+:::chapter{title="Winter"}
+:::section{title="Harbor"}
+The cranes stood still over the frozen dock.
+:::/section
+:::/chapter

@@ -1,0 +1,3 @@
+{~ Tests inline formatting nested inside directive bracket content. ~}
+
+The margin note says :tooltip[**bold** and *italic* content]{text="extra info"} beside the chart.

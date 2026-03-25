@@ -1,0 +1,4 @@
+{~ Tests an empty fenced code block with nothing between the opening and closing fences. ~}
+
+```
+```

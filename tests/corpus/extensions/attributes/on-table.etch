@@ -1,0 +1,7 @@
+{~ Tests attributes attached to a table after the table block. ~}
+
+| Stop | Time |
+| --- | --- |
+| North Gate | 08:15 |
+| River Dock | 09:40 |
+{.striped .compact}

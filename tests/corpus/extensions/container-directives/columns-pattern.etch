@@ -1,0 +1,14 @@
+{~ Tests the canonical columns pattern with named closes for each column and the outer container. ~}
+
+:::columns{count=2 gap="1rem"}
+:::column
+## Left Notes
+
+Pack the stove fuel and the spare wick.
+:::/column
+:::column
+## Right Notes
+
+Leave the tide chart with the dockmaster.
+:::/column
+:::/columns

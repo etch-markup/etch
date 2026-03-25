@@ -1,0 +1,9 @@
+{~ note: parser must reject this — leaf cannot nest directives ~}
+
+::aside
+This leaf directive starts with valid text.
+
+::spoiler
+This nested directive should cause a parse error.
+::
+::

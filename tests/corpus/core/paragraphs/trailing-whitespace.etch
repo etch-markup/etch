@@ -1,0 +1,5 @@
+{~ Tests that trailing spaces at line ends do not create hard line breaks inside a paragraph. ~}
+
+This line ends with trailing spaces.  
+This next line also ends with trailing spaces.  
+This line is still part of the same paragraph.

@@ -1,0 +1,5 @@
+{~ Tests ^superscript^ text in different positions within a line. ~}
+
+^Start^ opens this sentence.
+This sentence includes E = mc^2^ in the middle.
+This line ends with 1^st^.

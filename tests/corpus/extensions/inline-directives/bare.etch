@@ -1,0 +1,5 @@
+{~ Tests valid bare inline directives with no content or attributes. ~}
+
+Insert a :pagebreak before the appendix begins.
+
+:toc

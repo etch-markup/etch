@@ -1,0 +1,19 @@
+{~ Tests one heading at each valid level from h1 through h6, each followed by a short paragraph. ~}
+
+# Heading level 1
+Paragraph after h1.
+
+## Heading level 2
+Paragraph after h2.
+
+### Heading level 3
+Paragraph after h3.
+
+#### Heading level 4
+Paragraph after h4.
+
+##### Heading level 5
+Paragraph after h5.
+
+###### Heading level 6
+Paragraph after h6.

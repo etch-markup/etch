@@ -1,0 +1,3 @@
+{~ Tests an inline directive with bracket content inside a sentence. ~}
+
+The guide left a :tooltip[hover over this text] beside the map legend.

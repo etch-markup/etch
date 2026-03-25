@@ -1,0 +1,4 @@
+{~ Tests that a heading can be immediately followed by a paragraph with no blank line between them. ~}
+
+## Immediate paragraph heading
+This paragraph starts right after the heading with no blank line.

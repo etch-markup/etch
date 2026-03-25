@@ -1,0 +1,4 @@
+{~ Tests attributes on a blockquote attribution line. ~}
+
+> The harbor remembers every winter storm.
+> — Elias North {.attribution}

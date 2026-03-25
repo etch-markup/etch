@@ -1,0 +1,38 @@
+---
+title: "Token Bucket Reference"
+author: "infra-team"
+date: 2026-03-24
+---
+
+# Token Bucket API {#token-bucket .reference}
+
+{~ TODO: add an example for distributed refill coordination ~}
+
+The refill model uses :math[r \times t] tokens over time, where `r` is the refill rate.[^rate]
+
+::math
+tokens(t) = \min(capacity, tokens_0 + r t)
+::
+
+## Rust Client
+
+```rust
+pub fn allow(tokens: u32, requested: u32) -> bool {
+    tokens >= requested
+}
+```
+{.line-numbers highlight=3}
+
+| Field | Required | Example |
+| :--- | :---: | ---: |
+| capacity | yes | 120 |
+| refill_per_sec | yes | 10 |
+| burst | no | 240 |
+
+Capacity
+: The maximum number of tokens the bucket can hold.
+
+Burst
+: A temporary allowance above the steady-state request rate.
+
+[^rate]: Production systems usually derive `r` from a per-second throughput budget.

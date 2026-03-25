@@ -1,0 +1,5 @@
+{~ Tests that escaped formatting markers render as literal characters rather than starting inline formatting. ~}
+
+\*not italic\* stays literal at the start.
+This sentence keeps \~not sub\~, \^not super\^, and \=\=not highlight\=\= literal.
+This sentence ends with \+\+not insert\+\+.

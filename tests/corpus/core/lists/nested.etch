@@ -1,0 +1,9 @@
+{~ Note: this tests the lenient indentation rule where 2 spaces is canonical, but 4 spaces is also accepted as a deeper list indent and later normalized by the formatter. ~}
+
+- Weekend project
+  - Buy lumber
+    - Measure each board twice
+    - Mark the cut lines clearly
+- Workshop cleanup
+    - Sweep the sawdust
+    - Empty the dust collector
