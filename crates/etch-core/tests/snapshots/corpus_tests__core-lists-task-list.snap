@@ -1,5 +1,6 @@
 ---
 source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 414
 expression: result
 ---
 {
@@ -17,11 +18,12 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "[x] Reserve the campsite"
+                    "value": "Reserve the campsite"
                   }
                 ]
               }
-            ]
+            ],
+            "checked": true
           },
           {
             "content": [
@@ -30,11 +32,12 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "[ ] Print the route map"
+                    "value": "Print the route map"
                   }
                 ]
               }
-            ]
+            ],
+            "checked": false
           },
           {
             "content": [
@@ -43,11 +46,12 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "[x] Download the offline guide"
+                    "value": "Download the offline guide"
                   }
                 ]
               }
-            ]
+            ],
+            "checked": true
           },
           {
             "content": [
@@ -56,11 +60,12 @@ expression: result
                 "content": [
                   {
                     "type": "Text",
-                    "value": "[ ] Pack the first-aid kit"
+                    "value": "Pack the first-aid kit"
                   }
                 ]
               }
-            ]
+            ],
+            "checked": false
           }
         ]
       }

@@ -167,7 +167,7 @@ where
     I: Iterator<Item = (usize, &'a str)>,
 {
     let marker = list_item_content(first_line)
-        .map(|(_, marker, _)| marker)
+        .map(|(_, marker, _, _)| marker)
         .unwrap_or(ListMarker::Unordered);
     let mut items = Vec::new();
     let mut next_first_line = Some(first_line);
@@ -208,7 +208,7 @@ fn list_item_from_lines<'a, I>(
 where
     I: Iterator<Item = (usize, &'a str)>,
 {
-    let Some((item_indent, _, first_content)) = list_item_content(first_line) else {
+    let Some((item_indent, _, checked, first_content)) = list_item_content(first_line) else {
         return ListItem {
             content: Vec::new(),
             checked: None,
@@ -229,7 +229,7 @@ where
             continue;
         }
 
-        if let Some((indent, next_marker, _)) = list_item_content(line) {
+        if let Some((indent, next_marker, _, _)) = list_item_content(line) {
             if indent >= item_indent + 2 {
                 flush_item_paragraph(&mut content, &mut current_paragraph);
                 content.push(list_from_peeked(item_indent, lines));
@@ -252,10 +252,7 @@ where
 
     flush_item_paragraph(&mut content, &mut current_paragraph);
 
-    ListItem {
-        content,
-        checked: None,
-    }
+    ListItem { content, checked }
 }
 
 fn list_from_peeked<'a, I>(parent_indent: usize, lines: &mut Peekable<I>) -> Block
@@ -283,11 +280,11 @@ fn flush_item_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>)
 }
 
 fn is_top_level_list_item(line: &str) -> bool {
-    matches!(list_item_content(line), Some((0, _, _)))
+    matches!(list_item_content(line), Some((0, _, _, _)))
 }
 
 fn is_list_item_for_parent(line: &str, parent_indent: Option<usize>, marker: ListMarker) -> bool {
-    let Some((indent, line_marker, _)) = list_item_content(line) else {
+    let Some((indent, line_marker, _, _)) = list_item_content(line) else {
         return false;
     };
 
@@ -301,12 +298,20 @@ fn is_list_item_for_parent(line: &str, parent_indent: Option<usize>, marker: Lis
     }
 }
 
-fn list_item_content(line: &str) -> Option<(usize, ListMarker, &str)> {
+fn list_item_content(line: &str) -> Option<(usize, ListMarker, Option<bool>, &str)> {
     let indent = count_leading_spaces(line);
     let trimmed = &line[indent..];
 
     if let Some(content) = trimmed.strip_prefix("- ") {
-        return Some((indent, ListMarker::Unordered, content));
+        if let Some(content) = content.strip_prefix("[x] ") {
+            return Some((indent, ListMarker::Unordered, Some(true), content));
+        }
+
+        if let Some(content) = content.strip_prefix("[ ] ") {
+            return Some((indent, ListMarker::Unordered, Some(false), content));
+        }
+
+        return Some((indent, ListMarker::Unordered, None, content));
     }
 
     let digits = trimmed
@@ -319,7 +324,7 @@ fn list_item_content(line: &str) -> Option<(usize, ListMarker, &str)> {
 
     trimmed[digits..]
         .strip_prefix(". ")
-        .map(|content| (indent, ListMarker::Ordered, content))
+        .map(|content| (indent, ListMarker::Ordered, None, content))
 }
 
 fn count_leading_spaces(line: &str) -> usize {
@@ -790,6 +795,39 @@ mod tests {
                             attrs: None,
                         }],
                         checked: None,
+                    },
+                ],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_detects_checked_and_unchecked_task_list_items() {
+        let result = parse("- [x] Reserve the campsite\n- [ ] Print the route map");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::List {
+                ordered: false,
+                items: vec![
+                    ListItem {
+                        content: vec![Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Reserve the campsite".to_string(),
+                            }],
+                            attrs: None,
+                        }],
+                        checked: Some(true),
+                    },
+                    ListItem {
+                        content: vec![Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Print the route map".to_string(),
+                            }],
+                            attrs: None,
+                        }],
+                        checked: Some(false),
                     },
                 ],
                 attrs: None,
