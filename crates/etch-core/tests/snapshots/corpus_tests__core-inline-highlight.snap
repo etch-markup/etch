@@ -1,0 +1,56 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Highlight",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Highlighted"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " opens this sentence.\nThis sentence has "
+          },
+          {
+            "type": "Highlight",
+            "content": [
+              {
+                "type": "Text",
+                "value": "highlighted"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the middle.\nThis sentence ends with "
+          },
+          {
+            "type": "Highlight",
+            "content": [
+              {
+                "type": "Text",
+                "value": "highlighted"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

@@ -69,10 +69,50 @@ impl CaretDelimiter {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum EqualDelimiter {
+    Highlight,
+}
+
+impl EqualDelimiter {
+    fn len(self) -> usize {
+        match self {
+            Self::Highlight => 2,
+        }
+    }
+
+    fn wrap(self, content: Vec<Inline>) -> Inline {
+        match self {
+            Self::Highlight => Inline::Highlight { content },
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum PlusDelimiter {
+    Insert,
+}
+
+impl PlusDelimiter {
+    fn len(self) -> usize {
+        match self {
+            Self::Insert => 2,
+        }
+    }
+
+    fn wrap(self, content: Vec<Inline>) -> Inline {
+        match self {
+            Self::Insert => Inline::Insert { content },
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Delimiter {
     Star(StarDelimiter),
     Tilde(TildeDelimiter),
     Caret(CaretDelimiter),
+    Equal(EqualDelimiter),
+    Plus(PlusDelimiter),
 }
 
 impl Delimiter {
@@ -81,6 +121,8 @@ impl Delimiter {
             Self::Star(delimiter) => delimiter.len(),
             Self::Tilde(delimiter) => delimiter.len(),
             Self::Caret(delimiter) => delimiter.len(),
+            Self::Equal(delimiter) => delimiter.len(),
+            Self::Plus(delimiter) => delimiter.len(),
         }
     }
 
@@ -89,6 +131,8 @@ impl Delimiter {
             Self::Star(_) => b'*',
             Self::Tilde(_) => b'~',
             Self::Caret(_) => b'^',
+            Self::Equal(_) => b'=',
+            Self::Plus(_) => b'+',
         }
     }
 
@@ -97,6 +141,8 @@ impl Delimiter {
             Self::Star(delimiter) => delimiter.wrap(content),
             Self::Tilde(delimiter) => delimiter.wrap(content),
             Self::Caret(delimiter) => delimiter.wrap(content),
+            Self::Equal(delimiter) => delimiter.wrap(content),
+            Self::Plus(delimiter) => delimiter.wrap(content),
         }
     }
 
@@ -105,6 +151,8 @@ impl Delimiter {
             Self::Star(delimiter) => run_len >= delimiter.len(),
             Self::Tilde(delimiter) => run_len == delimiter.len(),
             Self::Caret(delimiter) => run_len == delimiter.len(),
+            Self::Equal(delimiter) => run_len == delimiter.len(),
+            Self::Plus(delimiter) => run_len == delimiter.len(),
         }
     }
 }
@@ -161,7 +209,7 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
             continue;
         }
 
-        if byte == b'*' || byte == b'~' || byte == b'^' {
+        if byte == b'*' || byte == b'~' || byte == b'^' || byte == b'=' || byte == b'+' {
             push_text(&mut nodes, &input[text_start..index]);
 
             if let Some((inline, next_index)) = try_parse_delimiter_run(input, index) {
@@ -240,6 +288,14 @@ fn parse_delimiter(input: &str, index: usize) -> Option<Delimiter> {
         },
         b'^' => match count_delimiters(input, index, byte) {
             1 => Some(Delimiter::Caret(CaretDelimiter::Superscript)),
+            _ => None,
+        },
+        b'=' => match count_delimiters(input, index, byte) {
+            2 => Some(Delimiter::Equal(EqualDelimiter::Highlight)),
+            _ => None,
+        },
+        b'+' => match count_delimiters(input, index, byte) {
+            2 => Some(Delimiter::Plus(PlusDelimiter::Insert)),
             _ => None,
         },
         _ => None,
@@ -470,6 +526,46 @@ mod tests {
     }
 
     #[test]
+    fn parses_highlight() {
+        assert_eq!(
+            parse_inlines("before ==marked== after"),
+            vec![
+                Inline::Text {
+                    value: "before ".to_string(),
+                },
+                Inline::Highlight {
+                    content: vec![Inline::Text {
+                        value: "marked".to_string(),
+                    }],
+                },
+                Inline::Text {
+                    value: " after".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_insert() {
+        assert_eq!(
+            parse_inlines("before ++added++ after"),
+            vec![
+                Inline::Text {
+                    value: "before ".to_string(),
+                },
+                Inline::Insert {
+                    content: vec![Inline::Text {
+                        value: "added".to_string(),
+                    }],
+                },
+                Inline::Text {
+                    value: " after".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
     fn leaves_invalid_caret_runs_literal() {
         assert_eq!(
             parse_inlines("^^ double carets ^^"),
@@ -556,9 +652,9 @@ mod tests {
     #[test]
     fn leaves_empty_or_whitespace_delimiters_literal() {
         assert_eq!(
-            parse_inlines("** **** * text* *text *"),
+            parse_inlines("** **** * text* *text * == ++++ ++ text++ ++text ++"),
             vec![Inline::Text {
-                value: "** **** * text* *text *".to_string(),
+                value: "** **** * text* *text * == ++++ ++ text++ ++text ++".to_string(),
             }]
         );
     }

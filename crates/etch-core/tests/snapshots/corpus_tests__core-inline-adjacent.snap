@@ -1,0 +1,105 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Emphasis",
+            "content": [
+              {
+                "type": "Text",
+                "value": "italic"
+              }
+            ]
+          },
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Text",
+                "value": "bold"
+              }
+            ]
+          },
+          {
+            "type": "InlineCode",
+            "value": "code"
+          },
+          {
+            "type": "Text",
+            "value": " starts this line.\nThis line has "
+          },
+          {
+            "type": "Highlight",
+            "content": [
+              {
+                "type": "Text",
+                "value": "mark"
+              }
+            ]
+          },
+          {
+            "type": "Insert",
+            "content": [
+              {
+                "type": "Text",
+                "value": "insert"
+              }
+            ]
+          },
+          {
+            "type": "Strikethrough",
+            "content": [
+              {
+                "type": "Text",
+                "value": "gone"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the middle.\nThis line ends with "
+          },
+          {
+            "type": "Superscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "up"
+              }
+            ]
+          },
+          {
+            "type": "Subscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "down"
+              }
+            ]
+          },
+          {
+            "type": "Emphasis",
+            "content": [
+              {
+                "type": "Text",
+                "value": "tail"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
