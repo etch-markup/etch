@@ -1,0 +1,45 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "name": "aside",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "First paragraph in the aside."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Second paragraph still belongs to the same directive."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Third paragraph also remains inside until the closing fence."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

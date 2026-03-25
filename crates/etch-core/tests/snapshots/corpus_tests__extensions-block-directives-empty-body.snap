@@ -1,0 +1,17 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "name": "note",
+        "body": []
+      }
+    ]
+  },
+  "errors": []
+}

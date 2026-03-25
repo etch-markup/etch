@@ -1,0 +1,36 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The familiar equation :math[E = mc^2] appears before the display form."
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "name": "math",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\int_0^1 x^2 \\, dx = \\frac{1}{3}\nE = mc^2\n\\nabla \\cdot \\vec{F} = 0"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

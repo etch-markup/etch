@@ -1,0 +1,90 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "name": "aside",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "First paragraph inside the aside."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Second paragraph still belongs to the same directive."
+              }
+            ]
+          },
+          {
+            "type": "List",
+            "ordered": false,
+            "items": [
+              {
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "Pack the spare map"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "Bring the brass compass"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "Check the tide chart"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The third paragraph ends with **bold** emphasis."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

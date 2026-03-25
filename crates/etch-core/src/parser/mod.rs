@@ -1,10 +1,16 @@
-use crate::{Block, Document, Frontmatter, Inline, ListItem, ParseResult};
+use crate::{Attributes, Block, Document, Frontmatter, Inline, ListItem, ParseResult};
 use std::{collections::HashMap, iter::Peekable};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum ListMarker {
     Unordered,
     Ordered,
+}
+
+struct BlockDirectiveOpening {
+    name: String,
+    label: Option<Vec<Inline>>,
+    attrs: Option<Attributes>,
 }
 
 pub fn parse(input: &str) -> ParseResult {
@@ -103,6 +109,12 @@ where
             continue;
         }
 
+        if let Some(opening) = block_directive_opening_from_line(line) {
+            flush_paragraph(&mut blocks, current);
+            blocks.push(block_directive_from_lines(opening, lines));
+            continue;
+        }
+
         if let Some(heading) = heading_from_line(line) {
             flush_paragraph(&mut blocks, current);
 
@@ -167,6 +179,266 @@ where
         content: content.join("\n"),
         attrs: None,
     }
+}
+
+fn block_directive_opening_from_line(line: &str) -> Option<BlockDirectiveOpening> {
+    if line.starts_with(":::") {
+        return None;
+    }
+
+    let mut remainder = line.strip_prefix("::")?;
+    if !remainder
+        .chars()
+        .next()
+        .is_some_and(|ch| ch.is_ascii_alphabetic())
+    {
+        return None;
+    }
+
+    let name_len = directive_name_length(remainder)?;
+    if name_len == 0 {
+        return None;
+    }
+
+    let name = remainder[..name_len].to_string();
+    remainder = &remainder[name_len..];
+
+    let mut label = None;
+    if remainder.starts_with('[') {
+        let (label_text, next_remainder) = parse_balanced_bracket_segment(remainder)?;
+        label = Some(vec![Inline::Text {
+            value: label_text.to_string(),
+        }]);
+        remainder = next_remainder;
+    }
+
+    let mut attrs = None;
+    if remainder.starts_with('{') {
+        let (parsed_attrs, next_remainder) = parse_attributes_segment(remainder)?;
+        attrs = Some(parsed_attrs);
+        remainder = next_remainder;
+    }
+
+    remainder
+        .is_empty()
+        .then_some(BlockDirectiveOpening { name, label, attrs })
+}
+
+fn block_directive_from_lines<'a, I>(
+    opening: BlockDirectiveOpening,
+    lines: &mut Peekable<I>,
+) -> Block
+where
+    I: Iterator<Item = (usize, &'a str)>,
+{
+    let mut body_lines = Vec::new();
+
+    while let Some((_, line)) = lines.next() {
+        if line == "::" {
+            break;
+        }
+
+        body_lines.push(line);
+    }
+
+    Block::BlockDirective {
+        name: opening.name,
+        label: opening.label,
+        attrs: opening.attrs,
+        body: parse_blocks(&body_lines.join("\n"), false),
+    }
+}
+
+fn directive_name_length(input: &str) -> Option<usize> {
+    let mut length = 0;
+
+    for (index, ch) in input.char_indices() {
+        if ch.is_ascii_alphabetic() || ch == '-' {
+            length = index + ch.len_utf8();
+            continue;
+        }
+
+        return matches!(ch, '[' | '{').then_some(length);
+    }
+
+    Some(length)
+}
+
+fn parse_balanced_bracket_segment(input: &str) -> Option<(&str, &str)> {
+    let mut depth = 0usize;
+    let mut escaped = false;
+
+    for (index, ch) in input.char_indices() {
+        if index == 0 {
+            if ch != '[' {
+                return None;
+            }
+
+            depth = 1;
+            continue;
+        }
+
+        if escaped {
+            escaped = false;
+            continue;
+        }
+
+        match ch {
+            '\\' => escaped = true,
+            '[' => depth += 1,
+            ']' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some((&input[1..index], &input[index + 1..]));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn parse_attributes_segment(input: &str) -> Option<(Attributes, &str)> {
+    let mut in_quotes = false;
+    let mut escaped = false;
+
+    for (index, ch) in input.char_indices() {
+        if index == 0 {
+            if ch != '{' {
+                return None;
+            }
+
+            continue;
+        }
+
+        if escaped {
+            escaped = false;
+            continue;
+        }
+
+        match ch {
+            '\\' if in_quotes => escaped = true,
+            '"' => in_quotes = !in_quotes,
+            '}' if !in_quotes => {
+                let attrs = parse_attributes_content(&input[1..index])?;
+                return Some((attrs, &input[index + 1..]));
+            }
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn parse_attributes_content(input: &str) -> Option<Attributes> {
+    let mut attrs = Attributes {
+        id: None,
+        classes: Vec::new(),
+        pairs: HashMap::new(),
+    };
+
+    for token in split_attribute_tokens(input) {
+        if token.is_empty() {
+            continue;
+        }
+
+        if let Some(id) = token.strip_prefix('#') {
+            if id.is_empty() {
+                return None;
+            }
+
+            attrs.id = Some(id.to_string());
+            continue;
+        }
+
+        if let Some(class) = token.strip_prefix('.') {
+            if class.is_empty() {
+                return None;
+            }
+
+            attrs.classes.push(class.to_string());
+            continue;
+        }
+
+        let (key, value) = token.split_once('=')?;
+        if key.is_empty() {
+            return None;
+        }
+
+        let value = if value.starts_with('"') {
+            let quoted = value.strip_prefix('"')?.strip_suffix('"')?;
+            unescape_quoted_attribute_value(quoted)
+        } else {
+            value.to_string()
+        };
+
+        attrs.pairs.insert(key.to_string(), value);
+    }
+
+    Some(attrs)
+}
+
+fn split_attribute_tokens(input: &str) -> Vec<&str> {
+    let mut tokens = Vec::new();
+    let mut start = None;
+    let mut in_quotes = false;
+    let mut escaped = false;
+
+    for (index, ch) in input.char_indices() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+
+        match ch {
+            '\\' if in_quotes => escaped = true,
+            '"' => {
+                in_quotes = !in_quotes;
+                start.get_or_insert(index);
+            }
+            ch if ch.is_whitespace() && !in_quotes => {
+                if let Some(token_start) = start.take() {
+                    tokens.push(&input[token_start..index]);
+                }
+            }
+            _ => {
+                start.get_or_insert(index);
+            }
+        }
+    }
+
+    if let Some(token_start) = start {
+        tokens.push(&input[token_start..]);
+    }
+
+    tokens
+}
+
+fn unescape_quoted_attribute_value(value: &str) -> String {
+    let mut unescaped = String::with_capacity(value.len());
+    let mut escaped = false;
+
+    for ch in value.chars() {
+        if escaped {
+            unescaped.push(ch);
+            escaped = false;
+            continue;
+        }
+
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+
+        unescaped.push(ch);
+    }
+
+    if escaped {
+        unescaped.push('\\');
+    }
+
+    unescaped
 }
 
 fn blockquote_from_lines<'a, I>(first_line: &'a str, lines: &mut Peekable<I>) -> Block
@@ -474,8 +746,9 @@ fn skip_leading_comment(input: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::parse;
-    use crate::{Block, Inline, ListItem};
+    use crate::{Attributes, Block, Inline, ListItem};
     use serde_yaml::{Mapping, Value};
+    use std::collections::HashMap;
 
     #[test]
     fn parse_wraps_input_in_a_single_paragraph_text_node() {
@@ -820,6 +1093,97 @@ mod tests {
             vec![Block::CodeBlock {
                 language: None,
                 content: "**bold**\n:note[keep literal]\n{~ not a comment ~}".to_string(),
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_detects_basic_block_directives_before_paragraph_fallback() {
+        let result = parse("::aside\nInside the aside.\n::");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::BlockDirective {
+                name: "aside".to_string(),
+                label: None,
+                attrs: None,
+                body: vec![Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Inside the aside.".to_string(),
+                    }],
+                    attrs: None,
+                }],
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_treats_blank_lines_inside_block_directives_as_body_content() {
+        let result = parse("::aside\nFirst paragraph.\n\nSecond paragraph.\n::");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::BlockDirective {
+                name: "aside".to_string(),
+                label: None,
+                attrs: None,
+                body: vec![
+                    Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "First paragraph.".to_string(),
+                        }],
+                        attrs: None,
+                    },
+                    Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "Second paragraph.".to_string(),
+                        }],
+                        attrs: None,
+                    },
+                ],
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_supports_block_directive_labels_and_attributes() {
+        let result = parse("::aside[Author note]{#callout .highlight tone=\"quiet\"}\nBody\n::");
+        let mut expected_pairs = HashMap::new();
+        expected_pairs.insert("tone".to_string(), "quiet".to_string());
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::BlockDirective {
+                name: "aside".to_string(),
+                label: Some(vec![Inline::Text {
+                    value: "Author note".to_string(),
+                }]),
+                attrs: Some(Attributes {
+                    id: Some("callout".to_string()),
+                    classes: vec!["highlight".to_string()],
+                    pairs: expected_pairs,
+                }),
+                body: vec![Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Body".to_string(),
+                    }],
+                    attrs: None,
+                }],
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_rejects_block_directive_names_with_non_letter_non_hyphen_characters() {
+        let result = parse("::note2\nBody\n::");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "::note2\nBody\n::".to_string(),
+                }],
                 attrs: None,
             }]
         );

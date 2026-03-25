@@ -1,0 +1,27 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "name": "aside",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The lantern stayed lit long after the station closed."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

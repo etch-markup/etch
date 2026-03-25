@@ -1,0 +1,66 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": ":::chapter{title=\"Storm Journal\"}"
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "name": "aside",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Keep the lamp away from the wet ledge."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "name": "spoiler",
+        "label": [
+          {
+            "type": "Text",
+            "value": "Hidden note"
+          }
+        ],
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The spare key is under the blue crate."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": ":::/chapter"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

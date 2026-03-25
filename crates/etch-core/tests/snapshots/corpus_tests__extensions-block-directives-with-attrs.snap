@@ -1,0 +1,33 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "name": "figure",
+        "attrs": {
+          "pairs": {
+            "caption": "A scenic view",
+            "width": "80%"
+          }
+        },
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "![North ridge overlook](photos/north-ridge.jpg)"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
