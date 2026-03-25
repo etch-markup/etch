@@ -50,9 +50,29 @@ impl TildeDelimiter {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum CaretDelimiter {
+    Superscript,
+}
+
+impl CaretDelimiter {
+    fn len(self) -> usize {
+        match self {
+            Self::Superscript => 1,
+        }
+    }
+
+    fn wrap(self, content: Vec<Inline>) -> Inline {
+        match self {
+            Self::Superscript => Inline::Superscript { content },
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Delimiter {
     Star(StarDelimiter),
     Tilde(TildeDelimiter),
+    Caret(CaretDelimiter),
 }
 
 impl Delimiter {
@@ -60,6 +80,7 @@ impl Delimiter {
         match self {
             Self::Star(delimiter) => delimiter.len(),
             Self::Tilde(delimiter) => delimiter.len(),
+            Self::Caret(delimiter) => delimiter.len(),
         }
     }
 
@@ -67,6 +88,7 @@ impl Delimiter {
         match self {
             Self::Star(_) => b'*',
             Self::Tilde(_) => b'~',
+            Self::Caret(_) => b'^',
         }
     }
 
@@ -74,6 +96,7 @@ impl Delimiter {
         match self {
             Self::Star(delimiter) => delimiter.wrap(content),
             Self::Tilde(delimiter) => delimiter.wrap(content),
+            Self::Caret(delimiter) => delimiter.wrap(content),
         }
     }
 
@@ -81,6 +104,7 @@ impl Delimiter {
         match self {
             Self::Star(delimiter) => run_len >= delimiter.len(),
             Self::Tilde(delimiter) => run_len == delimiter.len(),
+            Self::Caret(delimiter) => run_len == delimiter.len(),
         }
     }
 }
@@ -137,7 +161,7 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
             continue;
         }
 
-        if byte == b'*' || byte == b'~' {
+        if byte == b'*' || byte == b'~' || byte == b'^' {
             push_text(&mut nodes, &input[text_start..index]);
 
             if let Some((inline, next_index)) = try_parse_delimiter_run(input, index) {
@@ -212,6 +236,10 @@ fn parse_delimiter(input: &str, index: usize) -> Option<Delimiter> {
         b'~' => match count_delimiters(input, index, byte) {
             1 => Some(Delimiter::Tilde(TildeDelimiter::Subscript)),
             2 => Some(Delimiter::Tilde(TildeDelimiter::Strikethrough)),
+            _ => None,
+        },
+        b'^' => match count_delimiters(input, index, byte) {
+            1 => Some(Delimiter::Caret(CaretDelimiter::Superscript)),
             _ => None,
         },
         _ => None,
@@ -418,6 +446,36 @@ mod tests {
                     }],
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn parses_superscript() {
+        assert_eq!(
+            parse_inlines("before ^super^ after"),
+            vec![
+                Inline::Text {
+                    value: "before ".to_string(),
+                },
+                Inline::Superscript {
+                    content: vec![Inline::Text {
+                        value: "super".to_string(),
+                    }],
+                },
+                Inline::Text {
+                    value: " after".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn leaves_invalid_caret_runs_literal() {
+        assert_eq!(
+            parse_inlines("^^ double carets ^^"),
+            vec![Inline::Text {
+                value: "^^ double carets ^^".to_string(),
+            }]
         );
     }
 

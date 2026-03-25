@@ -1,0 +1,56 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Superscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Start"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " opens this sentence.\nThis sentence includes E = mc"
+          },
+          {
+            "type": "Superscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the middle.\nThis line ends with 1"
+          },
+          {
+            "type": "Superscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "st"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

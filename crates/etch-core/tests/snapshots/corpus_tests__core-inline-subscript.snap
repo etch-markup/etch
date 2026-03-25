@@ -1,0 +1,56 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Subscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Start"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " opens this sentence.\nThis sentence includes H"
+          },
+          {
+            "type": "Subscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "O in the middle.\nThis line ends with CO"
+          },
+          {
+            "type": "Subscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
