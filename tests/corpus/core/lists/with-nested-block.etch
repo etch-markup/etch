@@ -1,0 +1,7 @@
+{~ Tests that list item continuation content is parsed as blocks, not just paragraph text. ~}
+
+- Camp briefing for the new arrivals.
+  Bring dry socks and a flashlight.
+
+  > Check in before sunset.
+  > Keep your permit visible.

@@ -21,52 +21,72 @@ pub fn parse(input: &str) -> ParseResult {
 }
 
 fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> {
-    let mut blocks = Vec::new();
     let mut current = Vec::new();
     let mut lines = input.lines().enumerate().peekable();
 
+    parse_blocks_from_lines(
+        &mut lines,
+        body_starts_at_document_start,
+        false,
+        &mut current,
+    )
+}
+
+fn parse_blocks_from_lines<'a, I>(
+    lines: &mut Peekable<I>,
+    body_starts_at_document_start: bool,
+    allow_indented_list_starts: bool,
+    current: &mut Vec<&'a str>,
+) -> Vec<Block>
+where
+    I: Iterator<Item = (usize, &'a str)>,
+{
+    let mut blocks = Vec::new();
+
     while let Some((line_index, line)) = lines.next() {
         if line.trim().is_empty() {
-            flush_paragraph(&mut blocks, &mut current);
+            flush_paragraph(&mut blocks, current);
             continue;
         }
 
         if let Some(language) = code_block_language_from_line(line) {
-            flush_paragraph(&mut blocks, &mut current);
-            blocks.push(code_block_from_lines(language, &mut lines));
+            flush_paragraph(&mut blocks, current);
+            blocks.push(code_block_from_lines(language, lines));
             continue;
         }
 
         if let Some(heading) = heading_from_line(line) {
-            flush_paragraph(&mut blocks, &mut current);
+            flush_paragraph(&mut blocks, current);
 
             blocks.push(heading);
             continue;
         }
 
         if is_blockquote_line(line) {
-            flush_paragraph(&mut blocks, &mut current);
-            blocks.push(blockquote_from_lines(line, &mut lines));
+            flush_paragraph(&mut blocks, current);
+            blocks.push(blockquote_from_lines(line, lines));
             continue;
         }
 
         let is_first_document_line = body_starts_at_document_start && line_index == 0;
         if let Some(thematic_break) = thematic_break_from_line(line, is_first_document_line) {
-            flush_paragraph(&mut blocks, &mut current);
+            flush_paragraph(&mut blocks, current);
             blocks.push(thematic_break);
             continue;
         }
 
-        if is_top_level_list_item(line) {
-            flush_paragraph(&mut blocks, &mut current);
-            blocks.push(list_from_lines(line, None, &mut lines));
+        if let Some(parent_indent) =
+            list_parent_indent_for_block_start(line, allow_indented_list_starts)
+        {
+            flush_paragraph(&mut blocks, current);
+            blocks.push(list_from_lines(line, parent_indent, lines));
             continue;
         }
 
         current.push(line);
     }
 
-    flush_paragraph(&mut blocks, &mut current);
+    flush_paragraph(&mut blocks, current);
 
     blocks
 }
@@ -215,24 +235,21 @@ where
         };
     };
 
-    let mut content = Vec::new();
-    let mut current_paragraph = Vec::new();
-
-    if !first_content.is_empty() {
-        current_paragraph.push(first_content);
-    }
+    let mut continuation_lines = Vec::new();
+    let mut pending_blank_lines = 0;
 
     while let Some((_, line)) = lines.peek().copied() {
         if line.trim().is_empty() {
             lines.next();
-            flush_item_paragraph(&mut content, &mut current_paragraph);
+            pending_blank_lines += 1;
             continue;
         }
 
         if let Some((indent, next_marker, _, _)) = list_item_content(line) {
             if indent >= item_indent + 2 {
-                flush_item_paragraph(&mut content, &mut current_paragraph);
-                content.push(list_from_peeked(item_indent, lines));
+                lines.next();
+                push_item_blank_lines(&mut continuation_lines, &mut pending_blank_lines);
+                continuation_lines.push(strip_indent(line, item_indent + 2));
                 continue;
             }
 
@@ -243,44 +260,49 @@ where
 
         if count_leading_spaces(line) >= item_indent + 2 {
             lines.next();
-            current_paragraph.push(strip_indent(line, item_indent + 2));
+            push_item_blank_lines(&mut continuation_lines, &mut pending_blank_lines);
+            continuation_lines.push(strip_indent(line, item_indent + 2));
             continue;
         }
 
         break;
     }
 
-    flush_item_paragraph(&mut content, &mut current_paragraph);
+    let content = parse_list_item_blocks(first_content, &continuation_lines);
 
     ListItem { content, checked }
 }
 
-fn list_from_peeked<'a, I>(parent_indent: usize, lines: &mut Peekable<I>) -> Block
-where
-    I: Iterator<Item = (usize, &'a str)>,
-{
-    let Some((_, first_line)) = lines.next() else {
-        return Block::List {
-            ordered: false,
-            items: Vec::new(),
-            attrs: None,
-        };
-    };
-
-    list_from_lines(first_line, Some(parent_indent), lines)
-}
-
-fn flush_item_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>) {
-    if current.is_empty() {
-        return;
+fn parse_list_item_blocks<'a>(
+    first_content: &'a str,
+    continuation_lines: &[&'a str],
+) -> Vec<Block> {
+    let mut current = Vec::new();
+    if !first_content.is_empty() {
+        current.push(first_content);
     }
 
-    blocks.push(paragraph_from_lines(current));
-    current.clear();
+    let mut lines = continuation_lines.iter().copied().enumerate().peekable();
+    parse_blocks_from_lines(&mut lines, false, true, &mut current)
 }
 
-fn is_top_level_list_item(line: &str) -> bool {
-    matches!(list_item_content(line), Some((0, _, _, _)))
+fn push_item_blank_lines(lines: &mut Vec<&str>, pending_blank_lines: &mut usize) {
+    for _ in 0..*pending_blank_lines {
+        lines.push("");
+    }
+
+    *pending_blank_lines = 0;
+}
+
+fn list_parent_indent_for_block_start(
+    line: &str,
+    allow_indented_list_starts: bool,
+) -> Option<Option<usize>> {
+    match list_item_content(line) {
+        Some((0, _, _, _)) => Some(None),
+        Some(_) if allow_indented_list_starts => Some(Some(0)),
+        _ => None,
+    }
 }
 
 fn is_list_item_for_parent(line: &str, parent_indent: Option<usize>, marker: ListMarker) -> bool {
@@ -861,6 +883,65 @@ mod tests {
                             attrs: None,
                         },
                     ],
+                    checked: None,
+                }],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_parses_nested_blocks_inside_list_item_content() {
+        let result = parse(
+            "- Camp briefing for the new arrivals.\n  Bring dry socks and a flashlight.\n\n  > Check in before sunset.\n  > Keep your permit visible.",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::List {
+                ordered: false,
+                items: vec![ListItem {
+                    content: vec![
+                        Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Camp briefing for the new arrivals.\nBring dry socks and a flashlight."
+                                    .to_string(),
+                            }],
+                            attrs: None,
+                        },
+                        Block::BlockQuote {
+                            content: vec![Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "Check in before sunset.\nKeep your permit visible."
+                                        .to_string(),
+                                }],
+                                attrs: None,
+                            }],
+                            attrs: None,
+                        },
+                    ],
+                    checked: None,
+                }],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_keeps_first_list_item_line_as_paragraph_text_when_it_starts_with_block_syntax() {
+        let result = parse("- # not a heading");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::List {
+                ordered: false,
+                items: vec![ListItem {
+                    content: vec![Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "# not a heading".to_string(),
+                        }],
+                        attrs: None,
+                    }],
                     checked: None,
                 }],
                 attrs: None,

@@ -1,0 +1,45 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "List",
+        "ordered": false,
+        "items": [
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Camp briefing for the new arrivals.\nBring dry socks and a flashlight."
+                  }
+                ]
+              },
+              {
+                "type": "BlockQuote",
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "Check in before sunset.\nKeep your permit visible."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

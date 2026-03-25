@@ -64,6 +64,7 @@ macro_rules! corpus_test {
 // - core/lists/task-list.etch
 // - core/lists/unordered.etch
 // - core/lists/with-formatting.etch
+// - core/lists/with-nested-block.etch
 // - core/lists/with-paragraphs.etch
 // - core/paragraphs/empty.etch
 // - core/paragraphs/extra-blanks.etch
@@ -425,6 +426,11 @@ corpus_test!(
     core_lists_with_formatting,
     "../../../tests/corpus/core/lists/with-formatting.etch",
     "core-lists-with-formatting"
+);
+corpus_test!(
+    core_lists_with_nested_block,
+    "../../../tests/corpus/core/lists/with-nested-block.etch",
+    "core-lists-with-nested-block"
 );
 corpus_test!(
     core_lists_with_paragraphs,
