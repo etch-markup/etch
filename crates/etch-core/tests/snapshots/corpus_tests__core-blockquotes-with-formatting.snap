@@ -14,7 +14,39 @@ expression: result
             "content": [
               {
                 "type": "Text",
-                "value": "The guide called the ridge **safe enough** by noon.\nShe marked the eastern path as *muddy* after the storm.\n- Pack an extra scarf\n- Leave the `radio` on channel three"
+                "value": "The guide called the ridge **safe enough** by noon.\nShe marked the eastern path as *muddy* after the storm."
+              }
+            ]
+          },
+          {
+            "type": "List",
+            "ordered": false,
+            "items": [
+              {
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "Pack an extra scarf"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "Leave the `radio` on channel three"
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           }

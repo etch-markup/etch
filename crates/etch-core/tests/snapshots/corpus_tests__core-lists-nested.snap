@@ -1,0 +1,127 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "List",
+        "ordered": false,
+        "items": [
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Weekend project"
+                  }
+                ]
+              },
+              {
+                "type": "List",
+                "ordered": false,
+                "items": [
+                  {
+                    "content": [
+                      {
+                        "type": "Paragraph",
+                        "content": [
+                          {
+                            "type": "Text",
+                            "value": "Buy lumber"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "List",
+                        "ordered": false,
+                        "items": [
+                          {
+                            "content": [
+                              {
+                                "type": "Paragraph",
+                                "content": [
+                                  {
+                                    "type": "Text",
+                                    "value": "Measure each board twice"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "content": [
+                              {
+                                "type": "Paragraph",
+                                "content": [
+                                  {
+                                    "type": "Text",
+                                    "value": "Mark the cut lines clearly"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Workshop cleanup"
+                  }
+                ]
+              },
+              {
+                "type": "List",
+                "ordered": false,
+                "items": [
+                  {
+                    "content": [
+                      {
+                        "type": "Paragraph",
+                        "content": [
+                          {
+                            "type": "Text",
+                            "value": "Sweep the sawdust"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "content": [
+                      {
+                        "type": "Paragraph",
+                        "content": [
+                          {
+                            "type": "Text",
+                            "value": "Empty the dust collector"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

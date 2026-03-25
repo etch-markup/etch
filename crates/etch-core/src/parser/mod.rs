@@ -3,7 +3,7 @@ mod directive;
 mod frontmatter;
 mod inline;
 
-use crate::{Block, Document, Inline, ParseResult};
+use crate::{Block, Document, Inline, ListItem, ParseResult};
 use std::iter::Peekable;
 
 pub fn parse(input: &str) -> ParseResult {
@@ -53,6 +53,12 @@ fn parse_blocks(input: &str, body_starts_at_document_start: bool) -> Vec<Block> 
         if let Some(thematic_break) = thematic_break_from_line(line, is_first_document_line) {
             flush_paragraph(&mut blocks, &mut current);
             blocks.push(thematic_break);
+            continue;
+        }
+
+        if is_top_level_unordered_list_item(line) {
+            flush_paragraph(&mut blocks, &mut current);
+            blocks.push(unordered_list_from_lines(line, None, &mut lines));
             continue;
         }
 
@@ -151,6 +157,159 @@ fn paragraph_from_lines(lines: &[&str]) -> Block {
     }
 }
 
+fn unordered_list_from_lines<'a, I>(
+    first_line: &'a str,
+    parent_indent: Option<usize>,
+    lines: &mut Peekable<I>,
+) -> Block
+where
+    I: Iterator<Item = (usize, &'a str)>,
+{
+    let mut items = Vec::new();
+    let mut next_first_line = Some(first_line);
+
+    loop {
+        let current_line = match next_first_line.take() {
+            Some(line) => line,
+            None => match lines.peek().copied() {
+                Some((_, line)) if is_unordered_list_item_for_parent(line, parent_indent) => {
+                    lines.next();
+                    line
+                }
+                _ => break,
+            },
+        };
+
+        items.push(unordered_list_item_from_lines(
+            current_line,
+            parent_indent,
+            lines,
+        ));
+    }
+
+    Block::List {
+        ordered: false,
+        items,
+        attrs: None,
+    }
+}
+
+fn unordered_list_item_from_lines<'a, I>(
+    first_line: &'a str,
+    parent_indent: Option<usize>,
+    lines: &mut Peekable<I>,
+) -> ListItem
+where
+    I: Iterator<Item = (usize, &'a str)>,
+{
+    let Some((item_indent, first_content)) = unordered_list_item_content(first_line) else {
+        return ListItem {
+            content: Vec::new(),
+            checked: None,
+        };
+    };
+
+    let mut content = Vec::new();
+    let mut current_paragraph = Vec::new();
+
+    if !first_content.is_empty() {
+        current_paragraph.push(first_content);
+    }
+
+    while let Some((_, line)) = lines.peek().copied() {
+        if line.trim().is_empty() {
+            lines.next();
+            flush_item_paragraph(&mut content, &mut current_paragraph);
+            continue;
+        }
+
+        if let Some((indent, _)) = unordered_list_item_content(line) {
+            if indent >= item_indent + 2 {
+                flush_item_paragraph(&mut content, &mut current_paragraph);
+                content.push(unordered_list_from_peeked(item_indent, lines));
+                continue;
+            }
+
+            if is_unordered_list_item_for_parent(line, parent_indent) {
+                break;
+            }
+        }
+
+        if count_leading_spaces(line) >= item_indent + 2 {
+            lines.next();
+            current_paragraph.push(strip_indent(line, item_indent + 2));
+            continue;
+        }
+
+        break;
+    }
+
+    flush_item_paragraph(&mut content, &mut current_paragraph);
+
+    ListItem {
+        content,
+        checked: None,
+    }
+}
+
+fn unordered_list_from_peeked<'a, I>(parent_indent: usize, lines: &mut Peekable<I>) -> Block
+where
+    I: Iterator<Item = (usize, &'a str)>,
+{
+    let Some((_, first_line)) = lines.next() else {
+        return Block::List {
+            ordered: false,
+            items: Vec::new(),
+            attrs: None,
+        };
+    };
+
+    unordered_list_from_lines(first_line, Some(parent_indent), lines)
+}
+
+fn flush_item_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>) {
+    if current.is_empty() {
+        return;
+    }
+
+    blocks.push(paragraph_from_lines(current));
+    current.clear();
+}
+
+fn is_top_level_unordered_list_item(line: &str) -> bool {
+    matches!(unordered_list_item_content(line), Some((0, _)))
+}
+
+fn is_unordered_list_item_for_parent(line: &str, parent_indent: Option<usize>) -> bool {
+    let Some((indent, _)) = unordered_list_item_content(line) else {
+        return false;
+    };
+
+    match parent_indent {
+        Some(parent_indent) => indent >= parent_indent + 2,
+        None => indent == 0,
+    }
+}
+
+fn unordered_list_item_content(line: &str) -> Option<(usize, &str)> {
+    let indent = count_leading_spaces(line);
+    line[indent..]
+        .strip_prefix("- ")
+        .map(|content| (indent, content))
+}
+
+fn count_leading_spaces(line: &str) -> usize {
+    line.as_bytes()
+        .iter()
+        .take_while(|byte| **byte == b' ')
+        .count()
+}
+
+fn strip_indent(line: &str, spaces: usize) -> &str {
+    let actual = count_leading_spaces(line).min(spaces);
+    &line[actual..]
+}
+
 fn thematic_break_from_line(line: &str, is_first_document_line: bool) -> Option<Block> {
     if is_first_document_line && line == "---" {
         return None;
@@ -216,7 +375,7 @@ fn skip_leading_comment(input: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::parse;
-    use crate::{Block, Inline};
+    use crate::{Block, Inline, ListItem};
 
     #[test]
     fn parse_wraps_input_in_a_single_paragraph_text_node() {
@@ -579,5 +738,164 @@ mod tests {
         let result = parse(" \n\t\n  ");
 
         assert!(result.document.body.is_empty());
+    }
+
+    #[test]
+    fn parse_detects_unordered_lists_before_paragraph_fallback() {
+        let result = parse("- pack rope\n- fill canteen");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::List {
+                ordered: false,
+                items: vec![
+                    ListItem {
+                        content: vec![Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "pack rope".to_string(),
+                            }],
+                            attrs: None,
+                        }],
+                        checked: None,
+                    },
+                    ListItem {
+                        content: vec![Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "fill canteen".to_string(),
+                            }],
+                            attrs: None,
+                        }],
+                        checked: None,
+                    },
+                ],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_treats_indented_lines_as_unordered_list_item_continuations() {
+        let result = parse(
+            "- Camp briefing for the new arrivals.\n  Bring dry socks, a flashlight, and a map.\n\n  Check in before sunset.",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::List {
+                ordered: false,
+                items: vec![ListItem {
+                    content: vec![
+                        Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Camp briefing for the new arrivals.\nBring dry socks, a flashlight, and a map."
+                                    .to_string(),
+                            }],
+                            attrs: None,
+                        },
+                        Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Check in before sunset.".to_string(),
+                            }],
+                            attrs: None,
+                        },
+                    ],
+                    checked: None,
+                }],
+                attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_supports_nested_unordered_lists_with_lenient_indentation() {
+        let result = parse(
+            "- Weekend project\n  - Buy lumber\n    - Measure each board twice\n    - Mark the cut lines clearly\n- Workshop cleanup\n    - Sweep the sawdust",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::List {
+                ordered: false,
+                items: vec![
+                    ListItem {
+                        content: vec![
+                            Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "Weekend project".to_string(),
+                                }],
+                                attrs: None,
+                            },
+                            Block::List {
+                                ordered: false,
+                                items: vec![ListItem {
+                                    content: vec![
+                                        Block::Paragraph {
+                                            content: vec![Inline::Text {
+                                                value: "Buy lumber".to_string(),
+                                            }],
+                                            attrs: None,
+                                        },
+                                        Block::List {
+                                            ordered: false,
+                                            items: vec![
+                                                ListItem {
+                                                    content: vec![Block::Paragraph {
+                                                        content: vec![Inline::Text {
+                                                            value: "Measure each board twice"
+                                                                .to_string(),
+                                                        }],
+                                                        attrs: None,
+                                                    }],
+                                                    checked: None,
+                                                },
+                                                ListItem {
+                                                    content: vec![Block::Paragraph {
+                                                        content: vec![Inline::Text {
+                                                            value: "Mark the cut lines clearly"
+                                                                .to_string(),
+                                                        }],
+                                                        attrs: None,
+                                                    }],
+                                                    checked: None,
+                                                },
+                                            ],
+                                            attrs: None,
+                                        },
+                                    ],
+                                    checked: None,
+                                }],
+                                attrs: None,
+                            },
+                        ],
+                        checked: None,
+                    },
+                    ListItem {
+                        content: vec![
+                            Block::Paragraph {
+                                content: vec![Inline::Text {
+                                    value: "Workshop cleanup".to_string(),
+                                }],
+                                attrs: None,
+                            },
+                            Block::List {
+                                ordered: false,
+                                items: vec![ListItem {
+                                    content: vec![Block::Paragraph {
+                                        content: vec![Inline::Text {
+                                            value: "Sweep the sawdust".to_string(),
+                                        }],
+                                        attrs: None,
+                                    }],
+                                    checked: None,
+                                }],
+                                attrs: None,
+                            },
+                        ],
+                        checked: None,
+                    },
+                ],
+                attrs: None,
+            }]
+        );
     }
 }
