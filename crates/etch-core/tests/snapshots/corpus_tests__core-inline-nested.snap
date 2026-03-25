@@ -1,0 +1,95 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Bold with "
+              },
+              {
+                "type": "Emphasis",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "italic"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " inside"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " appears at the start.\nThis sentence has "
+          },
+          {
+            "type": "Emphasis",
+            "content": [
+              {
+                "type": "Text",
+                "value": "italic with "
+              },
+              {
+                "type": "Strong",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " inside"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the middle.\nThis sentence ends with "
+          },
+          {
+            "type": "Strikethrough",
+            "content": [
+              {
+                "type": "Text",
+                "value": "strike with "
+              },
+              {
+                "type": "Strong",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " inside"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

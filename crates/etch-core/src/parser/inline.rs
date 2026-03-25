@@ -120,6 +120,23 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
 
         let byte = input.as_bytes()[index];
 
+        if byte == b'`' {
+            push_text(&mut nodes, &input[text_start..index]);
+            let run_len = count_delimiters(input, index, b'`');
+
+            if let Some((inline, next_index)) = try_parse_inline_code(input, index) {
+                nodes.push(inline);
+                index = next_index;
+                text_start = index;
+                continue;
+            }
+
+            push_text(&mut nodes, &input[index..index + run_len]);
+            index += run_len;
+            text_start = index;
+            continue;
+        }
+
         if byte == b'*' || byte == b'~' {
             push_text(&mut nodes, &input[text_start..index]);
 
@@ -164,6 +181,24 @@ fn try_parse_delimiter_run(input: &str, index: usize) -> Option<(Inline, usize)>
     None
 }
 
+fn try_parse_inline_code(input: &str, index: usize) -> Option<(Inline, usize)> {
+    let delimiter_len = count_delimiters(input, index, b'`');
+
+    if !matches!(delimiter_len, 1 | 2) {
+        return None;
+    }
+
+    let content_start = index + delimiter_len;
+    let closing_index = find_closing_backticks(input, content_start, delimiter_len)?;
+
+    Some((
+        Inline::InlineCode {
+            value: input[content_start..closing_index].to_string(),
+        },
+        closing_index + delimiter_len,
+    ))
+}
+
 fn parse_delimiter(input: &str, index: usize) -> Option<Delimiter> {
     let byte = input.as_bytes().get(index).copied()?;
 
@@ -198,6 +233,19 @@ fn count_delimiters(input: &str, index: usize, byte: u8) -> usize {
         .bytes()
         .take_while(|candidate| *candidate == byte)
         .count()
+}
+
+fn find_closing_backticks(input: &str, mut index: usize, delimiter_len: usize) -> Option<usize> {
+    while index < input.len() {
+        if input.as_bytes()[index] == b'`' && count_delimiters(input, index, b'`') >= delimiter_len
+        {
+            return Some(index);
+        }
+
+        index += next_char_len(input, index);
+    }
+
+    None
 }
 
 fn next_char_len(input: &str, index: usize) -> usize {
@@ -370,6 +418,80 @@ mod tests {
                     }],
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn parses_inline_code_spans() {
+        assert_eq!(
+            parse_inlines("`printf()` opens this sentence and `npm test` runs later"),
+            vec![
+                Inline::InlineCode {
+                    value: "printf()".to_string(),
+                },
+                Inline::Text {
+                    value: " opens this sentence and ".to_string(),
+                },
+                Inline::InlineCode {
+                    value: "npm test".to_string(),
+                },
+                Inline::Text {
+                    value: " runs later".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_double_backtick_code_spans() {
+        assert_eq!(
+            parse_inlines("before ``code containing `backticks` inside`` after"),
+            vec![
+                Inline::Text {
+                    value: "before ".to_string(),
+                },
+                Inline::InlineCode {
+                    value: "code containing `backticks` inside".to_string(),
+                },
+                Inline::Text {
+                    value: " after".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn treats_code_span_content_as_raw_text() {
+        assert_eq!(
+            parse_inlines("`*not italic* and **not bold**`"),
+            vec![Inline::InlineCode {
+                value: "*not italic* and **not bold**".to_string(),
+            }]
+        );
+    }
+
+    #[test]
+    fn does_not_escape_backticks_inside_code_spans() {
+        assert_eq!(
+            parse_inlines("`a\\`b`"),
+            vec![
+                Inline::InlineCode {
+                    value: "a\\".to_string(),
+                },
+                Inline::Text {
+                    value: "b`".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn leaves_unclosed_backtick_runs_literal() {
+        assert_eq!(
+            parse_inlines("before ``code after"),
+            vec![Inline::Text {
+                value: "before ``code after".to_string(),
+            }]
         );
     }
 

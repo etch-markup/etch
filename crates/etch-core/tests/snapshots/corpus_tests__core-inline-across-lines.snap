@@ -1,0 +1,56 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Emphasis",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Starts on this line\nand ends on the next"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the same paragraph.\n"
+          },
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Bold starts here\nand ends here"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " in the same paragraph too.\n"
+          },
+          {
+            "type": "Strikethrough",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Strike starts here\nand ends here"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " at the end of the paragraph."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

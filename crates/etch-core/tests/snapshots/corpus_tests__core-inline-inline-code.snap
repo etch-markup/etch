@@ -1,0 +1,41 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "InlineCode",
+            "value": "printf()"
+          },
+          {
+            "type": "Text",
+            "value": " opens this sentence.\nThis sentence uses "
+          },
+          {
+            "type": "InlineCode",
+            "value": "npm test"
+          },
+          {
+            "type": "Text",
+            "value": " in the middle.\nThis sentence ends with "
+          },
+          {
+            "type": "InlineCode",
+            "value": "code containing `backticks` inside"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
