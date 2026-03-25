@@ -1,0 +1,31 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Heading",
+        "level": 2,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Immediate paragraph heading"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "This paragraph starts right after the heading with no blank line."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

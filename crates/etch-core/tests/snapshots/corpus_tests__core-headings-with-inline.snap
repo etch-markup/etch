@@ -1,0 +1,42 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Heading",
+        "level": 1,
+        "content": [
+          {
+            "type": "Text",
+            "value": "A **bold** heading"
+          }
+        ]
+      },
+      {
+        "type": "Heading",
+        "level": 2,
+        "content": [
+          {
+            "type": "Text",
+            "value": "An *italic* heading"
+          }
+        ]
+      },
+      {
+        "type": "Heading",
+        "level": 3,
+        "content": [
+          {
+            "type": "Text",
+            "value": "A `code` heading"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

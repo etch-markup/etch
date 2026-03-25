@@ -1,0 +1,126 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Heading",
+        "level": 1,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Heading level 1"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Paragraph after h1."
+          }
+        ]
+      },
+      {
+        "type": "Heading",
+        "level": 2,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Heading level 2"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Paragraph after h2."
+          }
+        ]
+      },
+      {
+        "type": "Heading",
+        "level": 3,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Heading level 3"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Paragraph after h3."
+          }
+        ]
+      },
+      {
+        "type": "Heading",
+        "level": 4,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Heading level 4"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Paragraph after h4."
+          }
+        ]
+      },
+      {
+        "type": "Heading",
+        "level": 5,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Heading level 5"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Paragraph after h5."
+          }
+        ]
+      },
+      {
+        "type": "Heading",
+        "level": 6,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Heading level 6"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Paragraph after h6."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

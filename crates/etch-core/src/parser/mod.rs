@@ -9,22 +9,32 @@ pub fn parse(input: &str) -> ParseResult {
     ParseResult {
         document: Document {
             frontmatter: None,
-            body: parse_paragraphs(skip_leading_comment(input)),
+            body: parse_blocks(skip_leading_comment(input)),
         },
         errors: Vec::new(),
     }
 }
 
-fn parse_paragraphs(input: &str) -> Vec<Block> {
-    let mut paragraphs = Vec::new();
+fn parse_blocks(input: &str) -> Vec<Block> {
+    let mut blocks = Vec::new();
     let mut current = Vec::new();
 
     for line in input.lines() {
         if line.trim().is_empty() {
             if !current.is_empty() {
-                paragraphs.push(paragraph_from_lines(&current));
+                blocks.push(paragraph_from_lines(&current));
                 current.clear();
             }
+            continue;
+        }
+
+        if let Some(heading) = heading_from_line(line) {
+            if !current.is_empty() {
+                blocks.push(paragraph_from_lines(&current));
+                current.clear();
+            }
+
+            blocks.push(heading);
             continue;
         }
 
@@ -32,10 +42,30 @@ fn parse_paragraphs(input: &str) -> Vec<Block> {
     }
 
     if !current.is_empty() {
-        paragraphs.push(paragraph_from_lines(&current));
+        blocks.push(paragraph_from_lines(&current));
     }
 
-    paragraphs
+    blocks
+}
+
+fn heading_from_line(line: &str) -> Option<Block> {
+    let hash_count = line.chars().take_while(|ch| *ch == '#').count();
+
+    if !(1..=6).contains(&hash_count) {
+        return None;
+    }
+
+    if line.chars().nth(hash_count) != Some(' ') {
+        return None;
+    }
+
+    Some(Block::Heading {
+        level: hash_count as u8,
+        content: vec![Inline::Text {
+            value: line[hash_count + 1..].to_string(),
+        }],
+        attrs: None,
+    })
 }
 
 fn paragraph_from_lines(lines: &[&str]) -> Block {
@@ -154,6 +184,53 @@ mod tests {
                 }],
                 attrs: None,
             }]
+        );
+    }
+
+    #[test]
+    fn parse_detects_headings_before_paragraph_fallback() {
+        let result = parse("# Heading\nParagraph");
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::Heading {
+                    level: 1,
+                    content: vec![Inline::Text {
+                        value: "Heading".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Paragraph".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_treats_invalid_hash_prefixes_as_paragraph_text() {
+        let result = parse("#no-space\n\n####### Too many hashes");
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "#no-space".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "####### Too many hashes".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
         );
     }
 
