@@ -1,0 +1,63 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The village record mentions the flood only once."
+          },
+          {
+            "type": "FootnoteReference",
+            "label": "long-note"
+          }
+        ]
+      },
+      {
+        "type": "FootnoteDefinition",
+        "label": "long-note",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The clerk added the note after the council meeting"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "and copied it into the winter ledger the same night."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "A second paragraph explains that the bridge repairs lasted"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "until the first week of spring."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

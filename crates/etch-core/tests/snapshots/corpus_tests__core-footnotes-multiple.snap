@@ -1,0 +1,86 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The ranger map marks the upper bridge,"
+          },
+          {
+            "type": "FootnoteReference",
+            "label": "1"
+          },
+          {
+            "type": "Text",
+            "value": " the cold spring,"
+          },
+          {
+            "type": "FootnoteReference",
+            "label": "2"
+          },
+          {
+            "type": "Text",
+            "value": " and the storm shelter."
+          },
+          {
+            "type": "FootnoteReference",
+            "label": "3"
+          }
+        ]
+      },
+      {
+        "type": "FootnoteDefinition",
+        "label": "1",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The bridge was rebuilt after the thaw."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "FootnoteDefinition",
+        "label": "2",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The spring remains drinkable year-round."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "FootnoteDefinition",
+        "label": "3",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The shelter key hangs behind the lodge desk."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

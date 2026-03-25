@@ -247,6 +247,13 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
         if byte == b'[' {
             push_text(&mut nodes, &input[text_start..index]);
 
+            if let Some((inline, next_index)) = try_parse_footnote_reference(input, index) {
+                nodes.push(inline);
+                index = next_index;
+                text_start = index;
+                continue;
+            }
+
             if let Some((inline, next_index)) = try_parse_link(input, index) {
                 nodes.push(inline);
                 index = next_index;
@@ -395,6 +402,28 @@ fn try_parse_link(input: &str, index: usize) -> Option<(Inline, usize)> {
             attrs: None,
         },
         destination_end + 1,
+    ))
+}
+
+fn try_parse_footnote_reference(input: &str, index: usize) -> Option<(Inline, usize)> {
+    if input.as_bytes().get(index).copied()? != b'['
+        || input.as_bytes().get(index + 1).copied()? != b'^'
+    {
+        return None;
+    }
+
+    let label_start = index + 2;
+    let label_end = input[label_start..].find(']')? + label_start;
+
+    if label_end == label_start {
+        return None;
+    }
+
+    Some((
+        Inline::FootnoteReference {
+            label: input[label_start..label_end].to_string(),
+        },
+        label_end + 1,
     ))
 }
 
@@ -1147,12 +1176,20 @@ mod tests {
     }
 
     #[test]
-    fn does_not_parse_footnote_references_as_links() {
+    fn parses_footnote_references() {
         assert_eq!(
             parse_inlines("See [^guide] later"),
-            vec![Inline::Text {
-                value: "See [^guide] later".to_string(),
-            }]
+            vec![
+                Inline::Text {
+                    value: "See ".to_string(),
+                },
+                Inline::FootnoteReference {
+                    label: "guide".to_string(),
+                },
+                Inline::Text {
+                    value: " later".to_string(),
+                },
+            ]
         );
     }
 

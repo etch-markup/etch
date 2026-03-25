@@ -3,6 +3,7 @@ mod blockquote;
 mod code_block;
 mod comment;
 mod directive;
+mod footnote;
 mod frontmatter;
 mod heading;
 mod inline;
@@ -23,6 +24,7 @@ use self::{
         container_directive_from_lines, container_directive_named_close_from_line,
         container_directive_opening_from_line,
     },
+    footnote::{footnote_definition_from_lines, footnote_definition_opening_from_line},
     frontmatter::parse_frontmatter,
     heading::heading_from_line,
     list::{list_from_lines, list_parent_indent_for_block_start},
@@ -149,6 +151,15 @@ where
             flush_paragraph(&mut blocks, current);
 
             blocks.push(heading);
+            continue;
+        }
+
+        if footnote_definition_opening_from_line(line).is_some() {
+            flush_paragraph(&mut blocks, current);
+            blocks.push(
+                footnote_definition_from_lines(line, lines, errors)
+                    .expect("opening already validated"),
+            );
             continue;
         }
 
@@ -470,6 +481,53 @@ mod tests {
                         value: "outside".to_string(),
                     }],
                     attrs: None,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_detects_footnote_definitions_before_paragraph_fallback() {
+        let result = parse(
+            "Before.[^note]\n\n[^note]: First paragraph\n  still first paragraph\n\n  Second paragraph",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::Paragraph {
+                    content: vec![
+                        Inline::Text {
+                            value: "Before.".to_string(),
+                        },
+                        Inline::FootnoteReference {
+                            label: "note".to_string(),
+                        },
+                    ],
+                    attrs: None,
+                },
+                Block::FootnoteDefinition {
+                    label: "note".to_string(),
+                    content: vec![
+                        Block::Paragraph {
+                            content: vec![
+                                Inline::Text {
+                                    value: "First paragraph".to_string(),
+                                },
+                                Inline::SoftBreak,
+                                Inline::Text {
+                                    value: "still first paragraph".to_string(),
+                                },
+                            ],
+                            attrs: None,
+                        },
+                        Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Second paragraph".to_string(),
+                            }],
+                            attrs: None,
+                        },
+                    ],
                 },
             ]
         );

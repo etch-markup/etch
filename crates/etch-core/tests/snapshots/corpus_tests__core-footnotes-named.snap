@@ -1,0 +1,40 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The final page includes a note about the missing lantern."
+          },
+          {
+            "type": "FootnoteReference",
+            "label": "my-note"
+          }
+        ]
+      },
+      {
+        "type": "FootnoteDefinition",
+        "label": "my-note",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The lantern was later found in the supply shed."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
