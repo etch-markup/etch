@@ -1,4 +1,6 @@
-use crate::{Block, Inline};
+use crate::Block;
+
+use super::inline::parse_inlines;
 
 pub(crate) fn heading_from_line(line: &str) -> Option<Block> {
     let hash_count = line.chars().take_while(|ch| *ch == '#').count();
@@ -13,9 +15,7 @@ pub(crate) fn heading_from_line(line: &str) -> Option<Block> {
 
     Some(Block::Heading {
         level: hash_count as u8,
-        content: vec![Inline::Text {
-            value: line[hash_count + 1..].to_string(),
-        }],
+        content: parse_inlines(&line[hash_count + 1..]),
         attrs: None,
     })
 }

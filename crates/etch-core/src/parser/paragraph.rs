@@ -1,10 +1,10 @@
-use crate::{Block, Inline};
+use crate::Block;
+
+use super::inline::parse_inlines;
 
 pub(crate) fn paragraph_from_lines(lines: &[&str]) -> Block {
     Block::Paragraph {
-        content: vec![Inline::Text {
-            value: lines.join("\n"),
-        }],
+        content: parse_inlines(&lines.join("\n")),
         attrs: None,
     }
 }
