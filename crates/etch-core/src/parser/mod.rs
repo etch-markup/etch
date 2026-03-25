@@ -1,8 +1,3 @@
-mod attributes;
-mod directive;
-mod frontmatter;
-mod inline;
-
 use crate::{Block, Document, Inline, ListItem, ParseResult};
 use std::iter::Peekable;
 
