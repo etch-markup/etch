@@ -1,0 +1,71 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "ContainerDirective",
+        "name": "chapter",
+        "attrs": {
+          "pairs": {
+            "title": "One"
+          }
+        },
+        "body": [
+          {
+            "type": "ContainerDirective",
+            "name": "section",
+            "attrs": {
+              "pairs": {
+                "title": "Two"
+              }
+            },
+            "body": [
+              {
+                "type": "ContainerDirective",
+                "name": "columns",
+                "attrs": {
+                  "pairs": {
+                    "count": "2"
+                  }
+                },
+                "body": [
+                  {
+                    "type": "ContainerDirective",
+                    "name": "column",
+                    "body": [
+                      {
+                        "type": "Paragraph",
+                        "content": [
+                          {
+                            "type": "Text",
+                            "value": "Deep content lives here."
+                          }
+                        ]
+                      }
+                    ],
+                    "named_close": true
+                  }
+                ],
+                "named_close": true
+              }
+            ],
+            "named_close": true
+          }
+        ],
+        "named_close": true
+      }
+    ]
+  },
+  "errors": [
+    {
+      "kind": "Warning",
+      "message": "Structural directive nesting reached 4 levels at ':::column'",
+      "line": 6,
+      "column": 1
+    }
+  ]
+}

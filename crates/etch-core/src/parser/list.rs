@@ -1,6 +1,8 @@
 use crate::{Block, ListItem, ParseError};
 use std::iter::Peekable;
 
+use super::ParseContext;
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ListMarker {
     Unordered,
@@ -12,6 +14,7 @@ pub(crate) fn list_from_lines<'a, I>(
     parent_indent: Option<usize>,
     lines: &mut Peekable<I>,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Block
 where
     I: Iterator<Item = (usize, &'a str)>,
@@ -40,6 +43,7 @@ where
             marker,
             lines,
             errors,
+            context,
         ));
     }
 
@@ -56,6 +60,7 @@ pub(crate) fn list_item_from_lines<'a, I>(
     marker: ListMarker,
     lines: &mut Peekable<I>,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> ListItem
 where
     I: Iterator<Item = (usize, &'a str)>,
@@ -100,7 +105,7 @@ where
         break;
     }
 
-    let content = parse_list_item_blocks(first_content, &continuation_lines, errors);
+    let content = parse_list_item_blocks(first_content, &continuation_lines, errors, context);
 
     ListItem { content, checked }
 }
@@ -109,6 +114,7 @@ pub(crate) fn parse_list_item_blocks<'a>(
     first_content: &'a str,
     continuation_lines: &[&'a str],
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Vec<Block> {
     let mut current = Vec::new();
     if !first_content.is_empty() {
@@ -116,7 +122,17 @@ pub(crate) fn parse_list_item_blocks<'a>(
     }
 
     let mut lines = continuation_lines.iter().copied().enumerate().peekable();
-    super::parse_blocks_from_lines(&mut lines, false, true, &mut current, 0, errors, None).0
+    super::parse_blocks_from_lines(
+        &mut lines,
+        false,
+        true,
+        &mut current,
+        0,
+        errors,
+        None,
+        context,
+    )
+    .0
 }
 
 pub(crate) fn push_item_blank_lines(lines: &mut Vec<&str>, pending_blank_lines: &mut usize) {

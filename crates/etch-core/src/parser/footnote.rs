@@ -1,6 +1,7 @@
 use crate::{Block, ParseError};
 use std::iter::Peekable;
 
+use super::ParseContext;
 use super::list::{
     count_leading_spaces, parse_list_item_blocks, push_item_blank_lines, strip_indent,
 };
@@ -21,6 +22,7 @@ pub(crate) fn footnote_definition_from_lines<'a, I>(
     first_line: &'a str,
     lines: &mut Peekable<I>,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Option<Block>
 where
     I: Iterator<Item = (usize, &'a str)>,
@@ -47,13 +49,19 @@ where
 
     Some(Block::FootnoteDefinition {
         label,
-        content: parse_list_item_blocks(first_content.trim_start(), &continuation_lines, errors),
+        content: parse_list_item_blocks(
+            first_content.trim_start(),
+            &continuation_lines,
+            errors,
+            context,
+        ),
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::{footnote_definition_from_lines, footnote_definition_opening_from_line};
+    use crate::parser::ParseContext;
     use crate::{Block, Inline};
 
     #[test]
@@ -89,7 +97,12 @@ mod tests {
         let mut errors = Vec::new();
 
         assert_eq!(
-            footnote_definition_from_lines("[^note]: Opening line", &mut lines, &mut errors),
+            footnote_definition_from_lines(
+                "[^note]: Opening line",
+                &mut lines,
+                &mut errors,
+                ParseContext::root(),
+            ),
             Some(Block::FootnoteDefinition {
                 label: "note".to_string(),
                 content: vec![

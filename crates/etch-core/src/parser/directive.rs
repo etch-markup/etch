@@ -1,6 +1,8 @@
 use crate::{Attributes, Block, Inline, ParseError, ParseErrorKind};
 use std::iter::Peekable;
 
+use super::ParseContext;
+
 pub(crate) struct DirectiveOpening {
     pub(crate) name: String,
     pub(crate) label: Option<Vec<Inline>>,
@@ -11,6 +13,11 @@ pub(crate) struct DirectiveOpening {
 pub(crate) enum ContainerClose {
     Anonymous,
     Named,
+}
+
+enum NestedDirective {
+    Block,
+    Container,
 }
 
 pub(crate) fn block_directive_opening_from_line(
@@ -82,15 +89,39 @@ pub(crate) fn block_directive_from_lines<'a, I>(
     opening: DirectiveOpening,
     lines: &mut Peekable<I>,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Block
 where
     I: Iterator<Item = (usize, &'a str)> + Clone,
 {
     let mut body_lines = Vec::new();
+    let mut nested_directives = Vec::new();
 
     while let Some((_, line)) = lines.next() {
-        if line == "::" {
+        match nested_directives.last() {
+            Some(NestedDirective::Block) if line == "::" => {
+                nested_directives.pop();
+                body_lines.push(line);
+                continue;
+            }
+            Some(NestedDirective::Container)
+                if line == ":::" || container_directive_named_close_from_line(line).is_some() =>
+            {
+                nested_directives.pop();
+                body_lines.push(line);
+                continue;
+            }
+            _ => {}
+        }
+
+        if line == "::" && nested_directives.is_empty() {
             break;
+        }
+
+        if block_directive_opening_from_line(line, 0).is_some() {
+            nested_directives.push(NestedDirective::Block);
+        } else if container_directive_opening_from_line(line, 0).is_some() {
+            nested_directives.push(NestedDirective::Container);
         }
 
         body_lines.push(line);
@@ -100,7 +131,7 @@ where
         name: opening.name,
         label: opening.label,
         attrs: opening.attrs,
-        body: super::parse_blocks(&body_lines.join("\n"), false, 0, errors),
+        body: super::parse_blocks(&body_lines.join("\n"), false, opening.line, errors, context),
     }
 }
 
@@ -109,6 +140,7 @@ pub(crate) fn container_directive_from_lines<'a, I>(
     lines: &mut Peekable<I>,
     line_offset: usize,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Block
 where
     I: Iterator<Item = (usize, &'a str)> + Clone,
@@ -122,6 +154,7 @@ where
         line_offset,
         errors,
         Some(&opening.name),
+        context,
     );
 
     if close.is_none() {

@@ -1,10 +1,13 @@
 use crate::{Block, ParseError};
 use std::iter::Peekable;
 
+use super::ParseContext;
+
 pub(crate) fn blockquote_from_lines<'a, I>(
     first_line: &'a str,
     lines: &mut Peekable<I>,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Block
 where
     I: Iterator<Item = (usize, &'a str)>,
@@ -16,7 +19,7 @@ where
     }
 
     Block::BlockQuote {
-        content: super::parse_blocks(&content.join("\n"), false, 0, errors),
+        content: super::parse_blocks(&content.join("\n"), false, 0, errors, context),
         attrs: None,
     }
 }

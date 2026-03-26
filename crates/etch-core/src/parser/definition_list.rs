@@ -2,6 +2,7 @@ use crate::{Block, DefinitionItem, ParseError};
 use std::iter::Peekable;
 
 use super::{
+    ParseContext,
     inline::parse_inlines,
     list::{count_leading_spaces, parse_list_item_blocks, push_item_blank_lines, strip_indent},
 };
@@ -29,6 +30,7 @@ pub(crate) fn definition_list_from_lines<'a, I>(
     first_term: &'a str,
     lines: &mut Peekable<I>,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Option<Block>
 where
     I: Iterator<Item = (usize, &'a str)> + Clone,
@@ -50,7 +52,12 @@ where
             };
 
             lines.next();
-            definitions.push(definition_blocks_from_lines(first_content, lines, errors));
+            definitions.push(definition_blocks_from_lines(
+                first_content,
+                lines,
+                errors,
+                context,
+            ));
         }
 
         items.push(DefinitionItem {
@@ -76,6 +83,7 @@ fn definition_blocks_from_lines<'a, I>(
     first_content: &'a str,
     lines: &mut Peekable<I>,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Vec<Block>
 where
     I: Iterator<Item = (usize, &'a str)>,
@@ -99,7 +107,12 @@ where
         continuation_lines.push(strip_indent(line, 2));
     }
 
-    parse_list_item_blocks(first_content.trim_start(), &continuation_lines, errors)
+    parse_list_item_blocks(
+        first_content.trim_start(),
+        &continuation_lines,
+        errors,
+        context,
+    )
 }
 
 fn next_definition_term<'a, I>(lines: &Peekable<I>) -> Option<(usize, &'a str)>
@@ -130,6 +143,7 @@ mod tests {
     use super::{
         definition_list_from_lines, definition_list_starts_with, definition_opening_from_line,
     };
+    use crate::parser::ParseContext;
     use crate::{Block, DefinitionItem, Inline};
 
     #[test]
@@ -166,7 +180,7 @@ mod tests {
         let mut errors = Vec::new();
 
         assert_eq!(
-            definition_list_from_lines("Draft", &mut lines, &mut errors),
+            definition_list_from_lines("Draft", &mut lines, &mut errors, ParseContext::root()),
             Some(Block::DefinitionList {
                 items: vec![
                     DefinitionItem {
@@ -222,7 +236,7 @@ mod tests {
         let mut errors = Vec::new();
 
         assert_eq!(
-            definition_list_from_lines("Term", &mut lines, &mut errors),
+            definition_list_from_lines("Term", &mut lines, &mut errors, ParseContext::root()),
             Some(Block::DefinitionList {
                 items: vec![DefinitionItem {
                     term: vec![Inline::Text {

@@ -36,6 +36,35 @@ use self::{
     thematic_break::thematic_break_from_line,
 };
 
+#[derive(Clone, Copy)]
+pub(crate) struct ParseContext {
+    allow_nested_block_directives: bool,
+    structural_depth: usize,
+}
+
+impl ParseContext {
+    fn root() -> Self {
+        Self {
+            allow_nested_block_directives: true,
+            structural_depth: 0,
+        }
+    }
+
+    fn for_leaf_body(self) -> Self {
+        Self {
+            allow_nested_block_directives: false,
+            structural_depth: self.structural_depth,
+        }
+    }
+
+    fn for_container_body(self) -> Self {
+        Self {
+            allow_nested_block_directives: true,
+            structural_depth: self.structural_depth + 1,
+        }
+    }
+}
+
 pub fn parse(input: &str) -> ParseResult {
     let (frontmatter, input_without_frontmatter) = parse_frontmatter(input);
     let body = strip_comments(input_without_frontmatter);
@@ -54,6 +83,7 @@ pub fn parse(input: &str) -> ParseResult {
                 body_starts_at_document_start,
                 body_line_offset,
                 &mut errors,
+                ParseContext::root(),
             ),
         },
         errors,
@@ -65,6 +95,7 @@ pub(crate) fn parse_blocks(
     body_starts_at_document_start: bool,
     line_offset: usize,
     errors: &mut Vec<ParseError>,
+    context: ParseContext,
 ) -> Vec<Block> {
     let mut current = Vec::new();
     let mut lines = input.lines().enumerate().peekable();
@@ -77,6 +108,7 @@ pub(crate) fn parse_blocks(
         line_offset,
         errors,
         None,
+        context,
     )
     .0
 }
@@ -89,6 +121,7 @@ pub(crate) fn parse_blocks_from_lines<'a, I>(
     line_offset: usize,
     errors: &mut Vec<ParseError>,
     container_name: Option<&str>,
+    context: ParseContext,
 ) -> (Vec<Block>, Option<ContainerClose>)
 where
     I: Iterator<Item = (usize, &'a str)> + Clone,
@@ -136,18 +169,58 @@ where
 
         if let Some(opening) = container_directive_opening_from_line(line, line_number) {
             flush_paragraph(&mut blocks, current);
+            if !context.allow_nested_block_directives {
+                errors.push(ParseError {
+                    kind: ParseErrorKind::Error,
+                    message: format!(
+                        "Leaf directive cannot contain nested directive ':::{}'",
+                        opening.name
+                    ),
+                    line: opening.line,
+                    column: Some(1),
+                });
+            }
+            let structural_context = context.for_container_body();
+            if structural_context.structural_depth >= 4 {
+                errors.push(ParseError {
+                    kind: ParseErrorKind::Warning,
+                    message: format!(
+                        "Structural directive nesting reached {} levels at ':::{}'",
+                        structural_context.structural_depth, opening.name
+                    ),
+                    line: opening.line,
+                    column: Some(1),
+                });
+            }
             blocks.push(container_directive_from_lines(
                 opening,
                 lines,
                 line_offset,
                 errors,
+                structural_context,
             ));
             continue;
         }
 
         if let Some(opening) = block_directive_opening_from_line(line, line_number) {
             flush_paragraph(&mut blocks, current);
-            blocks.push(block_directive_from_lines(opening, lines, errors));
+            if !context.allow_nested_block_directives {
+                errors.push(ParseError {
+                    kind: ParseErrorKind::Error,
+                    message: format!(
+                        "Leaf directive cannot contain nested directive '::{}'",
+                        opening.name
+                    ),
+                    line: opening.line,
+                    column: Some(1),
+                });
+            }
+            blocks.push(block_directive_from_lines(
+                opening,
+                lines,
+                errors,
+                context.for_leaf_body(),
+            ));
             continue;
         }
 
@@ -161,7 +234,7 @@ where
         if footnote_definition_opening_from_line(line).is_some() {
             flush_paragraph(&mut blocks, current);
             blocks.push(
-                footnote_definition_from_lines(line, lines, errors)
+                footnote_definition_from_lines(line, lines, errors, context)
                     .expect("opening already validated"),
             );
             continue;
@@ -169,7 +242,7 @@ where
 
         if is_blockquote_line(line) {
             flush_paragraph(&mut blocks, current);
-            blocks.push(blockquote_from_lines(line, lines, errors));
+            blocks.push(blockquote_from_lines(line, lines, errors, context));
             continue;
         }
 
@@ -184,7 +257,7 @@ where
             list_parent_indent_for_block_start(line, allow_indented_list_starts)
         {
             flush_paragraph(&mut blocks, current);
-            blocks.push(list_from_lines(line, parent_indent, lines, errors));
+            blocks.push(list_from_lines(line, parent_indent, lines, errors, context));
             continue;
         }
 
@@ -197,7 +270,7 @@ where
         if current.is_empty() && definition_list_starts_with(line, lines) {
             flush_paragraph(&mut blocks, current);
             blocks.push(
-                definition_list_from_lines(line, lines, errors)
+                definition_list_from_lines(line, lines, errors, context)
                     .expect("definition list start already validated"),
             );
             continue;
@@ -1153,6 +1226,104 @@ mod tests {
             }]
         );
         assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_reports_block_directives_nested_inside_leaf_directives() {
+        let result = parse(
+            "::aside\nThis leaf directive starts with valid text.\n\n::spoiler\nNested.\n::\n::",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::BlockDirective {
+                name: "aside".to_string(),
+                label: None,
+                attrs: None,
+                body: vec![
+                    Block::Paragraph {
+                        content: vec![Inline::Text {
+                            value: "This leaf directive starts with valid text.".to_string(),
+                        }],
+                        attrs: None,
+                    },
+                    Block::BlockDirective {
+                        name: "spoiler".to_string(),
+                        label: None,
+                        attrs: None,
+                        body: vec![Block::Paragraph {
+                            content: vec![Inline::Text {
+                                value: "Nested.".to_string(),
+                            }],
+                            attrs: None,
+                        }],
+                    },
+                ],
+            }]
+        );
+        assert_eq!(
+            result.errors,
+            vec![ParseError {
+                kind: ParseErrorKind::Error,
+                message: "Leaf directive cannot contain nested directive '::spoiler'".to_string(),
+                line: 4,
+                column: Some(1),
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_allows_inline_directives_inside_leaf_directive_text() {
+        let result = parse("::aside\nInline :tooltip[text]{info=\"x\"} is fine.\n::");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::BlockDirective {
+                name: "aside".to_string(),
+                label: None,
+                attrs: None,
+                body: vec![Block::Paragraph {
+                    content: vec![
+                        Inline::Text {
+                            value: "Inline ".to_string(),
+                        },
+                        Inline::InlineDirective {
+                            name: "tooltip".to_string(),
+                            content: Some(vec![Inline::Text {
+                                value: "text".to_string(),
+                            }]),
+                            attrs: Some(Attributes {
+                                id: None,
+                                classes: Vec::new(),
+                                pairs: HashMap::from([("info".to_string(), "x".to_string())]),
+                            }),
+                        },
+                        Inline::Text {
+                            value: " is fine.".to_string(),
+                        },
+                    ],
+                    attrs: None,
+                }],
+            }]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_warns_when_structural_nesting_reaches_four_levels() {
+        let result = parse(
+            ":::chapter\n:::section\n:::columns\n:::column\nDeep content.\n:::/column\n:::/columns\n:::/section\n:::/chapter",
+        );
+
+        assert_eq!(
+            result.errors,
+            vec![ParseError {
+                kind: ParseErrorKind::Warning,
+                message: "Structural directive nesting reached 4 levels at ':::column'".to_string(),
+                line: 4,
+                column: Some(1),
+            }]
+        );
     }
 
     #[test]

@@ -1,0 +1,60 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "name": "aside",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The margin note uses "
+              },
+              {
+                "type": "InlineDirective",
+                "name": "tooltip",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "text"
+                  }
+                ],
+                "attrs": {
+                  "pairs": {
+                    "info": "x"
+                  }
+                }
+              },
+              {
+                "type": "Text",
+                "value": " beside "
+              },
+              {
+                "type": "InlineDirective",
+                "name": "math",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "E=mc^2"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " in the same paragraph."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
