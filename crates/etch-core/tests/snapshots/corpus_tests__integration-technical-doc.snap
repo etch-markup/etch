@@ -1,0 +1,292 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": {
+      "raw": "title: \"Token Bucket Reference\"\nauthor: \"infra-team\"\ndate: 2026-03-24\n",
+      "fields": {
+        "author": "infra-team",
+        "date": "2026-03-24",
+        "title": "Token Bucket Reference"
+      }
+    },
+    "body": [
+      {
+        "type": "Heading",
+        "level": 1,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Token Bucket API"
+          }
+        ],
+        "attrs": {
+          "id": "token-bucket",
+          "classes": [
+            "reference"
+          ]
+        }
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The refill model uses "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "r \\times t"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " tokens over time, where "
+          },
+          {
+            "type": "InlineCode",
+            "value": "r"
+          },
+          {
+            "type": "Text",
+            "value": " is the refill rate."
+          },
+          {
+            "type": "FootnoteReference",
+            "label": "rate"
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "name": "math",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "tokens(t) = \\min(capacity, tokens_0 + r t)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Heading",
+        "level": 2,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Rust Client"
+          }
+        ]
+      },
+      {
+        "type": "CodeBlock",
+        "language": "rust",
+        "content": "pub fn allow(tokens: u32, requested: u32) -> bool {\n    tokens >= requested\n}",
+        "attrs": {
+          "classes": [
+            "line-numbers"
+          ],
+          "pairs": {
+            "highlight": "3"
+          }
+        }
+      },
+      {
+        "type": "Table",
+        "headers": [
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Field"
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Required"
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Example"
+              }
+            ]
+          }
+        ],
+        "rows": [
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "capacity"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "yes"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "120"
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "refill_per_sec"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "yes"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "10"
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "burst"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "no"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "240"
+                }
+              ]
+            }
+          ]
+        ],
+        "alignments": [
+          "Left",
+          "Center",
+          "Right"
+        ]
+      },
+      {
+        "type": "DefinitionList",
+        "items": [
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Capacity"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "The maximum number of tokens the bucket can hold."
+                    }
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Burst"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "A temporary allowance above the steady-state request rate."
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "type": "FootnoteDefinition",
+        "label": "rate",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Production systems usually derive "
+              },
+              {
+                "type": "InlineCode",
+                "value": "r"
+              },
+              {
+                "type": "Text",
+                "value": " from a per-second throughput budget."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
