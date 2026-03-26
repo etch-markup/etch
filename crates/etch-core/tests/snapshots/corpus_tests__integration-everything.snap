@@ -1,0 +1,749 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 807
+expression: result
+---
+{
+  "document": {
+    "frontmatter": {
+      "raw": "title: \"Kitchen Sink\"\nauthor: \"etch-bot\"\ndate: 2026-03-24\ntags: [demo, integration, exhaustive]\nseries:\n  name: \"Spec Trials\"\n  part: 2\ndraft: true\nword_count: auto\n",
+      "fields": {
+        "author": "etch-bot",
+        "date": "2026-03-24",
+        "draft": true,
+        "series": {
+          "name": "Spec Trials",
+          "part": 2
+        },
+        "tags": [
+          "demo",
+          "integration",
+          "exhaustive"
+        ],
+        "title": "Kitchen Sink",
+        "word_count": "auto"
+      }
+    },
+    "body": [
+      {
+        "type": "Heading",
+        "level": 1,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Everything Document"
+          }
+        ],
+        "attrs": {
+          "id": "everything",
+          "classes": [
+            "wide"
+          ],
+          "pairs": {
+            "lang": "en"
+          }
+        }
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "This paragraph has "
+          },
+          {
+            "type": "Emphasis",
+            "content": [
+              {
+                "type": "Text",
+                "value": "italic"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": ", "
+          },
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Text",
+                "value": "bold"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": ", "
+          },
+          {
+            "type": "Strong",
+            "content": [
+              {
+                "type": "Emphasis",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "both"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": ", "
+          },
+          {
+            "type": "Strikethrough",
+            "content": [
+              {
+                "type": "Text",
+                "value": "strike"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": ", "
+          },
+          {
+            "type": "InlineCode",
+            "value": "code"
+          },
+          {
+            "type": "Text",
+            "value": ", x"
+          },
+          {
+            "type": "Superscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": ", H"
+          },
+          {
+            "type": "Subscript",
+            "content": [
+              {
+                "type": "Text",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": "O, "
+          },
+          {
+            "type": "Highlight",
+            "content": [
+              {
+                "type": "Text",
+                "value": "mark"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": ", "
+          },
+          {
+            "type": "Insert",
+            "content": [
+              {
+                "type": "Text",
+                "value": "insert"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": ", *literal asterisks*, a "
+          },
+          {
+            "type": "Link",
+            "url": "https://docs.etch-lang.dev/reference",
+            "content": [
+              {
+                "type": "Text",
+                "value": "reference link"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": ", a bare autolink "
+          },
+          {
+            "type": "AutoLink",
+            "url": "https://example.com,"
+          },
+          {
+            "type": "Text",
+            "value": " and a footnote."
+          },
+          {
+            "type": "FootnoteReference",
+            "label": "sink"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The field report mentions "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "name",
+            "content": [
+              {
+                "type": "Text",
+                "value": "River Cache"
+              }
+            ],
+            "attrs": {
+              "pairs": {
+                "role": "checkpoint"
+              }
+            }
+          },
+          {
+            "type": "Text",
+            "value": " and hides  inside the sentence before the list begins."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "This paragraph uses paragraph-level attributes to stand apart from the rest of the page."
+          }
+        ],
+        "attrs": {
+          "classes": [
+            "lead"
+          ]
+        }
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Image",
+            "url": "img/camp-diagram.png",
+            "alt": "Camp diagram",
+            "attrs": {
+              "classes": [
+                "rounded"
+              ],
+              "pairs": {
+                "width": "80%"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "InlineDirective",
+            "name": "pagebreak"
+          }
+        ]
+      },
+      {
+        "type": "List",
+        "ordered": false,
+        "items": [
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Unordered supplies include rope and dried fruit"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "A second bullet keeps the ordinary list syntax visible"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "List",
+        "ordered": true,
+        "items": [
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Ordered step one checks the north gate"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Ordered step two seals the ledger"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "List",
+        "ordered": false,
+        "items": [
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Task list item completed before dawn"
+                  }
+                ]
+              }
+            ],
+            "checked": true
+          },
+          {
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Task list item waiting on the weather"
+                  }
+                ]
+              }
+            ],
+            "checked": false
+          }
+        ]
+      },
+      {
+        "type": "BlockQuote",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The old bell sounded once across the yard."
+              }
+            ]
+          },
+          {
+            "type": "BlockQuote",
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "The echo answered from the empty stable."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Table",
+        "headers": [
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Item"
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "State"
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Count"
+              }
+            ]
+          }
+        ],
+        "rows": [
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Lantern"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "ready"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "3"
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "Map"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "marked"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "1"
+                }
+              ]
+            }
+          ]
+        ],
+        "alignments": [
+          "Left",
+          "Center",
+          "Right"
+        ]
+      },
+      {
+        "type": "DefinitionList",
+        "items": [
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Protocol"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "A written sequence of actions for the night watch."
+                    }
+                  ]
+                }
+              ]
+            ]
+          },
+          {
+            "term": [
+              {
+                "type": "Text",
+                "value": "Checksum"
+              }
+            ],
+            "definitions": [
+              [
+                {
+                  "type": "Paragraph",
+                  "content": [
+                    {
+                      "type": "Text",
+                      "value": "A "
+                    },
+                    {
+                      "type": "InlineCode",
+                      "value": "code"
+                    },
+                    {
+                      "type": "Text",
+                      "value": " value used to verify the copied record."
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "type": "CodeBlock",
+        "language": "rust",
+        "content": "pub fn checksum(bytes: &[u8]) -> u32 {\n    bytes.iter().fold(0, |acc, b| acc + (*b as u32))\n}",
+        "attrs": {
+          "classes": [
+            "line-numbers"
+          ],
+          "pairs": {
+            "highlight": "2"
+          }
+        }
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "North Gate Lodge"
+          },
+          {
+            "type": "HardBreak"
+          },
+          {
+            "type": "Text",
+            "value": "42 Lantern Row"
+          },
+          {
+            "type": "HardBreak"
+          },
+          {
+            "type": "Text",
+            "value": "Frost Harbor"
+          }
+        ]
+      },
+      {
+        "type": "ThematicBreak"
+      },
+      {
+        "type": "BlockDirective",
+        "name": "aside",
+        "label": [
+          {
+            "type": "Text",
+            "value": "Field note"
+          }
+        ],
+        "attrs": {
+          "classes": [
+            "highlighted"
+          ]
+        },
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "This leaf block holds "
+              },
+              {
+                "type": "InlineDirective",
+                "name": "tooltip",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "inline help"
+                  }
+                ],
+                "attrs": {
+                  "pairs": {
+                    "text": "shown on hover"
+                  }
+                }
+              },
+              {
+                "type": "Text",
+                "value": " and "
+              },
+              {
+                "type": "InlineDirective",
+                "name": "math",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "E = mc^2"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": " in flowing text."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "It also keeps blank lines inside the fenced body without ending early."
+              }
+            ]
+          },
+          {
+            "type": "List",
+            "ordered": false,
+            "items": [
+              {
+                "content": [
+                  {
+                    "type": "Paragraph",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "First aside item"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "name": "math",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ContainerDirective",
+        "name": "chapter",
+        "attrs": {
+          "pairs": {
+            "number": "3",
+            "title": "Night Watch"
+          }
+        },
+        "body": [
+          {
+            "type": "Heading",
+            "level": 2,
+            "content": [
+              {
+                "type": "Text",
+                "value": "First Bell"
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The chapter begins with a heading and a short paragraph about the frozen dock."
+              }
+            ]
+          },
+          {
+            "type": "ContainerDirective",
+            "name": "section",
+            "attrs": {
+              "pairs": {
+                "title": "Inner Yard"
+              }
+            },
+            "body": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "The section continues the report while the nested container stays open."
+                  }
+                ]
+              }
+            ],
+            "named_close": true
+          }
+        ],
+        "named_close": true
+      },
+      {
+        "type": "FootnoteDefinition",
+        "label": "sink",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The footnote closes the document with one last parser check."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
