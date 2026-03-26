@@ -1,0 +1,26 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": {
+      "raw": "title: \"Hello\"\n",
+      "fields": {
+        "title": "Hello"
+      }
+    },
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Hello, world."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
