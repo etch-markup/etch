@@ -25,7 +25,7 @@ pub(crate) fn footnote_definition_from_lines<'a, I>(
     context: ParseContext,
 ) -> Option<Block>
 where
-    I: Iterator<Item = (usize, &'a str)>,
+    I: Iterator<Item = (usize, &'a str)> + Clone,
 {
     let (label, first_content) = footnote_definition_opening_from_line(first_line)?;
     let mut continuation_lines = Vec::new();
@@ -39,6 +39,12 @@ where
         }
 
         if count_leading_spaces(line) < 2 {
+            if pending_blank_lines == 0 && is_lazy_footnote_continuation(line) {
+                lines.next();
+                continuation_lines.push(line);
+                continue;
+            }
+
             break;
         }
 
@@ -56,6 +62,26 @@ where
             context,
         ),
     })
+}
+
+fn is_lazy_footnote_continuation(line: &str) -> bool {
+    if line == "::"
+        || line == ":::"
+        || super::directive::container_directive_named_close_from_line(line).is_some()
+    {
+        return false;
+    }
+
+    super::code_block::code_block_language_from_line(line).is_none()
+        && super::directive::container_directive_opening_from_line(line, 0).is_none()
+        && super::directive::block_directive_opening_from_line(line, 0).is_none()
+        && super::heading::heading_from_line(line).is_none()
+        && footnote_definition_opening_from_line(line).is_none()
+        && !super::blockquote::is_blockquote_line(line)
+        && super::thematic_break::thematic_break_from_line(line, false).is_none()
+        && super::list::list_parent_indent_for_block_start(line, false).is_none()
+        && super::definition_list::definition_opening_from_line(line).is_none()
+        && !line.trim_start().starts_with('|')
 }
 
 #[cfg(test)]
@@ -132,6 +158,41 @@ mod tests {
             lines.next(),
             Some((4usize, "[^next]: not part of this footnote"))
         );
+        assert!(errors.is_empty());
+    }
+
+    #[test]
+    fn parses_lazy_footnote_continuation_lines() {
+        let mut lines = [(1usize, "folktale about returning wolves.")]
+            .into_iter()
+            .peekable();
+        let mut errors = Vec::new();
+
+        assert_eq!(
+            footnote_definition_from_lines(
+                "[^1]: The finding is loosely based on a Scandinavian",
+                &mut lines,
+                &mut errors,
+                ParseContext::root(),
+            ),
+            Some(Block::FootnoteDefinition {
+                label: "1".to_string(),
+                content: vec![Block::Paragraph {
+                    content: vec![
+                        Inline::Text {
+                            value: "The finding is loosely based on a Scandinavian".to_string(),
+                        },
+                        Inline::SoftBreak,
+                        Inline::Text {
+                            value: "folktale about returning wolves.".to_string(),
+                        },
+                    ],
+                    attrs: None,
+                }],
+            })
+        );
+
+        assert!(lines.next().is_none());
         assert!(errors.is_empty());
     }
 }
