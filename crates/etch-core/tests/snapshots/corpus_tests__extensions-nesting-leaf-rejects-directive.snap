@@ -41,7 +41,7 @@ expression: result
   "errors": [
     {
       "kind": "Error",
-      "message": "Leaf directive cannot contain nested directive '::spoiler'",
+      "message": "cannot nest directive inside ::aside (leaf directive) on line 6",
       "line": 6,
       "column": 1
     }

@@ -56,7 +56,7 @@ where
                 first_content,
                 lines,
                 errors,
-                context,
+                context.clone(),
             ));
         }
 

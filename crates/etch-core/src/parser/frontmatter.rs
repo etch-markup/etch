@@ -1,13 +1,13 @@
-use crate::Frontmatter;
+use crate::{Frontmatter, ParseError, ParseErrorKind};
 use std::collections::HashMap;
 
-pub(crate) fn parse_frontmatter(input: &str) -> (Option<Frontmatter>, &str) {
+pub(crate) fn parse_frontmatter(input: &str) -> (Option<Frontmatter>, &str, Vec<ParseError>) {
     let Some((first_line, rest, opener_len)) = split_first_line(input) else {
-        return (None, input);
+        return (None, input, Vec::new());
     };
 
     if first_line != "---" {
-        return (None, input);
+        return (None, input, Vec::new());
     }
 
     let mut remaining = rest;
@@ -16,20 +16,49 @@ pub(crate) fn parse_frontmatter(input: &str) -> (Option<Frontmatter>, &str) {
     while let Some((line, next_rest, line_len)) = split_first_line(remaining) {
         if line == "---" {
             let raw = input[opener_len..line_start].to_string();
-            let fields = if raw.is_empty() {
-                HashMap::new()
+            let (fields, errors) = if raw.is_empty() {
+                (HashMap::new(), Vec::new())
             } else {
-                serde_yaml::from_str::<HashMap<String, serde_yaml::Value>>(&raw).unwrap_or_default()
+                match serde_yaml::from_str::<HashMap<String, serde_yaml::Value>>(&raw) {
+                    Ok(fields) => (fields, Vec::new()),
+                    Err(error) => {
+                        let relative_line = error
+                            .location()
+                            .map(|location| location.line())
+                            .unwrap_or(1);
+                        let line = relative_line + 1;
+                        let column = error.location().map(|location| location.column());
+                        let summary = error
+                            .to_string()
+                            .replace('\n', " ")
+                            .split_once(" at line ")
+                            .map(|(message, _)| message.to_string())
+                            .unwrap_or_else(|| error.to_string());
+
+                        (
+                            HashMap::new(),
+                            vec![ParseError {
+                                kind: ParseErrorKind::Error,
+                                message: format!(
+                                    "invalid frontmatter YAML: {} on line {}",
+                                    summary, line
+                                ),
+                                line,
+                                column,
+                            }],
+                        )
+                    }
+                }
             };
 
-            return (Some(Frontmatter { raw, fields }), next_rest);
+            return (Some(Frontmatter { raw, fields }), next_rest, errors);
         }
 
         line_start += line_len;
         remaining = next_rest;
     }
 
-    (None, input)
+    (None, input, Vec::new())
 }
 
 pub(crate) fn split_first_line(input: &str) -> Option<(&str, &str, usize)> {

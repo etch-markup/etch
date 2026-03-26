@@ -96,6 +96,7 @@ where
 {
     let mut body_lines = Vec::new();
     let mut nested_directives = Vec::new();
+    let mut closed = false;
 
     while let Some((_, line)) = lines.next() {
         match nested_directives.last() {
@@ -115,6 +116,7 @@ where
         }
 
         if line == "::" && nested_directives.is_empty() {
+            closed = true;
             break;
         }
 
@@ -125,6 +127,18 @@ where
         }
 
         body_lines.push(line);
+    }
+
+    if !closed {
+        errors.push(ParseError {
+            kind: ParseErrorKind::Error,
+            message: format!(
+                "unclosed ::{} started on line {}",
+                opening.name, opening.line
+            ),
+            line: opening.line,
+            column: Some(1),
+        });
     }
 
     Block::BlockDirective {
@@ -160,7 +174,10 @@ where
     if close.is_none() {
         errors.push(ParseError {
             kind: ParseErrorKind::Error,
-            message: format!("Unclosed container directive ':::{}'", opening.name),
+            message: format!(
+                "unclosed :::{} started on line {}",
+                opening.name, opening.line
+            ),
             line: opening.line,
             column: Some(1),
         });

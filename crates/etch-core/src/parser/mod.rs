@@ -36,9 +36,10 @@ use self::{
     thematic_break::thematic_break_from_line,
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub(crate) struct ParseContext {
     allow_nested_block_directives: bool,
+    enclosing_leaf_directive: Option<String>,
     structural_depth: usize,
 }
 
@@ -46,13 +47,15 @@ impl ParseContext {
     fn root() -> Self {
         Self {
             allow_nested_block_directives: true,
+            enclosing_leaf_directive: None,
             structural_depth: 0,
         }
     }
 
-    fn for_leaf_body(self) -> Self {
+    fn for_leaf_body(self, directive_name: &str) -> Self {
         Self {
             allow_nested_block_directives: false,
+            enclosing_leaf_directive: Some(format!("::{}", directive_name)),
             structural_depth: self.structural_depth,
         }
     }
@@ -60,20 +63,20 @@ impl ParseContext {
     fn for_container_body(self) -> Self {
         Self {
             allow_nested_block_directives: true,
+            enclosing_leaf_directive: None,
             structural_depth: self.structural_depth + 1,
         }
     }
 }
 
 pub fn parse(input: &str) -> ParseResult {
-    let (frontmatter, input_without_frontmatter) = parse_frontmatter(input);
+    let (frontmatter, input_without_frontmatter, mut errors) = parse_frontmatter(input);
     let body = strip_comments(input_without_frontmatter);
     let body_starts_at_document_start = frontmatter.is_none();
     let body_line_offset = input[..input.len() - input_without_frontmatter.len()]
         .bytes()
         .filter(|byte| *byte == b'\n')
         .count();
-    let mut errors = Vec::new();
 
     ParseResult {
         document: Document {
@@ -144,8 +147,8 @@ where
                     errors.push(ParseError {
                         kind: ParseErrorKind::Error,
                         message: format!(
-                            "Mismatched container close: expected ':::/{}', found ':::/{}'",
-                            expected_container_name, close_name
+                            "expected :::/{}, got :::/{} on line {}",
+                            expected_container_name, close_name, line_number
                         ),
                         line: line_number,
                         column: Some(1),
@@ -170,17 +173,21 @@ where
         if let Some(opening) = container_directive_opening_from_line(line, line_number) {
             flush_paragraph(&mut blocks, current);
             if !context.allow_nested_block_directives {
+                let enclosing_leaf_directive = context
+                    .enclosing_leaf_directive
+                    .as_deref()
+                    .unwrap_or("leaf directive");
                 errors.push(ParseError {
                     kind: ParseErrorKind::Error,
                     message: format!(
-                        "Leaf directive cannot contain nested directive ':::{}'",
-                        opening.name
+                        "cannot nest directive inside {} (leaf directive) on line {}",
+                        enclosing_leaf_directive, opening.line
                     ),
                     line: opening.line,
                     column: Some(1),
                 });
             }
-            let structural_context = context.for_container_body();
+            let structural_context = context.clone().for_container_body();
             if structural_context.structural_depth >= 4 {
                 errors.push(ParseError {
                     kind: ParseErrorKind::Warning,
@@ -205,21 +212,26 @@ where
         if let Some(opening) = block_directive_opening_from_line(line, line_number) {
             flush_paragraph(&mut blocks, current);
             if !context.allow_nested_block_directives {
+                let enclosing_leaf_directive = context
+                    .enclosing_leaf_directive
+                    .as_deref()
+                    .unwrap_or("leaf directive");
                 errors.push(ParseError {
                     kind: ParseErrorKind::Error,
                     message: format!(
-                        "Leaf directive cannot contain nested directive '::{}'",
-                        opening.name
+                        "cannot nest directive inside {} (leaf directive) on line {}",
+                        enclosing_leaf_directive, opening.line
                     ),
                     line: opening.line,
                     column: Some(1),
                 });
             }
+            let leaf_context = context.clone().for_leaf_body(&opening.name);
             blocks.push(block_directive_from_lines(
                 opening,
                 lines,
                 errors,
-                context.for_leaf_body(),
+                leaf_context,
             ));
             continue;
         }
@@ -234,7 +246,7 @@ where
         if footnote_definition_opening_from_line(line).is_some() {
             flush_paragraph(&mut blocks, current);
             blocks.push(
-                footnote_definition_from_lines(line, lines, errors, context)
+                footnote_definition_from_lines(line, lines, errors, context.clone())
                     .expect("opening already validated"),
             );
             continue;
@@ -242,7 +254,7 @@ where
 
         if is_blockquote_line(line) {
             flush_paragraph(&mut blocks, current);
-            blocks.push(blockquote_from_lines(line, lines, errors, context));
+            blocks.push(blockquote_from_lines(line, lines, errors, context.clone()));
             continue;
         }
 
@@ -257,7 +269,13 @@ where
             list_parent_indent_for_block_start(line, allow_indented_list_starts)
         {
             flush_paragraph(&mut blocks, current);
-            blocks.push(list_from_lines(line, parent_indent, lines, errors, context));
+            blocks.push(list_from_lines(
+                line,
+                parent_indent,
+                lines,
+                errors,
+                context.clone(),
+            ));
             continue;
         }
 
@@ -270,7 +288,7 @@ where
         if current.is_empty() && definition_list_starts_with(line, lines) {
             flush_paragraph(&mut blocks, current);
             blocks.push(
-                definition_list_from_lines(line, lines, errors, context)
+                definition_list_from_lines(line, lines, errors, context.clone())
                     .expect("definition list start already validated"),
             );
             continue;
@@ -426,6 +444,29 @@ mod tests {
             Some(&Value::Mapping(expected_series))
         );
         assert_eq!(frontmatter.fields.get("draft"), Some(&Value::Bool(true)));
+    }
+
+    #[test]
+    fn parse_reports_invalid_frontmatter_yaml_with_the_document_line_number() {
+        let result = parse("---\ntitle: \"Lantern\"\ninvalid: [\n---\n\nBody");
+
+        assert_eq!(
+            result.errors,
+            vec![ParseError {
+                kind: ParseErrorKind::Error,
+                message: "invalid frontmatter YAML: did not find expected node content on line 4"
+                    .to_string(),
+                line: 4,
+                column: Some(1),
+            }]
+        );
+        assert_eq!(
+            result.document.frontmatter,
+            Some(crate::Frontmatter {
+                raw: "title: \"Lantern\"\ninvalid: [\n".to_string(),
+                fields: HashMap::new(),
+            })
+        );
     }
 
     #[test]
@@ -1265,8 +1306,24 @@ mod tests {
             result.errors,
             vec![ParseError {
                 kind: ParseErrorKind::Error,
-                message: "Leaf directive cannot contain nested directive '::spoiler'".to_string(),
+                message: "cannot nest directive inside ::aside (leaf directive) on line 4"
+                    .to_string(),
                 line: 4,
+                column: Some(1),
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_reports_unclosed_block_directives_with_the_opening_line_number() {
+        let result = parse("::aside\nBody");
+
+        assert_eq!(
+            result.errors,
+            vec![ParseError {
+                kind: ParseErrorKind::Error,
+                message: "unclosed ::aside started on line 1".to_string(),
+                line: 1,
                 column: Some(1),
             }]
         );
@@ -1349,9 +1406,23 @@ mod tests {
             result.errors,
             vec![ParseError {
                 kind: ParseErrorKind::Error,
-                message: "Mismatched container close: expected ':::/chapter', found ':::/section'"
-                    .to_string(),
+                message: "expected :::/chapter, got :::/section on line 3".to_string(),
                 line: 3,
+                column: Some(1),
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_reports_unclosed_container_directives_with_the_opening_line_number() {
+        let result = parse(":::chapter\nBody");
+
+        assert_eq!(
+            result.errors,
+            vec![ParseError {
+                kind: ParseErrorKind::Error,
+                message: "unclosed :::chapter started on line 1".to_string(),
+                line: 1,
                 column: Some(1),
             }]
         );

@@ -43,7 +43,7 @@ where
             marker,
             lines,
             errors,
-            context,
+            context.clone(),
         ));
     }
 

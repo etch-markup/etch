@@ -32,7 +32,7 @@ expression: result
   "errors": [
     {
       "kind": "Error",
-      "message": "Mismatched container close: expected ':::/chapter', found ':::/section'",
+      "message": "expected :::/chapter, got :::/section on line 5",
       "line": 5,
       "column": 1
     }
