@@ -1,0 +1,112 @@
+{
+  "comments": {
+    "lineComment": "{~ ",
+    "blockComment": [
+      "{~ ",
+      " ~}"
+    ]
+  },
+  "brackets": [
+    [
+      "[",
+      "]"
+    ],
+    [
+      "{",
+      "}"
+    ],
+    [
+      "(",
+      ")"
+    ]
+  ],
+  "autoClosingPairs": [
+    {
+      "open": "*",
+      "close": "*",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "**",
+      "close": "**",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "~~",
+      "close": "~~",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "^",
+      "close": "^",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "==",
+      "close": "==",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "++",
+      "close": "++",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "`",
+      "close": "`",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "[",
+      "close": "]",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "{",
+      "close": "}",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "(",
+      "close": ")",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    }
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*(?:::([A-Za-z][A-Za-z-]*)(?=$|\\[|\\{)|::([A-Za-z][A-Za-z-]*)(?=$|\\[|\\{)).*$",
+      "end": "^\\s*(?:::|:::/[A-Za-z][A-Za-z-]*|::)\\s*$"
+    }
+  },
+  "wordPattern": ":?[A-Za-z][A-Za-z-]*|\\d+(?:\\.\\d+)?"
+}
