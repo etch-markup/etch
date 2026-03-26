@@ -13,7 +13,7 @@ pub(crate) fn heading_from_line(line: &str) -> Option<Block> {
         return None;
     }
 
-    let content = &line[hash_count + 1..];
+    let content = line[hash_count + 1..].trim_end();
     let (content, attrs) = match split_trailing_block_attributes(content) {
         Some((content_without_attrs, attrs)) => (content_without_attrs, Some(attrs)),
         None => (content, None),

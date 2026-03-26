@@ -12,7 +12,7 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "My Title "
+            "value": "My Title"
           }
         ]
       }

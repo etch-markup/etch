@@ -900,6 +900,80 @@ mod tests {
     }
 
     #[test]
+    fn parse_strips_comments_from_headings_without_leaving_trailing_whitespace() {
+        let result = parse("# My Title {~ draft version ~}");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Heading {
+                level: 1,
+                content: vec![Inline::Text {
+                    value: "My Title".to_string(),
+                }],
+                attrs: None,
+            }]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_keeps_comments_adjacent_to_attributes_from_breaking_heading_attributes() {
+        let result = parse("# Title {~ note to self ~}{#my-id}");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Heading {
+                level: 1,
+                content: vec![Inline::Text {
+                    value: "Title".to_string(),
+                }],
+                attrs: Some(Attributes {
+                    id: Some("my-id".to_string()),
+                    classes: Vec::new(),
+                    pairs: HashMap::new(),
+                }),
+            }]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
+    fn parse_does_not_confuse_subscript_tildes_with_comment_closers() {
+        let result = parse(
+            "Water is H~2~O in the field notes {~ chemistry reminder ~} and the stove emits CO~2~.",
+        );
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Paragraph {
+                content: vec![
+                    Inline::Text {
+                        value: "Water is H".to_string(),
+                    },
+                    Inline::Subscript {
+                        content: vec![Inline::Text {
+                            value: "2".to_string(),
+                        }],
+                    },
+                    Inline::Text {
+                        value: "O in the field notes  and the stove emits CO".to_string(),
+                    },
+                    Inline::Subscript {
+                        content: vec![Inline::Text {
+                            value: "2".to_string(),
+                        }],
+                    },
+                    Inline::Text {
+                        value: ".".to_string(),
+                    },
+                ],
+                attrs: None,
+            }]
+        );
+        assert!(result.errors.is_empty());
+    }
+
+    #[test]
     fn parse_detects_basic_block_directives_before_paragraph_fallback() {
         let result = parse("::aside\nInside the aside.\n::");
 
