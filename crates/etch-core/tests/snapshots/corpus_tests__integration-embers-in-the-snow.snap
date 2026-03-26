@@ -1,0 +1,348 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": {
+      "raw": "title: \"Embers in the Snow\"\nauthor: \"foxwriter42\"\ndate: 2026-03-20\ntags: [drama, winter, shortform]\nrating: general\n",
+      "fields": {
+        "author": "foxwriter42",
+        "date": "2026-03-20",
+        "rating": "general",
+        "tags": [
+          "drama",
+          "winter",
+          "shortform"
+        ],
+        "title": "Embers in the Snow"
+      }
+    },
+    "body": [
+      {
+        "type": "Heading",
+        "level": 1,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Embers in the Snow"
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "name": "dedication",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "For everyone who stayed up too late reading under the covers."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "name": "content-warning",
+        "attrs": {
+          "pairs": {
+            "level": "mild",
+            "tags": "melancholy"
+          }
+        },
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Themes of nostalgia and gentle sadness."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ContainerDirective",
+        "name": "chapter",
+        "attrs": {
+          "pairs": {
+            "number": "1",
+            "title": "The First Snow"
+          }
+        },
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The village woke to silence. Not the silence of sleep,"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "but the silence of snow — heavy, patient, "
+              },
+              {
+                "type": "Highlight",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "absolute"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": "."
+              }
+            ]
+          },
+          {
+            "type": "BlockDirective",
+            "name": "aside",
+            "body": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "The author grew up in a town like this one."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "InlineDirective",
+                "name": "character",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "Mira"
+                  }
+                ],
+                "attrs": {
+                  "pairs": {
+                    "species": "wolf"
+                  }
+                }
+              },
+              {
+                "type": "Text",
+                "value": " stepped onto the porch,"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "breath curling like smoke. She held a letter — creased"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "from folding and refolding — and read it one last time."
+              }
+            ]
+          },
+          {
+            "type": "BlockQuote",
+            "content": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Emphasis",
+                    "content": [
+                      {
+                        "type": "Text",
+                        "value": "\"I'll come back when the embers remember how to burn.\""
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "— Kael's last letter"
+                  }
+                ],
+                "attrs": {
+                  "classes": [
+                    "attribution"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "She tucked it into her coat and walked into the white."
+              }
+            ]
+          }
+        ],
+        "named_close": true
+      },
+      {
+        "type": "ThematicBreak"
+      },
+      {
+        "type": "ContainerDirective",
+        "name": "chapter",
+        "attrs": {
+          "pairs": {
+            "number": "2",
+            "title": "The Finding"
+          }
+        },
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Three days later, she found what she was looking for."
+              },
+              {
+                "type": "FootnoteReference",
+                "label": "1"
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Not Kael — not exactly. But the place where he'd been,"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "marked by a ring of stones and the ash of a fire"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "that might have been warm "
+              },
+              {
+                "type": "Highlight",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "yesterday"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": "."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The area measured roughly "
+              },
+              {
+                "type": "InlineDirective",
+                "name": "math",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "3\\text{m} \\times 3\\text{m}"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": ","
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "with the stones arranged in a precise circle."
+              }
+            ]
+          },
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Her address was simple:"
+              },
+              {
+                "type": "HardBreak"
+              },
+              {
+                "type": "Text",
+                "value": "42 Northwind Road"
+              },
+              {
+                "type": "HardBreak"
+              },
+              {
+                "type": "Text",
+                "value": "The Village at the Edge"
+              }
+            ]
+          }
+        ],
+        "named_close": true
+      },
+      {
+        "type": "FootnoteDefinition",
+        "label": "1",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The finding is loosely based on a Scandinavian"
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "folktale about returning wolves."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}
