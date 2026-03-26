@@ -8,6 +8,6 @@ name = "etch"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4.6.0", features = ["derive"] }
 etch-core = { path = "../etch-core" }
-serde_json = "1"
+serde_json = "1.0.149"

@@ -2,5 +2,6 @@
 members = [
     "crates/etch-core",
     "crates/etch-cli",
+    "crates/etch-wasm",
 ]
 resolver = "3"
