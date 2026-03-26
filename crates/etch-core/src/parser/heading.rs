@@ -1,6 +1,6 @@
 use crate::Block;
 
-use super::inline::parse_inlines;
+use super::{attributes::split_trailing_block_attributes, inline::parse_inlines};
 
 pub(crate) fn heading_from_line(line: &str) -> Option<Block> {
     let hash_count = line.chars().take_while(|ch| *ch == '#').count();
@@ -13,9 +13,15 @@ pub(crate) fn heading_from_line(line: &str) -> Option<Block> {
         return None;
     }
 
+    let content = &line[hash_count + 1..];
+    let (content, attrs) = match split_trailing_block_attributes(content) {
+        Some((content_without_attrs, attrs)) => (content_without_attrs, Some(attrs)),
+        None => (content, None),
+    };
+
     Some(Block::Heading {
         level: hash_count as u8,
-        content: parse_inlines(&line[hash_count + 1..]),
-        attrs: None,
+        content: parse_inlines(content),
+        attrs,
     })
 }

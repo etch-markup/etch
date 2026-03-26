@@ -1,0 +1,81 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Table",
+        "headers": [
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Stop"
+              }
+            ]
+          },
+          {
+            "content": [
+              {
+                "type": "Text",
+                "value": "Time"
+              }
+            ]
+          }
+        ],
+        "rows": [
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "North Gate"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "08:15"
+                }
+              ]
+            }
+          ],
+          [
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "River Dock"
+                }
+              ]
+            },
+            {
+              "content": [
+                {
+                  "type": "Text",
+                  "value": "09:40"
+                }
+              ]
+            }
+          ]
+        ],
+        "alignments": [
+          "None",
+          "None"
+        ],
+        "attrs": {
+          "classes": [
+            "striped",
+            "compact"
+          ]
+        }
+      }
+    ]
+  },
+  "errors": []
+}

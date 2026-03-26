@@ -23,11 +23,13 @@ where
         rows.push(row);
     }
 
+    let attrs = super::attributes::take_attribute_only_line(lines);
+
     Some(Block::Table {
         headers,
         rows,
         alignments,
-        attrs: None,
+        attrs,
     })
 }
 

@@ -428,6 +428,29 @@ mod tests {
     }
 
     #[test]
+    fn parse_attaches_attributes_to_headings() {
+        let mut expected_pairs = HashMap::new();
+        expected_pairs.insert("lang".to_string(), "en".to_string());
+
+        let result = parse("# Heading {#title .hero lang=en}");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Heading {
+                level: 1,
+                content: vec![Inline::Text {
+                    value: "Heading".to_string(),
+                }],
+                attrs: Some(Attributes {
+                    id: Some("title".to_string()),
+                    classes: vec!["hero".to_string()],
+                    pairs: expected_pairs,
+                }),
+            }]
+        );
+    }
+
+    #[test]
     fn parse_detects_thematic_breaks_before_paragraph_fallback() {
         let result = parse("before\n\n---\n\nafter");
 
@@ -480,6 +503,27 @@ mod tests {
     }
 
     #[test]
+    fn parse_attaches_attributes_to_fenced_code_blocks_from_the_following_line() {
+        let mut expected_pairs = HashMap::new();
+        expected_pairs.insert("highlight".to_string(), "3".to_string());
+
+        let result = parse("```rust\nfn main() {}\n```\n{.line-numbers highlight=3}");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::CodeBlock {
+                language: Some("rust".to_string()),
+                content: "fn main() {}".to_string(),
+                attrs: Some(Attributes {
+                    id: None,
+                    classes: vec!["line-numbers".to_string()],
+                    pairs: expected_pairs,
+                }),
+            }]
+        );
+    }
+
+    #[test]
     fn parse_detects_blockquotes_before_paragraph_fallback() {
         let result = parse("> quoted\n\noutside");
 
@@ -502,6 +546,34 @@ mod tests {
                     attrs: None,
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn parse_attaches_attributes_to_paragraphs_inside_blockquotes() {
+        let result = parse("> quoted line\n> — Author {.attribution}");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::BlockQuote {
+                content: vec![Block::Paragraph {
+                    content: vec![
+                        Inline::Text {
+                            value: "quoted line".to_string(),
+                        },
+                        Inline::SoftBreak,
+                        Inline::Text {
+                            value: "— Author".to_string(),
+                        },
+                    ],
+                    attrs: Some(Attributes {
+                        id: None,
+                        classes: vec!["attribution".to_string()],
+                        pairs: HashMap::new(),
+                    }),
+                }],
+                attrs: None,
+            }]
         );
     }
 
@@ -572,6 +644,47 @@ mod tests {
                 }],
                 attrs: None,
             }]
+        );
+    }
+
+    #[test]
+    fn parse_attaches_attributes_to_paragraphs_without_stealing_inline_image_attributes() {
+        let result = parse(
+            "Reference card {#my-id .class1 .class2 key=value key2=\"quoted value with spaces\"}\n\n![Trail marker](photo.jpg){width=80% .rounded}",
+        );
+        let mut paragraph_pairs = HashMap::new();
+        paragraph_pairs.insert("key".to_string(), "value".to_string());
+        paragraph_pairs.insert("key2".to_string(), "quoted value with spaces".to_string());
+        let mut image_pairs = HashMap::new();
+        image_pairs.insert("width".to_string(), "80%".to_string());
+
+        assert_eq!(
+            result.document.body,
+            vec![
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Reference card".to_string(),
+                    }],
+                    attrs: Some(Attributes {
+                        id: Some("my-id".to_string()),
+                        classes: vec!["class1".to_string(), "class2".to_string()],
+                        pairs: paragraph_pairs,
+                    }),
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Image {
+                        url: "photo.jpg".to_string(),
+                        alt: "Trail marker".to_string(),
+                        title: None,
+                        attrs: Some(Attributes {
+                            id: None,
+                            classes: vec!["rounded".to_string()],
+                            pairs: image_pairs,
+                        }),
+                    }],
+                    attrs: None,
+                },
+            ]
         );
     }
 
@@ -1059,6 +1172,48 @@ mod tests {
                     },
                 ],
                 attrs: None,
+            }]
+        );
+    }
+
+    #[test]
+    fn parse_attaches_attributes_to_tables_from_the_following_line() {
+        let result =
+            parse("| Stop | Time |\n| --- | --- |\n| North Gate | 08:15 |\n{.striped .compact}");
+
+        assert_eq!(
+            result.document.body,
+            vec![Block::Table {
+                headers: vec![
+                    crate::TableCell {
+                        content: vec![Inline::Text {
+                            value: "Stop".to_string(),
+                        }],
+                    },
+                    crate::TableCell {
+                        content: vec![Inline::Text {
+                            value: "Time".to_string(),
+                        }],
+                    },
+                ],
+                rows: vec![vec![
+                    crate::TableCell {
+                        content: vec![Inline::Text {
+                            value: "North Gate".to_string(),
+                        }],
+                    },
+                    crate::TableCell {
+                        content: vec![Inline::Text {
+                            value: "08:15".to_string(),
+                        }],
+                    },
+                ]],
+                alignments: vec![crate::Alignment::None, crate::Alignment::None],
+                attrs: Some(Attributes {
+                    id: None,
+                    classes: vec!["striped".to_string(), "compact".to_string()],
+                    pairs: HashMap::new(),
+                }),
             }]
         );
     }

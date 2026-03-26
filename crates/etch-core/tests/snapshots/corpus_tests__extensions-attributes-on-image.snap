@@ -1,0 +1,30 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Image",
+            "url": "photo.jpg",
+            "alt": "Trail marker",
+            "attrs": {
+              "classes": [
+                "rounded"
+              ],
+              "pairs": {
+                "width": "80%"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

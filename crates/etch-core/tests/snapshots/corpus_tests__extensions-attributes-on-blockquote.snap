@@ -1,0 +1,38 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockQuote",
+        "content": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The harbor remembers every winter storm."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "— Elias North"
+              }
+            ],
+            "attrs": {
+              "classes": [
+                "attribution"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

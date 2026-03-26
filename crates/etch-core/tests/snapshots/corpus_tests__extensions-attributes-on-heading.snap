@@ -18,6 +18,24 @@ expression: result
         "attrs": {
           "id": "my-id"
         }
+      },
+      {
+        "type": "Heading",
+        "level": 2,
+        "content": [
+          {
+            "type": "Text",
+            "value": "Subtitle"
+          }
+        ],
+        "attrs": {
+          "classes": [
+            "special-class"
+          ],
+          "pairs": {
+            "lang": "en"
+          }
+        }
       }
     ]
   },

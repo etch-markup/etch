@@ -1,0 +1,25 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "CodeBlock",
+        "language": "rust",
+        "content": "fn main() {\n    println!(\"Etch\");\n}",
+        "attrs": {
+          "classes": [
+            "line-numbers"
+          ],
+          "pairs": {
+            "highlight": "3"
+          }
+        }
+      }
+    ]
+  },
+  "errors": []
+}

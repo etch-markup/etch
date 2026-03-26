@@ -7,16 +7,23 @@ expression: result
     "frontmatter": null,
     "body": [
       {
-        "type": "Heading",
-        "level": 1,
+        "type": "Paragraph",
         "content": [
           {
             "type": "Text",
-            "value": "Title"
+            "value": "Reference card"
           }
         ],
         "attrs": {
-          "id": "my-id"
+          "id": "my-id",
+          "classes": [
+            "class1",
+            "class2"
+          ],
+          "pairs": {
+            "key": "value",
+            "key2": "quoted value with spaces"
+          }
         }
       }
     ]

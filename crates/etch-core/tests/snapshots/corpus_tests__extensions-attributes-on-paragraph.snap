@@ -7,16 +7,17 @@ expression: result
     "frontmatter": null,
     "body": [
       {
-        "type": "Heading",
-        "level": 1,
+        "type": "Paragraph",
         "content": [
           {
             "type": "Text",
-            "value": "Title"
+            "value": "A centered announcement for the station platform."
           }
         ],
         "attrs": {
-          "id": "my-id"
+          "classes": [
+            "centered"
+          ]
         }
       }
     ]

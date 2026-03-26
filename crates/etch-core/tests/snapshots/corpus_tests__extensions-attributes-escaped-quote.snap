@@ -7,16 +7,17 @@ expression: result
     "frontmatter": null,
     "body": [
       {
-        "type": "Heading",
-        "level": 1,
+        "type": "Paragraph",
         "content": [
           {
             "type": "Text",
-            "value": "Title"
+            "value": "Quoted label"
           }
         ],
         "attrs": {
-          "id": "my-id"
+          "pairs": {
+            "key": "value with \"escaped quotes\" inside"
+          }
         }
       }
     ]
