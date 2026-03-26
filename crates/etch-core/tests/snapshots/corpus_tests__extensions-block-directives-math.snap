@@ -11,7 +11,21 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "The familiar equation :math[E = mc^2] appears before the display form."
+            "value": "The familiar equation "
+          },
+          {
+            "type": "InlineDirective",
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "E = mc^2"
+              }
+            ]
+          },
+          {
+            "type": "Text",
+            "value": " appears before the display form."
           }
         ]
       },
