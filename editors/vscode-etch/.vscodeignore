@@ -1,0 +1,12 @@
+src/**
+src/test/**
+.vscode/**
+.vscode-test.*
+tsconfig.json
+.vscodeignore
+.gitignore
+scripts/**
+pnpm-lock.yaml
+**/*.map
+**/*.tsbuildinfo
+out/test/**

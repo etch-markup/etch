@@ -1,0 +1,99 @@
+{
+  "name": "etch-language",
+  "displayName": "Etch",
+  "description": "Syntax highlighting and live preview for the Etch markup language",
+  "publisher": "etch-markup",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/etch-markup/etch.git"
+  },
+  "type": "module",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:etch"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "compile": "tsc -p ./ && node ./scripts/postbuild.mjs",
+    "watch": "tsc -w -p ./",
+    "package": "vsce package --no-dependencies",
+    "publish:vsce": "vsce publish --no-dependencies",
+    "vscode:prepublish": "pnpm run compile",
+    "pretest": "pnpm run compile",
+    "test": "vscode-test",
+    "test:integration": "node ./out/test/runTest.cjs"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "etch",
+        "extensions": [
+          ".etch"
+        ],
+        "aliases": [
+          "Etch",
+          "etch"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "etch",
+        "scopeName": "source.etch",
+        "path": "./syntaxes/etch.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "etch.openPreview",
+        "title": "Etch: Open Preview",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "etch.openPreviewToSide",
+        "title": "Etch: Open Preview to the Side",
+        "icon": "$(open-preview)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "etch.openPreview",
+        "key": "ctrl+shift+v",
+        "when": "editorLangId == etch && editorTextFocus"
+      },
+      {
+        "command": "etch.openPreviewToSide",
+        "key": "ctrl+k v",
+        "when": "editorLangId == etch && editorTextFocus"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "etch.openPreviewToSide",
+          "when": "resourceLangId == etch",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.5.2",
+    "@types/vscode": "^1.96.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.3.2",
+    "glob": "^11.0.3",
+    "mocha": "^11.7.2",
+    "typescript": "^5.8.2"
+  }
+}
