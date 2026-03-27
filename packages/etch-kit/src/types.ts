@@ -1,0 +1,246 @@
+export type FrontmatterValue =
+  | string
+  | number
+  | boolean
+  | null
+  | FrontmatterValue[]
+  | Map<string, FrontmatterValue>;
+
+export interface Frontmatter {
+  raw: string;
+  fields: Map<string, FrontmatterValue>;
+}
+
+export interface Attributes {
+  id?: string;
+  classes?: string[];
+  pairs?: Map<string, string>;
+}
+
+export interface TableCell {
+  content: Inline[];
+}
+
+export type Alignment = 'None' | 'Left' | 'Center' | 'Right';
+
+export interface ListItem {
+  content: Block[];
+  checked?: boolean;
+}
+
+export interface DefinitionItem {
+  term: Inline[];
+  definitions: Block[][];
+}
+
+export interface Document {
+  frontmatter?: Frontmatter;
+  body: Block[];
+}
+
+export interface ParagraphBlock {
+  type: 'Paragraph';
+  content: Inline[];
+  attrs?: Attributes;
+}
+
+export interface HeadingBlock {
+  type: 'Heading';
+  level: number;
+  content: Inline[];
+  attrs?: Attributes;
+}
+
+export interface CodeBlock {
+  type: 'CodeBlock';
+  language?: string;
+  content: string;
+  attrs?: Attributes;
+}
+
+export interface BlockQuote {
+  type: 'BlockQuote';
+  content: Block[];
+  attrs?: Attributes;
+}
+
+export interface ListBlock {
+  type: 'List';
+  ordered: boolean;
+  items: ListItem[];
+  attrs?: Attributes;
+}
+
+export interface TableBlock {
+  type: 'Table';
+  headers: TableCell[];
+  rows: TableCell[][];
+  alignments: Alignment[];
+  attrs?: Attributes;
+}
+
+export interface ThematicBreak {
+  type: 'ThematicBreak';
+}
+
+export interface BlockDirective {
+  type: 'BlockDirective';
+  name: string;
+  label?: Inline[];
+  attrs?: Attributes;
+  body: Block[];
+}
+
+export interface ContainerDirective {
+  type: 'ContainerDirective';
+  name: string;
+  label?: Inline[];
+  attrs?: Attributes;
+  body: Block[];
+  named_close: boolean;
+}
+
+export interface FootnoteDefinition {
+  type: 'FootnoteDefinition';
+  label: string;
+  content: Block[];
+}
+
+export interface DefinitionList {
+  type: 'DefinitionList';
+  items: DefinitionItem[];
+  attrs?: Attributes;
+}
+
+export type Block =
+  | ParagraphBlock
+  | HeadingBlock
+  | CodeBlock
+  | BlockQuote
+  | ListBlock
+  | TableBlock
+  | ThematicBreak
+  | BlockDirective
+  | ContainerDirective
+  | FootnoteDefinition
+  | DefinitionList;
+
+export interface TextInline {
+  type: 'Text';
+  value: string;
+}
+
+export interface Emphasis {
+  type: 'Emphasis';
+  content: Inline[];
+}
+
+export interface Strong {
+  type: 'Strong';
+  content: Inline[];
+}
+
+export interface Strikethrough {
+  type: 'Strikethrough';
+  content: Inline[];
+}
+
+export interface InlineCode {
+  type: 'InlineCode';
+  value: string;
+}
+
+export interface Superscript {
+  type: 'Superscript';
+  content: Inline[];
+}
+
+export interface Subscript {
+  type: 'Subscript';
+  content: Inline[];
+}
+
+export interface Highlight {
+  type: 'Highlight';
+  content: Inline[];
+}
+
+export interface Insert {
+  type: 'Insert';
+  content: Inline[];
+}
+
+export interface Link {
+  type: 'Link';
+  url: string;
+  title?: string;
+  content: Inline[];
+  attrs?: Attributes;
+}
+
+export interface Image {
+  type: 'Image';
+  url: string;
+  alt: string;
+  title?: string;
+  attrs?: Attributes;
+}
+
+export interface AutoLink {
+  type: 'AutoLink';
+  url: string;
+}
+
+export interface InlineDirective {
+  type: 'InlineDirective';
+  name: string;
+  content?: Inline[];
+  attrs?: Attributes;
+}
+
+export interface FootnoteReference {
+  type: 'FootnoteReference';
+  label: string;
+}
+
+export interface SoftBreak {
+  type: 'SoftBreak';
+}
+
+export interface HardBreak {
+  type: 'HardBreak';
+}
+
+export type Inline =
+  | TextInline
+  | Emphasis
+  | Strong
+  | Strikethrough
+  | InlineCode
+  | Superscript
+  | Subscript
+  | Highlight
+  | Insert
+  | Link
+  | Image
+  | AutoLink
+  | InlineDirective
+  | FootnoteReference
+  | SoftBreak
+  | HardBreak;
+
+export type ParseErrorKind = 'Error' | 'Warning';
+
+export interface ParseError {
+  kind: ParseErrorKind;
+  message: string;
+  line: number;
+  column?: number;
+}
+
+export interface ParseResult {
+  document: Document;
+  errors: ParseError[];
+}
+
+export type EtchDocument = Document;
