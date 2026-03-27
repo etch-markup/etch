@@ -5,7 +5,7 @@
 // All types derive Serialize so they can be snapshot-tested as JSON.
 
 use serde::{Serialize, Serializer, ser::SerializeMap};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 // ─────────────────────────────────────────────
 // Top-level document
@@ -24,16 +24,55 @@ pub struct Document {
 // Frontmatter
 // ─────────────────────────────────────────────
 
-/// YAML frontmatter parsed from the --- ... --- block at the start of a file.
+/// Frontmatter parsed from the --- ... --- block at the start of a file.
 /// Only present if the very first line of the file is ---.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Frontmatter {
     /// The raw YAML text (useful for round-tripping)
     pub raw: String,
-    /// Parsed key-value pairs. Values can be strings, numbers, arrays, or nested objects.
-    /// We use serde_yaml::Value to represent arbitrary YAML.
-    #[serde(serialize_with = "serialize_ordered_map")]
-    pub fields: HashMap<String, serde_yaml::Value>,
+    /// Parsed key-value pairs. Values can be strings, numbers, booleans, arrays, null, or
+    /// nested objects from Etch's supported frontmatter subset.
+    pub fields: BTreeMap<String, FrontmatterValue>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum FrontmatterValue {
+    Null,
+    Bool(bool),
+    Integer(i64),
+    Float(f64),
+    String(String),
+    Array(Vec<FrontmatterValue>),
+    Object(BTreeMap<String, FrontmatterValue>),
+}
+
+impl Serialize for FrontmatterValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::Null => serializer.serialize_unit(),
+            Self::Bool(value) => serializer.serialize_bool(*value),
+            Self::Integer(value) => serializer.serialize_i64(*value),
+            Self::Float(value) => serializer.serialize_f64(*value),
+            Self::String(value) => serializer.serialize_str(value),
+            Self::Array(values) => values.serialize(serializer),
+            Self::Object(values) => values.serialize(serializer),
+        }
+    }
+}
+
+impl FrontmatterValue {
+    pub fn as_title_string(&self) -> Option<String> {
+        match self {
+            Self::String(value) => Some(value.clone()),
+            Self::Bool(value) => Some(value.to_string()),
+            Self::Integer(value) => Some(value.to_string()),
+            Self::Float(value) => Some(value.to_string()),
+            _ => None,
+        }
+    }
 }
 
 // ─────────────────────────────────────────────

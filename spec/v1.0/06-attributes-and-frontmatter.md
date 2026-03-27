@@ -127,11 +127,18 @@ This heading has identifier `final` and classes `featured` and `compact`. The fi
 1. **Opening position**: Frontmatter begins only when a line containing exactly `---` appears on the very first line of the file.
 2. **Strict positioning**: If any blank line or any other content appears before `---`, then that `---` is not frontmatter.
 3. **Closing fence**: A frontmatter block closes at the next later line containing exactly `---`.
-4. **Content type**: The content between the opening and closing fences is YAML and MUST be parsed by a YAML parser.
-5. **Field shapes**: Frontmatter MAY contain arbitrary YAML values, including strings, numbers, booleans, arrays, and nested objects.
-6. **Empty frontmatter**: An empty frontmatter block is valid. `---` immediately followed by `---` therefore represents a frontmatter block with empty YAML content.
-7. **Not a late construct**: A `---` line that is not on the first line of the file is never frontmatter. In that position it is a thematic break, as defined in Chapter 4.
-8. **Resume document parsing**: After the closing `---`, normal Etch block parsing resumes with the following line.
+4. **Content type**: The content between the opening and closing fences uses Etch frontmatter syntax, a small YAML-like mapping format.
+5. **Top-level shape**: Frontmatter MUST be a mapping of `key: value` entries.
+6. **Field shapes**: Values MAY be strings, integers, floats, booleans, null, inline arrays, and nested objects.
+7. **Quoted strings**: A quoted string uses double quotes. Inside a quoted string, `\"` represents a literal quote and `\\` represents a literal backslash.
+8. **Plain strings**: An unquoted value that is not recognized as a number, boolean, or null is treated as a string.
+9. **Arrays**: Arrays use inline bracket syntax such as `[tag1, tag2, "field note"]`.
+10. **Nested objects**: A key with no inline value MAY introduce a nested object on later indented lines.
+11. **Null values**: A key with no inline value and no nested object has the value `null`.
+12. **Unsupported YAML**: Anchors, aliases, block scalars, tags, and other general YAML features are not part of Etch frontmatter.
+13. **Empty frontmatter**: An empty frontmatter block is valid. `---` immediately followed by `---` therefore represents a frontmatter block with no fields.
+14. **Not a late construct**: A `---` line that is not on the first line of the file is never frontmatter. In that position it is a thematic break, as defined in Chapter 4.
+15. **Resume document parsing**: After the closing `---`, normal Etch block parsing resumes with the following line.
 
 ### Normative Examples
 
@@ -148,7 +155,7 @@ The lantern log begins after a simple frontmatter block.
 
 This input, from `tests/corpus/extensions/frontmatter/basic.etch`, demonstrates a minimal frontmatter block at the top of the file.
 
-`✓ Frontmatter with various YAML types`
+`✓ Frontmatter with various supported field types`
 
 ```etch
 ---
@@ -166,7 +173,7 @@ word_count: auto
 This document starts after a frontmatter block using several YAML field shapes.
 ```
 
-This input, from `tests/corpus/extensions/frontmatter/full.etch`, demonstrates strings, numbers, arrays, booleans, and nested objects in frontmatter content.
+This input, from `tests/corpus/extensions/frontmatter/full.etch`, demonstrates strings, numbers, arrays, booleans, and nested objects in Etch frontmatter.
 
 `✓ Empty frontmatter`
 

@@ -2,7 +2,6 @@ use crate::{
     Alignment, Attributes, Block, DefinitionItem, Document, Frontmatter, Inline, ListItem,
     TableCell,
 };
-use serde_yaml::Value;
 use std::collections::HashSet;
 
 pub fn render_html(document: &Document) -> String {
@@ -561,12 +560,7 @@ fn document_title(frontmatter: Option<&Frontmatter>) -> Option<String> {
     let frontmatter = frontmatter?;
     let value = frontmatter.fields.get("title")?;
 
-    match value {
-        Value::String(value) => Some(value.clone()),
-        Value::Number(value) => Some(value.to_string()),
-        Value::Bool(value) => Some(value.to_string()),
-        _ => None,
-    }
+    value.as_title_string()
 }
 
 fn normalize_data_attribute_name(name: &str) -> String {
@@ -592,18 +586,19 @@ fn escape_html_attr(value: &str) -> String {
 mod tests {
     use super::{render_html, render_html_document};
     use crate::{
-        Alignment, Attributes, Block, Document, Frontmatter, Inline, ListItem, TableCell, parse,
+        Alignment, Attributes, Block, Document, Frontmatter, FrontmatterValue, Inline, ListItem,
+        TableCell, parse,
     };
-    use std::collections::HashMap;
+    use std::collections::{BTreeMap, HashMap};
 
     #[test]
     fn renders_core_nodes_to_html() {
         let document = Document {
             frontmatter: Some(Frontmatter {
                 raw: "title: Example".to_string(),
-                fields: HashMap::from([(
+                fields: BTreeMap::from([(
                     "title".to_string(),
-                    serde_yaml::Value::String("Example".to_string()),
+                    FrontmatterValue::String("Example".to_string()),
                 )]),
             }),
             body: vec![

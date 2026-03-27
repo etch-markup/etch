@@ -314,9 +314,11 @@ fn flush_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>) {
 #[cfg(test)]
 mod tests {
     use super::parse;
-    use crate::{Attributes, Block, DefinitionItem, Inline, ListItem, ParseError, ParseErrorKind};
-    use serde_yaml::{Mapping, Value};
-    use std::collections::HashMap;
+    use crate::{
+        Attributes, Block, DefinitionItem, FrontmatterValue, Inline, ListItem, ParseError,
+        ParseErrorKind,
+    };
+    use std::collections::{BTreeMap, HashMap};
 
     #[test]
     fn parse_wraps_input_in_a_single_paragraph_text_node() {
@@ -369,11 +371,11 @@ mod tests {
         );
         assert_eq!(
             frontmatter.fields.get("title"),
-            Some(&Value::String("Winter Notes".to_string()))
+            Some(&FrontmatterValue::String("Winter Notes".to_string()))
         );
         assert_eq!(
             frontmatter.fields.get("author"),
-            Some(&Value::String("trailwriter".to_string()))
+            Some(&FrontmatterValue::String("trailwriter".to_string()))
         );
         assert_eq!(
             result.document.body,
@@ -429,42 +431,82 @@ mod tests {
             "---\nseries:\n  name: \"Northern Passages\"\n  part: 3\ndraft: true\n---\n\nBody",
         );
         let frontmatter = result.document.frontmatter.expect("expected frontmatter");
-        let mut expected_series = Mapping::new();
-        expected_series.insert(
-            Value::String("name".to_string()),
-            Value::String("Northern Passages".to_string()),
-        );
-        expected_series.insert(
-            Value::String("part".to_string()),
-            serde_yaml::to_value(3).expect("serializable integer"),
-        );
 
         assert_eq!(
             frontmatter.fields.get("series"),
-            Some(&Value::Mapping(expected_series))
+            Some(&FrontmatterValue::Object(BTreeMap::from([
+                (
+                    "name".to_string(),
+                    FrontmatterValue::String("Northern Passages".to_string()),
+                ),
+                ("part".to_string(), FrontmatterValue::Integer(3)),
+            ])))
         );
-        assert_eq!(frontmatter.fields.get("draft"), Some(&Value::Bool(true)));
+        assert_eq!(
+            frontmatter.fields.get("draft"),
+            Some(&FrontmatterValue::Bool(true))
+        );
     }
 
     #[test]
-    fn parse_reports_invalid_frontmatter_yaml_with_the_document_line_number() {
+    fn parse_reports_invalid_frontmatter_with_the_document_line_number() {
         let result = parse("---\ntitle: \"Lantern\"\ninvalid: [\n---\n\nBody");
 
         assert_eq!(
             result.errors,
             vec![ParseError {
                 kind: ParseErrorKind::Error,
-                message: "invalid frontmatter YAML: did not find expected node content on line 4"
-                    .to_string(),
-                line: 4,
-                column: Some(1),
+                message: "invalid frontmatter: unterminated array on line 3".to_string(),
+                line: 3,
+                column: Some(9),
             }]
         );
         assert_eq!(
             result.document.frontmatter,
             Some(crate::Frontmatter {
                 raw: "title: \"Lantern\"\ninvalid: [\n".to_string(),
-                fields: HashMap::new(),
+                fields: BTreeMap::new(),
+            })
+        );
+    }
+
+    #[test]
+    fn parse_supports_inline_arrays_and_nulls_in_frontmatter() {
+        let result = parse("---\ntags: [travel, \"winter log\", 3]\ndescription:\n---\n\nBody");
+        let frontmatter = result.document.frontmatter.expect("expected frontmatter");
+
+        assert_eq!(
+            frontmatter.fields.get("tags"),
+            Some(&FrontmatterValue::Array(vec![
+                FrontmatterValue::String("travel".to_string()),
+                FrontmatterValue::String("winter log".to_string()),
+                FrontmatterValue::Integer(3),
+            ]))
+        );
+        assert_eq!(
+            frontmatter.fields.get("description"),
+            Some(&FrontmatterValue::Null)
+        );
+    }
+
+    #[test]
+    fn parse_rejects_misaligned_nested_frontmatter_content() {
+        let result = parse("---\nseries:\n  name: \"North\"\n part: 3\n---\n\nBody");
+
+        assert_eq!(
+            result.errors,
+            vec![ParseError {
+                kind: ParseErrorKind::Error,
+                message: "invalid frontmatter: unexpected indentation on line 4".to_string(),
+                line: 4,
+                column: Some(2),
+            }]
+        );
+        assert_eq!(
+            result.document.frontmatter,
+            Some(crate::Frontmatter {
+                raw: "series:\n  name: \"North\"\n part: 3\n".to_string(),
+                fields: BTreeMap::new(),
             })
         );
     }
