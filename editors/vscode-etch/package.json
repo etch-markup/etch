@@ -85,9 +85,6 @@
       ]
     }
   },
-  "dependencies": {
-    "@etch-markup/etch-plugin-pipeline": "workspace:*"
-  },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.5.2",
@@ -95,6 +92,7 @@
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.3.2",
+    "esbuild": "^0.25.11",
     "glob": "^11.0.3",
     "mocha": "^11.7.2",
     "typescript": "^5.8.2"

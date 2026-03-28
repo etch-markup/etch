@@ -1,6 +1,7 @@
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
 import { parseWithErrors, renderDocument } from '../../etch-kit/index.js';
@@ -24,6 +25,26 @@ suite('Etch Extension', () => {
 
     assert.ok(commands.includes('etch.openPreview'));
     assert.ok(commands.includes('etch.openPreviewToSide'));
+  });
+
+  test('loads the vendored plugin pipeline bundle', async () => {
+    const bundlePath = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'vendor',
+      'etch-plugin-pipeline',
+      'index.js'
+    );
+    const module = (await import(pathToFileURL(bundlePath).href)) as Record<
+      string,
+      unknown
+    >;
+
+    assert.strictEqual(typeof module.loadConfig, 'function');
+    assert.strictEqual(typeof module.createPipeline, 'function');
+    assert.strictEqual(typeof module.runPipeline, 'function');
+    assert.strictEqual(typeof module.BUILTIN_THEMES, 'object');
   });
 
   test('reports parse diagnostics for invalid Etch input', async () => {

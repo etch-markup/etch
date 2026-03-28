@@ -222,18 +222,11 @@ export class EtchPreviewManager implements vscode.Disposable {
       `<style>${DEFAULT_STANDALONE_STYLES}</style>`,
       `<style>
         :root {
-          --etch-bg: var(--vscode-editor-background);
-          --etch-text: var(--vscode-editor-foreground);
-          --etch-accent: var(--vscode-textLink-foreground);
-          --etch-code-bg: var(--vscode-textCodeBlock-background);
-          --etch-body-font: var(--vscode-font-family);
-          --etch-heading-font: var(--vscode-editor-font-family, var(--vscode-font-family));
           --etch-muted: var(--vscode-descriptionForeground, var(--etch-text));
           --etch-border: var(--vscode-panel-border, rgba(127, 127, 127, 0.2));
           --etch-surface: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
           --etch-surface-strong: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.12));
           --etch-code-text: var(--vscode-editor-foreground);
-          --etch-math-font: "STIX Two Math", "Cambria Math", serif;
           --etch-warning-bg: var(--vscode-inputValidation-warningBackground, rgba(255, 196, 0, 0.12));
           --etch-warning-border: var(--vscode-inputValidation-warningBorder, rgba(255, 196, 0, 0.4));
           --etch-warning-text: var(--vscode-inputValidation-warningForeground, var(--etch-text));

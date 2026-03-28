@@ -1,18 +1,116 @@
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { readFileSync } from 'node:fs';
 import * as vscode from 'vscode';
-import {
-  createPipeline,
-  discoverPlugins,
-  loadConfig,
-  mergeWithFrontmatter,
-  runPipeline,
-  type EtchConfig,
-  type Pipeline,
-} from '@etch-markup/etch-plugin-pipeline';
 import type { Document as EtchDocument, FrontmatterValue } from './etch-kit/index.js';
 
 const PLUGIN_RELOAD_DEBOUNCE_MS = 150;
+
+type PluginDeclaration =
+  | string
+  | {
+      name: string;
+      config?: Record<string, unknown>;
+    };
+
+type EtchConfig = {
+  plugins: PluginDeclaration[];
+  theme: string;
+};
+
+type Pipeline = unknown;
+
+type PipelineModule = {
+  loadConfig(projectRoot: string): EtchConfig;
+  mergeWithFrontmatter(
+    config: EtchConfig,
+    frontmatter: Record<string, unknown>
+  ): EtchConfig;
+  discoverPlugins(
+    pluginNames: string[],
+    projectRoot: string,
+    globalRoot: string
+  ): Promise<unknown[]>;
+  createPipeline(
+    plugins: unknown[],
+    options?: {
+      projectRoot?: string;
+      pluginConfig?: Record<string, Record<string, unknown>>;
+      log?: (message: string) => void;
+    }
+  ): Promise<Pipeline>;
+  runPipeline(
+    html: string,
+    document: unknown,
+    pipeline: Pipeline,
+    config: EtchConfig
+  ): Promise<string>;
+};
+
+type ThemeDefinition = {
+  variables: Record<string, string>;
+  darkMode?: {
+    variables: Record<string, string>;
+  };
+};
+
+const BUILTIN_THEMES: Record<string, ThemeDefinition> = {
+  default: {
+    variables: {
+      '--etch-bg': '#ffffff',
+      '--etch-text': '#1a1a1a',
+      '--etch-heading-font': 'Georgia, serif',
+      '--etch-body-font': 'Georgia, serif',
+      '--etch-accent': '#2563eb',
+      '--etch-code-bg': '#f5f5f5',
+    },
+    darkMode: {
+      variables: {
+        '--etch-bg': '#1a1a1a',
+        '--etch-text': '#e0e0e0',
+        '--etch-code-bg': '#2a2a2a',
+      },
+    },
+  },
+  minimal: {
+    variables: {
+      '--etch-bg': '#ffffff',
+      '--etch-text': '#333333',
+      '--etch-heading-font':
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      '--etch-body-font':
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      '--etch-accent': '#0066cc',
+      '--etch-code-bg': '#f0f0f0',
+    },
+    darkMode: {
+      variables: {
+        '--etch-bg': '#1e1e1e',
+        '--etch-text': '#d4d4d4',
+        '--etch-code-bg': '#2d2d2d',
+      },
+    },
+  },
+  academic: {
+    variables: {
+      '--etch-bg': '#fffff8',
+      '--etch-text': '#111111',
+      '--etch-heading-font':
+        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
+      '--etch-body-font':
+        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
+      '--etch-accent': '#8b0000',
+      '--etch-code-bg': '#f5f2eb',
+    },
+    darkMode: {
+      variables: {
+        '--etch-bg': '#1a1a18',
+        '--etch-text': '#d4d0c8',
+        '--etch-code-bg': '#2a2820',
+      },
+    },
+  },
+};
 
 export class PluginManager implements vscode.Disposable {
   private pipeline: Pipeline | null = null;
@@ -20,6 +118,7 @@ export class PluginManager implements vscode.Disposable {
   private workspaceRoot: string | null = null;
   private readonly globalRoot = path.join(os.homedir(), '.etch');
   private reloadTimer: ReturnType<typeof setTimeout> | undefined;
+  private modulePromise: Promise<PipelineModule> | undefined;
 
   public async initialize(workspaceRoot: string): Promise<void> {
     this.workspaceRoot = workspaceRoot;
@@ -30,21 +129,36 @@ export class PluginManager implements vscode.Disposable {
     html: string,
     document: EtchDocument
   ): Promise<string> {
-    if (!this.pipeline || !this.workspaceRoot) {
+    if (!this.workspaceRoot) {
       return html;
     }
 
     const normalizedDocument = normalizeValue(document) as Parameters<
-      typeof runPipeline
+      PipelineModule['runPipeline']
     >[1];
-    const effectiveConfig = document.frontmatter
-      ? mergeWithFrontmatter(
-          this.config,
-          normalizeValue(document.frontmatter.fields) as Record<string, unknown>
-        )
+    const frontmatterFields = document.frontmatter
+      ? (normalizeValue(document.frontmatter.fields) as Record<string, unknown>)
+      : undefined;
+
+    if (!this.pipeline) {
+      const fallbackConfig = mergeThemeFallbackConfig(
+        loadFallbackConfig(this.workspaceRoot),
+        frontmatterFields
+      );
+      return injectThemeOnly(html, fallbackConfig.theme);
+    }
+
+    const pipelineModule = await this.getPipelineModule();
+    const effectiveConfig = frontmatterFields
+      ? pipelineModule.mergeWithFrontmatter(this.config, frontmatterFields)
       : this.config;
 
-    return runPipeline(html, normalizedDocument, this.pipeline, effectiveConfig);
+    return pipelineModule.runPipeline(
+      html,
+      normalizedDocument,
+      this.pipeline,
+      effectiveConfig
+    );
   }
 
   public watchChanges(onReload: () => void): vscode.Disposable {
@@ -115,13 +229,14 @@ export class PluginManager implements vscode.Disposable {
       return;
     }
 
-    const nextConfig = loadConfig(this.workspaceRoot);
-    const plugins = await discoverPlugins(
+    const pipelineModule = await this.getPipelineModule();
+    const nextConfig = pipelineModule.loadConfig(this.workspaceRoot);
+    const plugins = await pipelineModule.discoverPlugins(
       nextConfig.plugins.map(getPluginName),
       this.workspaceRoot,
       this.globalRoot
     );
-    const nextPipeline = await createPipeline(plugins, {
+    const nextPipeline = await pipelineModule.createPipeline(plugins, {
       projectRoot: this.workspaceRoot,
       pluginConfig: buildPluginConfigMap(nextConfig),
       log: (message) => console.log(`[etch plugins] ${message}`),
@@ -129,6 +244,15 @@ export class PluginManager implements vscode.Disposable {
 
     this.config = nextConfig;
     this.pipeline = nextPipeline;
+  }
+
+  private async getPipelineModule(): Promise<PipelineModule> {
+    if (!this.modulePromise) {
+      const moduleUrl = new URL('./vendor/etch-plugin-pipeline/index.js', import.meta.url);
+      this.modulePromise = import(moduleUrl.href) as Promise<PipelineModule>;
+    }
+
+    return this.modulePromise;
   }
 }
 
@@ -175,4 +299,60 @@ function normalizeValue(value: unknown): unknown {
   }
 
   return value;
+}
+
+function loadFallbackConfig(projectRoot: string): EtchConfig {
+  try {
+    const raw = readFileSync(path.join(projectRoot, 'etch.config.json'), 'utf8');
+    const parsed = JSON.parse(raw) as Partial<EtchConfig>;
+    return {
+      plugins: Array.isArray(parsed.plugins) ? parsed.plugins : [],
+      theme: typeof parsed.theme === 'string' ? parsed.theme : 'default',
+    };
+  } catch {
+    return { plugins: [], theme: 'default' };
+  }
+}
+
+function mergeThemeFallbackConfig(
+  config: EtchConfig,
+  frontmatter: Record<string, unknown> | undefined
+): EtchConfig {
+  return {
+    ...config,
+    theme:
+      frontmatter && typeof frontmatter.theme === 'string'
+        ? frontmatter.theme
+        : config.theme,
+  };
+}
+
+function injectThemeOnly(html: string, themeName: string): string {
+  const theme = BUILTIN_THEMES[themeName] ?? BUILTIN_THEMES.default;
+  const css = assembleThemeCss(theme);
+  const tag = `<style data-etch-pipeline="theme">${css}</style>`;
+
+  if (html.includes('</head>')) {
+    return html.replace('</head>', `${tag}</head>`);
+  }
+
+  return `${tag}${html}`;
+}
+
+function assembleThemeCss(theme: ThemeDefinition): string {
+  let css = ':root {\n';
+  for (const [key, value] of Object.entries(theme.variables)) {
+    css += `  ${key}: ${value};\n`;
+  }
+  css += '}\n';
+
+  if (theme.darkMode) {
+    css += '@media (prefers-color-scheme: dark) {\n  :root {\n';
+    for (const [key, value] of Object.entries(theme.darkMode.variables)) {
+      css += `    ${key}: ${value};\n`;
+    }
+    css += '  }\n}\n';
+  }
+
+  return css;
 }
