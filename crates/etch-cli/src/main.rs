@@ -1,3 +1,7 @@
+mod config;
+mod npm;
+mod plugin;
+
 use clap::{ArgAction, Parser, Subcommand};
 use etch_core::{ParseError, ParseErrorKind, parse, render_html};
 use std::{
@@ -35,6 +39,16 @@ enum Commands {
         #[arg(long, action = ArgAction::SetTrue)]
         quiet: bool,
     },
+    /// Install a plugin
+    Add {
+        name: String,
+        #[arg(long, action = ArgAction::SetTrue)]
+        global: bool,
+    },
+    /// Remove a project-local plugin
+    Remove { name: String },
+    /// List installed plugins
+    Plugins,
     /// Format an .etch file
     Fmt { input: PathBuf },
     /// Lint an .etch file
@@ -51,6 +65,9 @@ fn main() -> ExitCode {
             json,
         } => render_command(&input, output.as_deref(), json),
         Commands::Validate { input, quiet } => validate_command(&input, quiet),
+        Commands::Add { name, global } => plugin_command(plugin::add_plugin(&name, global)),
+        Commands::Remove { name } => plugin_command(plugin::remove_plugin(&name)),
+        Commands::Plugins => plugin_command(plugin::list_plugins()),
         Commands::Fmt { .. } => {
             eprintln!("fmt is not yet implemented");
             ExitCode::SUCCESS
@@ -58,6 +75,16 @@ fn main() -> ExitCode {
         Commands::Lint { .. } => {
             eprintln!("lint is not yet implemented");
             ExitCode::SUCCESS
+        }
+    }
+}
+
+fn plugin_command(result: Result<(), Box<dyn std::error::Error + Send + Sync>>) -> ExitCode {
+    match result {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("error: {error}");
+            ExitCode::from(1)
         }
     }
 }
