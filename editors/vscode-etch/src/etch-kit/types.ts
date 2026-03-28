@@ -11,6 +11,16 @@ export interface Frontmatter {
   fields: Map<string, FrontmatterValue>;
 }
 
+export interface SourcePosition {
+  line: number;
+  column: number;
+}
+
+export interface SourceSpan {
+  start: SourcePosition;
+  end: SourcePosition;
+}
+
 export interface Attributes {
   id?: string;
   classes?: string[];
@@ -85,17 +95,25 @@ export interface ThematicBreak {
 
 export interface BlockDirective {
   type: 'BlockDirective';
+  directive_id: number;
+  span: SourceSpan;
   name: string;
   label?: Inline[];
+  raw_label?: string;
   attrs?: Attributes;
+  raw_body: string;
   body: Block[];
 }
 
 export interface ContainerDirective {
   type: 'ContainerDirective';
+  directive_id: number;
+  span: SourceSpan;
   name: string;
   label?: Inline[];
+  raw_label?: string;
   attrs?: Attributes;
+  raw_body: string;
   body: Block[];
   named_close: boolean;
 }
@@ -193,8 +211,11 @@ export interface AutoLink {
 
 export interface InlineDirective {
   type: 'InlineDirective';
+  directive_id: number;
+  span: SourceSpan;
   name: string;
   content?: Inline[];
+  raw_content?: string;
   attrs?: Attributes;
 }
 

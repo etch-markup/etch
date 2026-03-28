@@ -16,12 +16,10 @@ export const DEFAULT_STANDALONE_STYLES = `html {
 body {
   margin: 0;
   padding: 3rem 1.5rem;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--etch-body-font, Georgia, "Times New Roman", serif);
   line-height: 1.7;
-  background:
-    radial-gradient(circle at top, rgba(160, 174, 192, 0.14), transparent 45%),
-    linear-gradient(180deg, #fcfcfd 0%, #f3f4f6 100%);
-  color: #1f2933;
+  background: var(--etch-bg, var(--vscode-editor-background));
+  color: var(--etch-text, var(--vscode-editor-foreground));
 }
 
 main {
@@ -30,6 +28,7 @@ main {
 }
 
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--etch-heading-font, Georgia, "Times New Roman", serif);
   line-height: 1.2;
   margin: 2rem 0 1rem;
 }
@@ -39,7 +38,7 @@ p, ul, ol, blockquote, pre, table, dl {
 }
 
 a {
-  color: #0f5ea8;
+  color: var(--etch-accent, var(--vscode-textLink-foreground));
 }
 
 code, pre {
@@ -50,14 +49,14 @@ pre {
   padding: 1rem;
   overflow-x: auto;
   border-radius: 0.75rem;
-  background: rgba(15, 23, 42, 0.92);
-  color: #e5edf5;
+  background: var(--etch-code-bg, var(--vscode-textCodeBlock-background));
+  color: var(--etch-text, var(--vscode-editor-foreground));
 }
 
 code {
   padding: 0.1rem 0.3rem;
   border-radius: 0.35rem;
-  background: rgba(148, 163, 184, 0.18);
+  background: color-mix(in srgb, var(--etch-code-bg, var(--vscode-textCodeBlock-background)) 85%, transparent);
 }
 
 pre code {
@@ -68,8 +67,8 @@ pre code {
 blockquote {
   margin-left: 0;
   padding-left: 1rem;
-  border-left: 4px solid rgba(15, 94, 168, 0.35);
-  color: #52606d;
+  border-left: 4px solid color-mix(in srgb, var(--etch-accent, var(--vscode-textLink-foreground)) 35%, transparent);
+  color: var(--etch-text, var(--vscode-editor-foreground));
 }
 
 table {
@@ -83,7 +82,7 @@ th, td {
 }
 
 th {
-  background: rgba(226, 232, 240, 0.7);
+  background: color-mix(in srgb, var(--etch-code-bg, var(--vscode-textCodeBlock-background)) 80%, transparent);
 }
 
 img {
@@ -94,7 +93,7 @@ img {
 .footnote {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(148, 163, 184, 0.35);
+  border-top: 1px solid color-mix(in srgb, var(--etch-text, var(--vscode-editor-foreground)) 20%, transparent);
 }
 
 .directive-label {
@@ -102,33 +101,35 @@ img {
   letter-spacing: 0.02em;
 }
 
+math {
+  font-family: "STIX Two Math", "Cambria Math", serif;
+}
+
+math[display="block"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+.etch-missing-plugin {
+  display: grid;
+  gap: 0.35rem;
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--etch-accent, var(--vscode-textLink-foreground)) 45%, transparent);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--etch-code-bg, var(--vscode-textCodeBlock-background)) 85%, transparent);
+}
+
+.etch-missing-plugin code {
+  background: color-mix(in srgb, var(--etch-code-bg, var(--vscode-textCodeBlock-background)) 92%, transparent);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+}
+
 @media (prefers-color-scheme: dark) {
-  body {
-    background:
-      radial-gradient(circle at top, rgba(96, 165, 250, 0.12), transparent 45%),
-      linear-gradient(180deg, #0f172a 0%, #111827 100%);
-    color: #e5e7eb;
-  }
-
-  a {
-    color: #7dd3fc;
-  }
-
   code {
-    background: rgba(148, 163, 184, 0.2);
-  }
-
-  blockquote {
-    color: #cbd5e1;
-    border-left-color: rgba(125, 211, 252, 0.45);
-  }
-
-  th {
-    background: rgba(30, 41, 59, 0.85);
-  }
-
-  th, td, .footnote {
-    border-color: rgba(148, 163, 184, 0.25);
+    background: color-mix(in srgb, var(--etch-code-bg, var(--vscode-textCodeBlock-background)) 82%, transparent);
   }
 }`;
 

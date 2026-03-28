@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { initialize } from './etch-kit/index.js';
+import { PluginManager } from './plugins.js';
 import { EtchPreviewManager } from './preview.js';
 
 const ETCH_LANGUAGE_ID = 'etch';
@@ -10,10 +11,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   await initialize();
 
-  const previewManager = new EtchPreviewManager(context, diagnostics);
+  const pluginManager = new PluginManager();
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (workspaceRoot) {
+    await pluginManager.initialize(workspaceRoot);
+  }
+
+  const previewManager = new EtchPreviewManager(context, diagnostics, pluginManager);
 
   context.subscriptions.push(
+    pluginManager,
     previewManager,
+    workspaceRoot
+      ? pluginManager.watchChanges(() => {
+          void previewManager.refreshAllPreviews();
+        })
+      : new vscode.Disposable(() => undefined),
     vscode.commands.registerCommand('etch.openPreview', async () => {
       await previewManager.openPreview(false);
     }),

@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import {
+  DEFAULT_STANDALONE_STYLES,
   parseWithErrors,
-  renderStandalone,
+  renderDocument,
   type ParseError,
 } from './etch-kit/index.js';
+import { PluginManager } from './plugins.js';
 
 const ETCH_LANGUAGE_ID = 'etch';
 const PREVIEW_DEBOUNCE_MS = 200;
@@ -16,15 +18,19 @@ type PreviewEntry = {
 export class EtchPreviewManager implements vscode.Disposable {
   private readonly context: vscode.ExtensionContext;
   private readonly diagnostics: vscode.DiagnosticCollection;
+  private readonly pluginManager: PluginManager;
   private readonly panels = new Map<string, PreviewEntry>();
   private readonly refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly renderVersions = new Map<string, number>();
 
   public constructor(
     context: vscode.ExtensionContext,
-    diagnostics: vscode.DiagnosticCollection
+    diagnostics: vscode.DiagnosticCollection,
+    pluginManager: PluginManager
   ) {
     this.context = context;
     this.diagnostics = diagnostics;
+    this.pluginManager = pluginManager;
   }
 
   public async openPreview(toSide: boolean): Promise<void> {
@@ -68,6 +74,7 @@ export class EtchPreviewManager implements vscode.Disposable {
 
     panel.onDidDispose(() => {
       this.panels.delete(key);
+      this.renderVersions.delete(key);
     });
 
     await this.renderPreview(document, panel);
@@ -111,6 +118,7 @@ export class EtchPreviewManager implements vscode.Disposable {
     }
 
     this.diagnostics.delete(document.uri);
+    this.renderVersions.delete(key);
 
     const entry = this.panels.get(key);
 
@@ -125,6 +133,7 @@ export class EtchPreviewManager implements vscode.Disposable {
     }
 
     this.refreshTimers.clear();
+    this.renderVersions.clear();
 
     for (const entry of this.panels.values()) {
       entry.panel.dispose();
@@ -133,12 +142,23 @@ export class EtchPreviewManager implements vscode.Disposable {
     this.panels.clear();
   }
 
-  private async updateDocument(document: vscode.TextDocument): Promise<void> {
-    this.renderDiagnostics(document);
+  public async refreshAllPreviews(): Promise<void> {
+    for (const [key, entry] of this.panels.entries()) {
+      const document = vscode.workspace.textDocuments.find(
+        (candidate) => candidate.uri.toString() === key
+      );
+      if (!document) {
+        continue;
+      }
+      await this.renderPreview(document, entry.panel);
+    }
+  }
 
+  private async updateDocument(document: vscode.TextDocument): Promise<void> {
     const entry = this.panels.get(document.uri.toString());
 
     if (!entry) {
+      this.renderDiagnostics(document);
       return;
     }
 
@@ -147,11 +167,7 @@ export class EtchPreviewManager implements vscode.Disposable {
 
   private renderDiagnostics(document: vscode.TextDocument): ParseError[] {
     const result = parseWithErrors(document.getText());
-    const diagnostics = result.errors.map((error) =>
-      this.toDiagnostic(document, error)
-    );
-
-    this.diagnostics.set(document.uri, diagnostics);
+    this.setDiagnostics(document, result.errors);
     return result.errors;
   }
 
@@ -159,13 +175,30 @@ export class EtchPreviewManager implements vscode.Disposable {
     document: vscode.TextDocument,
     panel: vscode.WebviewPanel
   ): Promise<void> {
+    const key = document.uri.toString();
+    const renderVersion = (this.renderVersions.get(key) ?? 0) + 1;
+    this.renderVersions.set(key, renderVersion);
+
     try {
-      const errors = this.renderDiagnostics(document);
-      const rendered = renderStandalone(document.getText());
+      const parseResult = parseWithErrors(document.getText());
+      this.setDiagnostics(document, parseResult.errors);
+      const coreHtml = renderDocument(document.getText());
+      const rendered = await this.pluginManager.processHtml(coreHtml, parseResult.document);
+
+      if (!this.isLatestRender(key, renderVersion, panel)) {
+        return;
+      }
 
       panel.title = this.getPanelTitle(document);
-      panel.webview.html = this.decorateHtml(panel.webview, rendered, errors);
+      panel.webview.html = this.decorateHtml(
+        panel.webview,
+        rendered,
+        parseResult.errors
+      );
     } catch (error) {
+      if (!this.isLatestRender(key, renderVersion, panel)) {
+        return;
+      }
       panel.webview.html = this.renderFailure(panel.webview, error);
     }
   }
@@ -182,18 +215,31 @@ export class EtchPreviewManager implements vscode.Disposable {
     const headInjection = [
       `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: data:; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource} https: data:;">`,
       `<link rel="stylesheet" href="${previewCssUri.toString()}">`,
+      `<style>${DEFAULT_STANDALONE_STYLES}</style>`,
       `<style>
         :root {
           --etch-bg: var(--vscode-editor-background);
           --etch-text: var(--vscode-editor-foreground);
           --etch-accent: var(--vscode-textLink-foreground);
           --etch-code-bg: var(--vscode-textCodeBlock-background);
+          --etch-body-font: var(--vscode-font-family);
+          --etch-heading-font: var(--vscode-editor-font-family, var(--vscode-font-family));
+          --etch-muted: var(--vscode-descriptionForeground, var(--etch-text));
+          --etch-border: var(--vscode-panel-border, rgba(127, 127, 127, 0.2));
+          --etch-surface: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
+          --etch-surface-strong: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.12));
+          --etch-code-text: var(--vscode-editor-foreground);
+          --etch-math-font: "STIX Two Math", "Cambria Math", serif;
+          --etch-warning-bg: var(--vscode-inputValidation-warningBackground, rgba(255, 196, 0, 0.12));
+          --etch-warning-border: var(--vscode-inputValidation-warningBorder, rgba(255, 196, 0, 0.4));
+          --etch-warning-text: var(--vscode-inputValidation-warningForeground, var(--etch-text));
         }
       </style>`,
     ].join('\n');
 
     const banner = this.renderErrorBanner(errors);
-    const withHead = injectBeforeClosingTag(html, 'head', headInjection);
+    const withMain = ensureMainWrapper(html);
+    const withHead = injectBeforeClosingTag(withMain, 'head', headInjection);
     return injectAfterOpeningBody(withHead, banner);
   }
 
@@ -316,6 +362,23 @@ export class EtchPreviewManager implements vscode.Disposable {
     const segments = document.uri.path.split('/');
     return segments[segments.length - 1] || document.fileName || 'Untitled';
   }
+
+  private isLatestRender(
+    key: string,
+    version: number,
+    panel: vscode.WebviewPanel
+  ): boolean {
+    const entry = this.panels.get(key);
+    return entry?.panel === panel && this.renderVersions.get(key) === version;
+  }
+
+  private setDiagnostics(
+    document: vscode.TextDocument,
+    errors: ParseError[]
+  ): void {
+    const diagnostics = errors.map((error) => this.toDiagnostic(document, error));
+    this.diagnostics.set(document.uri, diagnostics);
+  }
 }
 
 function injectBeforeClosingTag(
@@ -330,6 +393,21 @@ function injectBeforeClosingTag(
   }
 
   return `${content}\n${html}`;
+}
+
+function ensureMainWrapper(html: string): string {
+  if (/<main[\s>]/i.test(html)) {
+    return html;
+  }
+
+  const bodyTag = /<body([^>]*)>/i;
+
+  if (!bodyTag.test(html)) {
+    return html;
+  }
+
+  const withMainOpen = html.replace(bodyTag, '<body$1>\n<main>');
+  return withMainOpen.replace(/<\/body>/i, '</main>\n</body>');
 }
 
 function injectAfterOpeningBody(html: string, content: string): string {

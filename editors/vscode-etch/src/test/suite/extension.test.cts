@@ -1,5 +1,10 @@
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
+import { parseWithErrors, renderDocument } from '../../etch-kit/index.js';
+import { PluginManager } from '../../plugins.js';
 
 suite('Etch Extension', () => {
   const extensionId = 'etch-markup.etch-language';
@@ -51,6 +56,110 @@ suite('Etch Extension', () => {
     await waitForSettledDiagnostics();
 
     assert.deepStrictEqual(vscode.languages.getDiagnostics(document.uri), []);
+  });
+
+  test('renders math through the core bridge and replaces plugin directives', async () => {
+    const workspaceRoot = mkdtempSync(path.join(os.tmpdir(), 'etch-extension-'));
+
+    try {
+      writeFileSync(
+        path.join(workspaceRoot, 'etch.config.json'),
+        JSON.stringify(
+          {
+            plugins: ['cards'],
+            theme: 'academic',
+          },
+          null,
+          2
+        )
+      );
+
+      const pluginRoot = path.join(
+        workspaceRoot,
+        '.etch',
+        'plugins',
+        'etch-plugin-cards'
+      );
+      mkdirSync(pluginRoot, { recursive: true });
+      writeFileSync(
+        path.join(pluginRoot, 'package.json'),
+        JSON.stringify(
+          {
+            name: 'etch-plugin-cards',
+            version: '1.0.0',
+            type: 'module',
+            main: 'index.js',
+          },
+          null,
+          2
+        )
+      );
+      writeFileSync(
+        path.join(pluginRoot, 'index.js'),
+        `export default {
+          name: 'cards',
+          version: '1.0.0',
+          directives: {
+            card: {
+              type: 'block',
+              styles: '.card{color:var(--etch-accent);}',
+              render(node, ctx) {
+                return '<div class="card">' + node.content + '|' + ctx.renderChildren(node.children) + '</div>';
+              }
+            }
+          }
+        };`
+      );
+
+      const pluginManager = new PluginManager();
+      await pluginManager.initialize(workspaceRoot);
+
+      const source = 'Inline math :math[\\frac{1}{2}].\n\n::card\nhello\n::';
+      const parsed = parseWithErrors(source);
+      assert.deepStrictEqual(parsed.errors, []);
+
+      const html = renderDocument(source);
+      assert.match(
+        html,
+        /<math xmlns="http:\/\/www\.w3\.org\/1998\/Math\/MathML"><mfrac><mn>1<\/mn><mn>2<\/mn><\/mfrac><\/math>/
+      );
+
+      const processed = await pluginManager.processHtml(html, parsed.document);
+
+      assert.match(processed, /<div class="card">hello\|<p>hello<\/p><\/div>/);
+      assert.match(processed, /<style data-etch-pipeline="theme">/);
+      assert.match(processed, /--etch-bg: #fffff8;/);
+      assert.match(
+        processed,
+        /<math xmlns="http:\/\/www\.w3\.org\/1998\/Math\/MathML"><mfrac><mn>1<\/mn><mn>2<\/mn><\/mfrac><\/math>/
+      );
+    } finally {
+      rmSync(workspaceRoot, { recursive: true, force: true });
+    }
+  });
+
+  test('falls back when a plugin is missing', async () => {
+    const workspaceRoot = mkdtempSync(path.join(os.tmpdir(), 'etch-extension-'));
+
+    try {
+      writeFileSync(
+        path.join(workspaceRoot, 'etch.config.json'),
+        JSON.stringify({ plugins: [], theme: 'default' }, null, 2)
+      );
+
+      const pluginManager = new PluginManager();
+      await pluginManager.initialize(workspaceRoot);
+
+      const source = 'A :ghost[missing] directive.';
+      const parsed = parseWithErrors(source);
+      const processed = await pluginManager.processHtml(renderDocument(source), parsed.document);
+
+      assert.match(processed, /class="etch-missing-plugin"/);
+      assert.match(processed, /Unknown directive: <code>ghost<\/code>/);
+      assert.match(processed, /<style data-etch-pipeline="theme">/);
+    } finally {
+      rmSync(workspaceRoot, { recursive: true, force: true });
+    }
   });
 });
 
