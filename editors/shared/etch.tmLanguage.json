@@ -10,7 +10,13 @@
       "include": "#fenced-code-block"
     },
     {
+      "include": "#math-container-directive"
+    },
+    {
       "include": "#container-directive"
+    },
+    {
+      "include": "#math-block-directive"
     },
     {
       "include": "#block-directive"
@@ -100,6 +106,26 @@
       },
       "contentName": "markup.raw.block.etch"
     },
+    "math-container-directive": {
+      "begin": "^(:::math)(?=$|\\[|\\{)",
+      "beginCaptures": {
+        "0": {
+          "name": "entity.name.function.directive.container.etch"
+        }
+      },
+      "end": "^(:::(?:/math)?)\\s*$",
+      "endCaptures": {
+        "0": {
+          "name": "entity.name.function.directive.container.etch"
+        }
+      },
+      "contentName": "markup.raw.block.math.etch",
+      "patterns": [
+        {
+          "include": "#math-directive-open-tail"
+        }
+      ]
+    },
     "container-directive": {
       "begin": "^(:::[A-Za-z][A-Za-z-]*)(?=$|\\[|\\{)",
       "beginCaptures": {
@@ -109,8 +135,8 @@
       },
       "end": "^(:::(?:/[A-Za-z][A-Za-z-]*)?)\\s*$",
       "endCaptures": {
-        "1": {
-          "name": "punctuation.definition.directive.end.etch"
+        "0": {
+          "name": "entity.name.function.directive.container.etch"
         }
       },
       "patterns": [
@@ -119,6 +145,26 @@
         },
         {
           "include": "#block-content"
+        }
+      ]
+    },
+    "math-block-directive": {
+      "begin": "^(::math)(?=$|\\[|\\{)",
+      "beginCaptures": {
+        "0": {
+          "name": "entity.name.function.directive.block.etch"
+        }
+      },
+      "end": "^(::)\\s*$",
+      "endCaptures": {
+        "0": {
+          "name": "entity.name.function.directive.block.etch"
+        }
+      },
+      "contentName": "markup.raw.block.math.etch",
+      "patterns": [
+        {
+          "include": "#math-directive-open-tail"
         }
       ]
     },
@@ -131,8 +177,8 @@
       },
       "end": "^(::)\\s*$",
       "endCaptures": {
-        "1": {
-          "name": "punctuation.definition.directive.end.etch"
+        "0": {
+          "name": "entity.name.function.directive.block.etch"
         }
       },
       "patterns": [
@@ -448,7 +494,13 @@
           "include": "#fenced-code-block"
         },
         {
+          "include": "#math-container-directive"
+        },
+        {
           "include": "#container-directive"
+        },
+        {
+          "include": "#math-block-directive"
         },
         {
           "include": "#block-directive"
@@ -573,6 +625,9 @@
           "include": "#link"
         },
         {
+          "include": "#math-inline-directive"
+        },
+        {
           "include": "#inline-directive"
         },
         {
@@ -648,6 +703,23 @@
         }
       }
     },
+    "math-inline-directive": {
+      "begin": "(:math)(?=$|\\[|\\{)",
+      "beginCaptures": {
+        "0": {
+          "name": "entity.name.function.directive.etch"
+        }
+      },
+      "end": "(?=$|\\s|[!\"'(),.;:?\\]])",
+      "patterns": [
+        {
+          "include": "#math-directive-bracket-content"
+        },
+        {
+          "include": "#attributes"
+        }
+      ]
+    },
     "inline-directive": {
       "begin": "(:[A-Za-z][A-Za-z-]*)",
       "beginCaptures": {
@@ -699,6 +771,9 @@
           "include": "#link"
         },
         {
+          "include": "#math-inline-directive"
+        },
+        {
           "include": "#inline-directive"
         },
         {
@@ -745,6 +820,41 @@
         },
         {
           "include": "#attributes"
+        }
+      ]
+    },
+    "math-directive-open-tail": {
+      "begin": "\\G(?=[\\[{])",
+      "end": "$",
+      "patterns": [
+        {
+          "include": "#math-directive-bracket-content"
+        },
+        {
+          "include": "#attributes"
+        }
+      ]
+    },
+    "math-directive-bracket-content": {
+      "begin": "\\[",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.directive-content.begin.etch"
+        }
+      },
+      "end": "(?<!\\\\)\\]",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.directive-content.end.etch"
+        }
+      },
+      "contentName": "markup.raw.inline.math.etch",
+      "patterns": [
+        {
+          "include": "#escape"
+        },
+        {
+          "include": "#math-directive-bracket-content"
         }
       ]
     },

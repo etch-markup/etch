@@ -1,0 +1,1 @@
+The renderer should preserve :math[f(x[0]) + g([1, 2, 3])] without bleeding into following text.
