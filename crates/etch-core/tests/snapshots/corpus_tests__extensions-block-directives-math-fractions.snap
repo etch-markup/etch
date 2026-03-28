@@ -1,0 +1,117 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Simple: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 9
+              },
+              "end": {
+                "line": 1,
+                "column": 27
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\frac{1}{2}"
+              }
+            ],
+            "raw_content": "\\frac{1}{2}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Nested: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 9
+              },
+              "end": {
+                "line": 1,
+                "column": 37
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\frac{\\frac{a}{b}}{c}"
+              }
+            ],
+            "raw_content": "\\frac{\\frac{a}{b}}{c}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Expression: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 13
+              },
+              "end": {
+                "line": 1,
+                "column": 39
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\frac{x + 1}{x - 1}"
+              }
+            ],
+            "raw_content": "\\frac{x + 1}{x - 1}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

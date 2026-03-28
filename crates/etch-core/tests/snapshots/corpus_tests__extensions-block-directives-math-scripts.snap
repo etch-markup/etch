@@ -1,0 +1,143 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Superscript: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 14
+              },
+              "end": {
+                "line": 1,
+                "column": 34
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "x"
+              },
+              {
+                "type": "Superscript",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "2, e"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": "{i\\pi}"
+              }
+            ],
+            "raw_content": "x^2, e^{i\\pi}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Subscript: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 12
+              },
+              "end": {
+                "line": 1,
+                "column": 31
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "a_i, x_{n+1}"
+              }
+            ],
+            "raw_content": "a_i, x_{n+1}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Both: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 32
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "x_i"
+              },
+              {
+                "type": "Superscript",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "2, a_{i,j}"
+                  }
+                ]
+              },
+              {
+                "type": "Text",
+                "value": "{k}"
+              }
+            ],
+            "raw_content": "x_i^2, a_{i,j}^{k}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

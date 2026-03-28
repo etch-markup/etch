@@ -1,0 +1,117 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Blackboard bold: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 18
+              },
+              "end": {
+                "line": 1,
+                "column": 49
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\mathbb{R}, \\mathbb{R}^n"
+              }
+            ],
+            "raw_content": "\\mathbb{R}, \\mathbb{R}^n"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Calligraphic: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 15
+              },
+              "end": {
+                "line": 1,
+                "column": 33
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\mathcal{L}"
+              }
+            ],
+            "raw_content": "\\mathcal{L}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Bold: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 24
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\mathbf{v}"
+              }
+            ],
+            "raw_content": "\\mathbf{v}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

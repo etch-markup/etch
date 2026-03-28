@@ -1,0 +1,13 @@
+{~ Tests display mode (block) math rendering. ~}
+
+::math
+\sum_{i=0}^{n} x_i
+::
+
+::math
+\int_0^1 f(x) \, dx = F(1) - F(0)
+::
+
+::math
+\prod_{k=1}^{n} k = n!
+::

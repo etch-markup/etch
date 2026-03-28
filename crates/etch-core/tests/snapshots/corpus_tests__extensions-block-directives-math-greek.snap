@@ -1,0 +1,82 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Lowercase: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 12
+              },
+              "end": {
+                "line": 1,
+                "column": 101
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\alpha, \\beta, \\gamma, \\delta, \\epsilon, \\theta, \\lambda, \\mu, \\pi, \\sigma, \\omega"
+              }
+            ],
+            "raw_content": "\\alpha, \\beta, \\gamma, \\delta, \\epsilon, \\theta, \\lambda, \\mu, \\pi, \\sigma, \\omega"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Uppercase: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 12
+              },
+              "end": {
+                "line": 1,
+                "column": 63
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\Gamma, \\Delta, \\Theta, \\Lambda, \\Pi, \\Omega"
+              }
+            ],
+            "raw_content": "\\Gamma, \\Delta, \\Theta, \\Lambda, \\Pi, \\Omega"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

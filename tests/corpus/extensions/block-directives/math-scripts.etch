@@ -1,0 +1,7 @@
+{~ Tests superscript and subscript rendering. ~}
+
+Superscript: :math[x^2, e^{i\pi}].
+
+Subscript: :math[a_i, x_{n+1}].
+
+Both: :math[x_i^2, a_{i,j}^{k}].

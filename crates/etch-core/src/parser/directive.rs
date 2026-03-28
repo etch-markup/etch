@@ -1,13 +1,16 @@
-use crate::{Attributes, Block, Inline, ParseError, ParseErrorKind};
+use crate::{Attributes, Block, Inline, ParseError, ParseErrorKind, SourcePosition, SourceSpan};
 use std::iter::Peekable;
 
-use super::ParseContext;
+use super::{ParseContext, next_directive_id};
 
 pub(crate) struct DirectiveOpening {
+    pub(crate) directive_id: u64,
     pub(crate) name: String,
     pub(crate) label: Option<Vec<Inline>>,
+    pub(crate) raw_label: Option<String>,
     pub(crate) attrs: Option<Attributes>,
     pub(crate) line: usize,
+    pub(crate) span_start: SourcePosition,
 }
 
 pub(crate) enum ContainerClose {
@@ -24,7 +27,7 @@ pub(crate) fn block_directive_opening_from_line(
     line: &str,
     line_number: usize,
 ) -> Option<DirectiveOpening> {
-    if line.starts_with(":::") {
+    if !is_block_directive_opening_line(line) {
         return None;
     }
 
@@ -35,6 +38,10 @@ pub(crate) fn container_directive_opening_from_line(
     line: &str,
     line_number: usize,
 ) -> Option<DirectiveOpening> {
+    if !is_container_directive_opening_line(line) {
+        return None;
+    }
+
     directive_opening_from_line(line, ":::", line_number)
 }
 
@@ -61,11 +68,13 @@ pub(crate) fn directive_opening_from_line(
     remainder = &remainder[name_len..];
 
     let mut label = None;
+    let mut raw_label = None;
     if remainder.starts_with('[') {
         let (label_text, next_remainder) = parse_balanced_bracket_segment(remainder)?;
         label = Some(vec![Inline::Text {
             value: label_text.to_string(),
         }]);
+        raw_label = Some(label_text.to_string());
         remainder = next_remainder;
     }
 
@@ -78,16 +87,23 @@ pub(crate) fn directive_opening_from_line(
     }
 
     remainder.is_empty().then_some(DirectiveOpening {
+        directive_id: next_directive_id(),
         name,
         label,
+        raw_label,
         attrs,
         line: line_number,
+        span_start: SourcePosition {
+            line: line_number,
+            column: 1,
+        },
     })
 }
 
 pub(crate) fn block_directive_from_lines<'a, I>(
     opening: DirectiveOpening,
     lines: &mut Peekable<I>,
+    line_offset: usize,
     errors: &mut Vec<ParseError>,
     context: ParseContext,
 ) -> Block
@@ -97,12 +113,21 @@ where
     let mut body_lines = Vec::new();
     let mut nested_directives = Vec::new();
     let mut closed = false;
+    let mut end = SourcePosition {
+        line: opening.line,
+        column: 1,
+    };
 
-    while let Some((_, line)) = lines.next() {
+    while let Some((line_index, line)) = lines.next() {
+        let line_number = line_offset + line_index + 1;
         match nested_directives.last() {
             Some(NestedDirective::Block) if line == "::" => {
                 nested_directives.pop();
                 body_lines.push(line);
+                end = SourcePosition {
+                    line: line_number,
+                    column: line.chars().count() + 1,
+                };
                 continue;
             }
             Some(NestedDirective::Container)
@@ -110,6 +135,10 @@ where
             {
                 nested_directives.pop();
                 body_lines.push(line);
+                end = SourcePosition {
+                    line: line_number,
+                    column: line.chars().count() + 1,
+                };
                 continue;
             }
             _ => {}
@@ -117,16 +146,24 @@ where
 
         if line == "::" && nested_directives.is_empty() {
             closed = true;
+            end = SourcePosition {
+                line: line_number,
+                column: line.chars().count() + 1,
+            };
             break;
         }
 
-        if block_directive_opening_from_line(line, 0).is_some() {
+        if is_block_directive_opening_line(line) {
             nested_directives.push(NestedDirective::Block);
-        } else if container_directive_opening_from_line(line, 0).is_some() {
+        } else if is_container_directive_opening_line(line) {
             nested_directives.push(NestedDirective::Container);
         }
 
         body_lines.push(line);
+        end = SourcePosition {
+            line: line_number,
+            column: line.chars().count() + 1,
+        };
     }
 
     if !closed {
@@ -142,9 +179,16 @@ where
     }
 
     Block::BlockDirective {
+        directive_id: opening.directive_id,
+        span: SourceSpan {
+            start: opening.span_start,
+            end,
+        },
         name: opening.name,
         label: opening.label,
+        raw_label: opening.raw_label,
         attrs: opening.attrs,
+        raw_body: body_lines.join("\n"),
         body: super::parse_blocks(&body_lines.join("\n"), false, opening.line, errors, context),
     }
 }
@@ -159,6 +203,8 @@ pub(crate) fn container_directive_from_lines<'a, I>(
 where
     I: Iterator<Item = (usize, &'a str)> + Clone,
 {
+    let (raw_body, end, named_close) =
+        collect_container_body_metadata(lines.clone(), line_offset, &opening.name);
     let mut current = Vec::new();
     let (body, close) = super::parse_blocks_from_lines(
         lines,
@@ -184,12 +230,83 @@ where
     }
 
     Block::ContainerDirective {
+        directive_id: opening.directive_id,
+        span: SourceSpan {
+            start: opening.span_start,
+            end,
+        },
         name: opening.name,
         label: opening.label,
+        raw_label: opening.raw_label,
         attrs: opening.attrs,
+        raw_body,
         body,
-        named_close: matches!(close, Some(ContainerClose::Named)),
+        named_close: named_close || matches!(close, Some(ContainerClose::Named)),
     }
+}
+
+fn collect_container_body_metadata<'a, I>(
+    mut lines: Peekable<I>,
+    line_offset: usize,
+    container_name: &str,
+) -> (String, SourcePosition, bool)
+where
+    I: Iterator<Item = (usize, &'a str)> + Clone,
+{
+    let mut raw_lines = Vec::new();
+    let mut nested_containers = 0usize;
+    let mut end = SourcePosition {
+        line: line_offset + 1,
+        column: 1,
+    };
+    let mut named_close = false;
+
+    while let Some((line_index, line)) = lines.next() {
+        let line_number = line_offset + line_index + 1;
+
+        if line == ":::" {
+            if nested_containers == 0 {
+                end = SourcePosition {
+                    line: line_number,
+                    column: line.chars().count() + 1,
+                };
+                break;
+            }
+
+            nested_containers -= 1;
+            raw_lines.push(line);
+            continue;
+        }
+
+        if let Some(close_name) = container_directive_named_close_from_line(line) {
+            if nested_containers == 0 {
+                named_close = close_name == container_name;
+                end = SourcePosition {
+                    line: line_number,
+                    column: line.chars().count() + 1,
+                };
+                break;
+            }
+
+            if nested_containers > 0 {
+                nested_containers -= 1;
+                raw_lines.push(line);
+                continue;
+            }
+        }
+
+        if is_container_directive_opening_line(line) {
+            nested_containers += 1;
+        }
+
+        raw_lines.push(line);
+        end = SourcePosition {
+            line: line_number,
+            column: line.chars().count() + 1,
+        };
+    }
+
+    (raw_lines.join("\n"), end, named_close)
 }
 
 pub(crate) fn container_directive_named_close_from_line(line: &str) -> Option<&str> {
@@ -197,6 +314,32 @@ pub(crate) fn container_directive_named_close_from_line(line: &str) -> Option<&s
     let name_len = directive_name_length(remainder)?;
 
     (name_len > 0 && name_len == remainder.len()).then_some(&remainder[..name_len])
+}
+
+fn is_block_directive_opening_line(line: &str) -> bool {
+    if line.starts_with(":::") {
+        return false;
+    }
+
+    let Some(remainder) = line.strip_prefix("::") else {
+        return false;
+    };
+    remainder
+        .chars()
+        .next()
+        .is_some_and(|ch| ch.is_ascii_alphabetic())
+        && directive_name_length(remainder).is_some_and(|length| length > 0)
+}
+
+fn is_container_directive_opening_line(line: &str) -> bool {
+    let Some(remainder) = line.strip_prefix(":::") else {
+        return false;
+    };
+    remainder
+        .chars()
+        .next()
+        .is_some_and(|ch| ch.is_ascii_alphabetic())
+        && directive_name_length(remainder).is_some_and(|length| length > 0)
 }
 
 pub(crate) fn directive_name_length(input: &str) -> Option<usize> {

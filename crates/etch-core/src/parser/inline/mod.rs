@@ -5,7 +5,7 @@ mod escape;
 mod link;
 mod util;
 
-use crate::Inline;
+use crate::{Inline, SourcePosition};
 
 use self::{
     code::try_parse_inline_code,
@@ -24,10 +24,45 @@ struct ParseResult {
 
 #[allow(dead_code)]
 pub(crate) fn parse_inlines(input: &str) -> Vec<Inline> {
-    parse_segment(input, 0, None).nodes
+    parse_inlines_with_position(input, 1, 1)
 }
 
-fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> ParseResult {
+pub(crate) fn parse_inlines_with_position(
+    input: &str,
+    start_line: usize,
+    start_column: usize,
+) -> Vec<Inline> {
+    parse_segment(
+        input,
+        0,
+        SourcePosition {
+            line: start_line,
+            column: start_column,
+        },
+        None,
+    )
+    .nodes
+}
+
+pub(super) fn advance_position(mut position: SourcePosition, text: &str) -> SourcePosition {
+    for ch in text.chars() {
+        if ch == '\n' {
+            position.line += 1;
+            position.column = 1;
+        } else {
+            position.column += 1;
+        }
+    }
+
+    position
+}
+
+fn parse_segment(
+    input: &str,
+    mut index: usize,
+    mut position: SourcePosition,
+    stop: Option<Delimiter>,
+) -> ParseResult {
     let mut nodes = Vec::new();
     let mut text_start = index;
 
@@ -55,6 +90,7 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
             if let Some(next_index) = try_parse_hard_break(input, index) {
                 push_text(&mut nodes, &input[text_start..index]);
                 nodes.push(Inline::HardBreak);
+                position = advance_position(position, &input[index..next_index]);
                 index = next_index;
                 text_start = index;
                 continue;
@@ -63,6 +99,7 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
             if let Some(next_index) = try_parse_escaped_literal(input, index) {
                 push_text(&mut nodes, &input[text_start..index]);
                 push_text(&mut nodes, &input[index + 1..next_index]);
+                position = advance_position(position, &input[index..next_index]);
                 index = next_index;
                 text_start = index;
                 continue;
@@ -72,6 +109,7 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
         if let Some(next_index) = try_parse_soft_break(input, index) {
             push_text(&mut nodes, &input[text_start..index]);
             nodes.push(Inline::SoftBreak);
+            position = advance_position(position, &input[index..next_index]);
             index = next_index;
             text_start = index;
             continue;
@@ -81,6 +119,7 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
             if let Some((inline, next_index)) = try_parse_autolink(input, index) {
                 push_text(&mut nodes, &input[text_start..index]);
                 nodes.push(inline);
+                position = advance_position(position, &input[index..next_index]);
                 index = next_index;
                 text_start = index;
                 continue;
@@ -92,12 +131,14 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
 
             if let Some((inline, next_index)) = try_parse_image(input, index) {
                 nodes.push(inline);
+                position = advance_position(position, &input[index..next_index]);
                 index = next_index;
                 text_start = index;
                 continue;
             }
 
             push_text(&mut nodes, &input[index..index + 1]);
+            position = advance_position(position, &input[index..index + 1]);
             index += 1;
             text_start = index;
             continue;
@@ -113,14 +154,16 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
                 continue;
             }
 
-            if let Some((inline, next_index)) = try_parse_link(input, index) {
+            if let Some((inline, next_index)) = try_parse_link(input, index, position) {
                 nodes.push(inline);
+                position = advance_position(position, &input[index..next_index]);
                 index = next_index;
                 text_start = index;
                 continue;
             }
 
             push_text(&mut nodes, &input[index..index + 1]);
+            position = advance_position(position, &input[index..index + 1]);
             index += 1;
             text_start = index;
             continue;
@@ -129,14 +172,16 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
         if byte == b':' {
             push_text(&mut nodes, &input[text_start..index]);
 
-            if let Some((inline, next_index)) = try_parse_inline_directive(input, index) {
+            if let Some((inline, next_index)) = try_parse_inline_directive(input, index, position) {
                 nodes.push(inline);
+                position = advance_position(position, &input[index..next_index]);
                 index = next_index;
                 text_start = index;
                 continue;
             }
 
             push_text(&mut nodes, &input[index..index + 1]);
+            position = advance_position(position, &input[index..index + 1]);
             index += 1;
             text_start = index;
             continue;
@@ -148,12 +193,14 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
 
             if let Some((inline, next_index)) = try_parse_inline_code(input, index) {
                 nodes.push(inline);
+                position = advance_position(position, &input[index..next_index]);
                 index = next_index;
                 text_start = index;
                 continue;
             }
 
             push_text(&mut nodes, &input[index..index + run_len]);
+            position = advance_position(position, &input[index..index + run_len]);
             index += run_len;
             text_start = index;
             continue;
@@ -164,18 +211,22 @@ fn parse_segment(input: &str, mut index: usize, stop: Option<Delimiter>) -> Pars
 
             if let Some((inline, next_index)) = try_parse_delimiter_run(input, index) {
                 nodes.push(inline);
+                position = advance_position(position, &input[index..next_index]);
                 index = next_index;
                 text_start = index;
                 continue;
             }
 
             push_text(&mut nodes, &input[index..index + 1]);
+            position = advance_position(position, &input[index..index + 1]);
             index += 1;
             text_start = index;
             continue;
         }
 
-        index += next_char_len(input, index);
+        let next_index = index + next_char_len(input, index);
+        position = advance_position(position, &input[index..next_index]);
+        index = next_index;
     }
 
     push_text(&mut nodes, &input[text_start..index]);
@@ -892,53 +943,94 @@ mod tests {
         expected_pairs.insert("species".to_string(), "fox".to_string());
         expected_pairs.insert("mood".to_string(), "playful".to_string());
 
+        let nodes = parse_inlines("I met :character[Sable]{species=fox mood=playful} nearby.");
         assert_eq!(
-            parse_inlines("I met :character[Sable]{species=fox mood=playful} nearby."),
-            vec![
-                Inline::Text {
-                    value: "I met ".to_string(),
-                },
-                Inline::InlineDirective {
-                    name: "character".to_string(),
-                    content: Some(vec![Inline::Text {
-                        value: "Sable".to_string(),
-                    }]),
-                    attrs: Some(Attributes {
-                        id: None,
-                        classes: Vec::new(),
-                        pairs: expected_pairs,
-                    }),
-                },
-                Inline::Text {
-                    value: " nearby.".to_string(),
-                },
-            ]
+            nodes[0],
+            Inline::Text {
+                value: "I met ".to_string()
+            }
+        );
+        assert_eq!(
+            nodes[2],
+            Inline::Text {
+                value: " nearby.".to_string()
+            }
+        );
+        let Inline::InlineDirective {
+            directive_id,
+            name,
+            content,
+            raw_content,
+            attrs,
+            ..
+        } = &nodes[1]
+        else {
+            panic!("expected inline directive");
+        };
+        assert_eq!(*directive_id, 1);
+        assert_eq!(name, "character");
+        assert_eq!(raw_content.as_deref(), Some("Sable"));
+        assert_eq!(
+            content,
+            &Some(vec![Inline::Text {
+                value: "Sable".to_string(),
+            }])
+        );
+        assert_eq!(
+            attrs,
+            &Some(Attributes {
+                id: None,
+                classes: Vec::new(),
+                pairs: expected_pairs,
+            })
         );
     }
 
     #[test]
     fn parses_bare_inline_directives() {
+        let nodes = parse_inlines("Insert :pagebreak here.\n:toc");
         assert_eq!(
-            parse_inlines("Insert :pagebreak here.\n:toc"),
-            vec![
-                Inline::Text {
-                    value: "Insert ".to_string(),
-                },
-                Inline::InlineDirective {
-                    name: "pagebreak".to_string(),
-                    content: None,
-                    attrs: None,
-                },
-                Inline::Text {
-                    value: " here.".to_string(),
-                },
-                Inline::SoftBreak,
-                Inline::InlineDirective {
-                    name: "toc".to_string(),
-                    content: None,
-                    attrs: None,
-                },
-            ]
+            nodes[0],
+            Inline::Text {
+                value: "Insert ".to_string()
+            }
+        );
+        assert_eq!(
+            nodes[2],
+            Inline::Text {
+                value: " here.".to_string()
+            }
+        );
+        assert_eq!(nodes[3], Inline::SoftBreak);
+        let Inline::InlineDirective {
+            directive_id,
+            name,
+            content,
+            raw_content,
+            attrs,
+            ..
+        } = &nodes[1]
+        else {
+            panic!("expected pagebreak directive");
+        };
+        assert_eq!(
+            (*directive_id, name.as_str(), content, raw_content, attrs),
+            (1, "pagebreak", &None, &None, &None)
+        );
+        let Inline::InlineDirective {
+            directive_id,
+            name,
+            content,
+            raw_content,
+            attrs,
+            ..
+        } = &nodes[4]
+        else {
+            panic!("expected toc directive");
+        };
+        assert_eq!(
+            (*directive_id, name.as_str(), content, raw_content, attrs),
+            (2, "toc", &None, &None, &None)
         );
     }
 
@@ -947,26 +1039,45 @@ mod tests {
         let mut expected_pairs = HashMap::new();
         expected_pairs.insert("text".to_string(), "extra info".to_string());
 
+        let nodes =
+            parse_inlines(":tooltip[**bold** and use \\] plus \\[ too]{text=\"extra info\"}");
+        let Inline::InlineDirective {
+            directive_id,
+            name,
+            content,
+            raw_content,
+            attrs,
+            ..
+        } = &nodes[0]
+        else {
+            panic!("expected tooltip directive");
+        };
+        assert_eq!(*directive_id, 1);
+        assert_eq!(name, "tooltip");
         assert_eq!(
-            parse_inlines(":tooltip[**bold** and use \\] plus \\[ too]{text=\"extra info\"}"),
-            vec![Inline::InlineDirective {
-                name: "tooltip".to_string(),
-                content: Some(vec![
-                    Inline::Strong {
-                        content: vec![Inline::Text {
-                            value: "bold".to_string(),
-                        }],
-                    },
-                    Inline::Text {
-                        value: " and use ] plus [ too".to_string(),
-                    },
-                ]),
-                attrs: Some(Attributes {
-                    id: None,
-                    classes: Vec::new(),
-                    pairs: expected_pairs,
-                }),
-            }]
+            raw_content.as_deref(),
+            Some("**bold** and use \\] plus \\[ too")
+        );
+        assert_eq!(
+            content,
+            &Some(vec![
+                Inline::Strong {
+                    content: vec![Inline::Text {
+                        value: "bold".to_string(),
+                    }],
+                },
+                Inline::Text {
+                    value: " and use ] plus [ too".to_string(),
+                },
+            ])
+        );
+        assert_eq!(
+            attrs,
+            &Some(Attributes {
+                id: None,
+                classes: Vec::new(),
+                pairs: expected_pairs,
+            })
         );
     }
 

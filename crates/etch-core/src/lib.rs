@@ -1,4 +1,5 @@
 mod ast;
+pub mod math;
 pub mod parser;
 pub mod render;
 

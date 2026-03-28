@@ -1,0 +1,11 @@
+{~ Tests accent decorations on symbols. ~}
+
+Hat: :math[\hat{x}].
+
+Bar: :math[\bar{x}].
+
+Vector: :math[\vec{v}].
+
+Dot: :math[\dot{x}].
+
+Tilde: :math[\tilde{x}].

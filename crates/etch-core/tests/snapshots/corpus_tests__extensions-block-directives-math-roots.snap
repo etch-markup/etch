@@ -1,0 +1,117 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Square root: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 14
+              },
+              "end": {
+                "line": 1,
+                "column": 43
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\sqrt{x}, \\sqrt{a + b}"
+              }
+            ],
+            "raw_content": "\\sqrt{x}, \\sqrt{a + b}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Cube root: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 12
+              },
+              "end": {
+                "line": 1,
+                "column": 30
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\sqrt[3]{8}"
+              }
+            ],
+            "raw_content": "\\sqrt[3]{8}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Nth root: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 11
+              },
+              "end": {
+                "line": 1,
+                "column": 29
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\sqrt[n]{x}"
+              }
+            ],
+            "raw_content": "\\sqrt[n]{x}"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

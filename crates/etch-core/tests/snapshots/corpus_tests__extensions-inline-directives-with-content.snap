@@ -15,13 +15,25 @@ expression: result
           },
           {
             "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 18
+              },
+              "end": {
+                "line": 1,
+                "column": 48
+              }
+            },
             "name": "tooltip",
             "content": [
               {
                 "type": "Text",
                 "value": "hover over this text"
               }
-            ]
+            ],
+            "raw_content": "hover over this text"
           },
           {
             "type": "Text",

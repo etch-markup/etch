@@ -588,6 +588,51 @@ corpus_test!(
     "extensions-block-directives-math"
 );
 corpus_test!(
+    extensions_block_directives_math_fractions,
+    "../../../tests/corpus/extensions/block-directives/math-fractions.etch",
+    "extensions-block-directives-math-fractions"
+);
+corpus_test!(
+    extensions_block_directives_math_greek,
+    "../../../tests/corpus/extensions/block-directives/math-greek.etch",
+    "extensions-block-directives-math-greek"
+);
+corpus_test!(
+    extensions_block_directives_math_operators,
+    "../../../tests/corpus/extensions/block-directives/math-operators.etch",
+    "extensions-block-directives-math-operators"
+);
+corpus_test!(
+    extensions_block_directives_math_scripts,
+    "../../../tests/corpus/extensions/block-directives/math-scripts.etch",
+    "extensions-block-directives-math-scripts"
+);
+corpus_test!(
+    extensions_block_directives_math_roots,
+    "../../../tests/corpus/extensions/block-directives/math-roots.etch",
+    "extensions-block-directives-math-roots"
+);
+corpus_test!(
+    extensions_block_directives_math_delimiters,
+    "../../../tests/corpus/extensions/block-directives/math-delimiters.etch",
+    "extensions-block-directives-math-delimiters"
+);
+corpus_test!(
+    extensions_block_directives_math_accents,
+    "../../../tests/corpus/extensions/block-directives/math-accents.etch",
+    "extensions-block-directives-math-accents"
+);
+corpus_test!(
+    extensions_block_directives_math_fonts,
+    "../../../tests/corpus/extensions/block-directives/math-fonts.etch",
+    "extensions-block-directives-math-fonts"
+);
+corpus_test!(
+    extensions_block_directives_math_display,
+    "../../../tests/corpus/extensions/block-directives/math-display.etch",
+    "extensions-block-directives-math-display"
+);
+corpus_test!(
     extensions_block_directives_multiple,
     "../../../tests/corpus/extensions/block-directives/multiple.etch",
     "extensions-block-directives-multiple"

@@ -1,11 +1,15 @@
-use crate::Inline;
+use crate::{Inline, SourcePosition};
 
 use super::{
-    parse_inlines,
+    advance_position, parse_inlines_with_position,
     util::{char_after, char_before},
 };
 
-pub(super) fn try_parse_link(input: &str, index: usize) -> Option<(Inline, usize)> {
+pub(super) fn try_parse_link(
+    input: &str,
+    index: usize,
+    start: SourcePosition,
+) -> Option<(Inline, usize)> {
     if char_before(input, index) == Some('!') {
         return None;
     }
@@ -26,7 +30,11 @@ pub(super) fn try_parse_link(input: &str, index: usize) -> Option<(Inline, usize
         Inline::Link {
             url,
             title,
-            content: parse_inlines(&input[text_start..text_end]),
+            content: parse_inlines_with_position(
+                &input[text_start..text_end],
+                start.line,
+                advance_position(start, &input[index..text_start]).column,
+            ),
             attrs: None,
         },
         destination_end + 1,

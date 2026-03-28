@@ -8,6 +8,17 @@ expression: result
     "body": [
       {
         "type": "ContainerDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 14,
+            "column": 12
+          }
+        },
         "name": "columns",
         "attrs": {
           "pairs": {
@@ -15,10 +26,23 @@ expression: result
             "gap": "1rem"
           }
         },
+        "raw_body": ":::column\n## Left Notes\n\nPack the stove fuel and the spare wick.\n:::/column\n:::column\n## Right Notes\n\nLeave the tide chart with the dockmaster.\n:::/column",
         "body": [
           {
             "type": "ContainerDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 4,
+                "column": 1
+              },
+              "end": {
+                "line": 8,
+                "column": 11
+              }
+            },
             "name": "column",
+            "raw_body": "## Left Notes\n\nPack the stove fuel and the spare wick.",
             "body": [
               {
                 "type": "Heading",
@@ -44,7 +68,19 @@ expression: result
           },
           {
             "type": "ContainerDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 9,
+                "column": 1
+              },
+              "end": {
+                "line": 13,
+                "column": 11
+              }
+            },
             "name": "column",
+            "raw_body": "## Right Notes\n\nLeave the tide chart with the dockmaster.",
             "body": [
               {
                 "type": "Heading",

@@ -8,6 +8,17 @@ expression: result
     "body": [
       {
         "type": "ContainerDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 5,
+            "column": 12
+          }
+        },
         "name": "columns",
         "attrs": {
           "pairs": {
@@ -15,6 +26,7 @@ expression: result
             "gap": "1rem"
           }
         },
+        "raw_body": "Left and right content are grouped under one container.",
         "body": [
           {
             "type": "Paragraph",

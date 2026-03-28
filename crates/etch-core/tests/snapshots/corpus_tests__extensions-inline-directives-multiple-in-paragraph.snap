@@ -15,6 +15,17 @@ expression: result
           },
           {
             "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 10
+              },
+              "end": {
+                "line": 1,
+                "column": 40
+              }
+            },
             "name": "character",
             "content": [
               {
@@ -22,6 +33,7 @@ expression: result
                 "value": "Sable"
               }
             ],
+            "raw_content": "Sable",
             "attrs": {
               "pairs": {
                 "species": "fox"
@@ -34,6 +46,17 @@ expression: result
           },
           {
             "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 52
+              },
+              "end": {
+                "line": 1,
+                "column": 100
+              }
+            },
             "name": "tooltip",
             "content": [
               {
@@ -41,6 +64,7 @@ expression: result
                 "value": "the old tower"
               }
             ],
+            "raw_content": "the old tower",
             "attrs": {
               "pairs": {
                 "text": "watch the stairs"
@@ -53,6 +77,17 @@ expression: result
           },
           {
             "type": "InlineDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 129
+              },
+              "end": {
+                "line": 1,
+                "column": 147
+              }
+            },
             "name": "date",
             "attrs": {
               "pairs": {

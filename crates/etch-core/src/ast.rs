@@ -20,6 +20,18 @@ pub struct Document {
     pub body: Vec<Block>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct SourcePosition {
+    pub line: usize,
+    pub column: usize,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct SourceSpan {
+    pub start: SourcePosition,
+    pub end: SourcePosition,
+}
+
 // ─────────────────────────────────────────────
 // Frontmatter
 // ─────────────────────────────────────────────
@@ -146,15 +158,20 @@ pub enum Block {
     /// Can contain rich content including multiple paragraphs (fenced behavior).
     /// Cannot contain other directives (unless overridden by plugin to structural).
     BlockDirective {
+        directive_id: u64,
+        span: SourceSpan,
         /// The directive name (e.g., "aside", "math", "spoiler").
         /// Letters and hyphens only, starts with a letter.
         name: String,
         /// Optional label text in [brackets] after the name.
         #[serde(skip_serializing_if = "Option::is_none")]
         label: Option<Vec<Inline>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        raw_label: Option<String>,
         /// Optional attributes in {braces} after the name/label.
         #[serde(skip_serializing_if = "Option::is_none")]
         attrs: Option<Attributes>,
+        raw_body: String,
         /// The body content, parsed as blocks.
         body: Vec<Block>,
     },
@@ -162,14 +179,19 @@ pub enum Block {
     /// A container directive (:::name ... ::: or :::/name). Structural by default.
     /// Can contain other directives (block and container).
     ContainerDirective {
+        directive_id: u64,
+        span: SourceSpan,
         /// The directive name (e.g., "chapter", "columns", "column").
         name: String,
         /// Optional label text in [brackets].
         #[serde(skip_serializing_if = "Option::is_none")]
         label: Option<Vec<Inline>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        raw_label: Option<String>,
         /// Optional attributes in {braces}.
         #[serde(skip_serializing_if = "Option::is_none")]
         attrs: Option<Attributes>,
+        raw_body: String,
         /// The body content, parsed as blocks (may include nested directives).
         body: Vec<Block>,
         /// Whether the directive was closed with a named close (:::/name).
@@ -258,11 +280,15 @@ pub enum Inline {
 
     /// :name[content]{attrs} — an inline directive.
     InlineDirective {
+        directive_id: u64,
+        span: SourceSpan,
         /// Directive name (letters and hyphens, starts with letter).
         name: String,
         /// Optional content in [brackets]. Can contain inline formatting.
         #[serde(skip_serializing_if = "Option::is_none")]
         content: Option<Vec<Inline>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        raw_content: Option<String>,
         /// Optional attributes in {braces}.
         #[serde(skip_serializing_if = "Option::is_none")]
         attrs: Option<Attributes>,

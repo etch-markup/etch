@@ -1,8 +1,12 @@
-use crate::Inline;
+use crate::{Inline, SourcePosition, SourceSpan};
 
-use super::parse_inlines;
+use super::{advance_position, parse_inlines_with_position};
 
-pub(super) fn try_parse_inline_directive(input: &str, index: usize) -> Option<(Inline, usize)> {
+pub(super) fn try_parse_inline_directive(
+    input: &str,
+    index: usize,
+    start: SourcePosition,
+) -> Option<(Inline, usize)> {
     if input.as_bytes().get(index).copied()? != b':' {
         return None;
     }
@@ -25,10 +29,18 @@ pub(super) fn try_parse_inline_directive(input: &str, index: usize) -> Option<(I
     remainder = &remainder[name_len..];
 
     let mut content = None;
+    let mut raw_content = None;
     if remainder.starts_with('[') {
         let (content_text, next_remainder) =
             super::super::directive::parse_balanced_bracket_segment(remainder)?;
-        content = Some(parse_inlines(content_text));
+        let consumed_before_content = input[index..].len() - remainder.len() + 1;
+        let content_start = advance_position(start, &input[index..index + consumed_before_content]);
+        content = Some(parse_inlines_with_position(
+            content_text,
+            content_start.line,
+            content_start.column,
+        ));
+        raw_content = Some(content_text.to_string());
         remainder = next_remainder;
     }
 
@@ -42,8 +54,14 @@ pub(super) fn try_parse_inline_directive(input: &str, index: usize) -> Option<(I
 
     Some((
         Inline::InlineDirective {
+            directive_id: super::super::next_directive_id(),
+            span: SourceSpan {
+                start,
+                end: advance_position(start, &input[index..input.len() - remainder.len()]),
+            },
             name,
             content,
+            raw_content,
             attrs,
         },
         input.len() - remainder.len(),

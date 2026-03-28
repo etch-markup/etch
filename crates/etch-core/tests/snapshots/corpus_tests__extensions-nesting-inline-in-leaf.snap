@@ -8,7 +8,19 @@ expression: result
     "body": [
       {
         "type": "BlockDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 5,
+            "column": 3
+          }
+        },
         "name": "aside",
+        "raw_body": "The margin note uses :tooltip[text]{info=\"x\"} beside :math[E=mc^2] in the same paragraph.",
         "body": [
           {
             "type": "Paragraph",
@@ -19,6 +31,17 @@ expression: result
               },
               {
                 "type": "InlineDirective",
+                "directive_id": 2,
+                "span": {
+                  "start": {
+                    "line": 1,
+                    "column": 22
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 46
+                  }
+                },
                 "name": "tooltip",
                 "content": [
                   {
@@ -26,6 +49,7 @@ expression: result
                     "value": "text"
                   }
                 ],
+                "raw_content": "text",
                 "attrs": {
                   "pairs": {
                     "info": "x"
@@ -38,13 +62,25 @@ expression: result
               },
               {
                 "type": "InlineDirective",
+                "directive_id": 3,
+                "span": {
+                  "start": {
+                    "line": 1,
+                    "column": 54
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 67
+                  }
+                },
                 "name": "math",
                 "content": [
                   {
                     "type": "Text",
                     "value": "E=mc^2"
                   }
-                ]
+                ],
+                "raw_content": "E=mc^2"
               },
               {
                 "type": "Text",

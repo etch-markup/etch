@@ -1,6 +1,5 @@
 ---
 source: crates/etch-core/tests/corpus_tests.rs
-assertion_line: 807
 expression: result
 ---
 {
@@ -205,6 +204,17 @@ expression: result
           },
           {
             "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 27
+              },
+              "end": {
+                "line": 1,
+                "column": 62
+              }
+            },
             "name": "name",
             "content": [
               {
@@ -212,6 +222,7 @@ expression: result
                 "value": "River Cache"
               }
             ],
+            "raw_content": "River Cache",
             "attrs": {
               "pairs": {
                 "role": "checkpoint"
@@ -261,6 +272,17 @@ expression: result
         "content": [
           {
             "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 11
+              }
+            },
             "name": "pagebreak"
           }
         ]
@@ -575,6 +597,17 @@ expression: result
       },
       {
         "type": "BlockDirective",
+        "directive_id": 3,
+        "span": {
+          "start": {
+            "line": 60,
+            "column": 1
+          },
+          "end": {
+            "line": 66,
+            "column": 3
+          }
+        },
         "name": "aside",
         "label": [
           {
@@ -582,11 +615,13 @@ expression: result
             "value": "Field note"
           }
         ],
+        "raw_label": "Field note",
         "attrs": {
           "classes": [
             "highlighted"
           ]
         },
+        "raw_body": "This leaf block holds :tooltip[inline help]{text=\"shown on hover\"} and :math[E = mc^2] in flowing text.\n\nIt also keeps blank lines inside the fenced body without ending early.\n\n- First aside item",
         "body": [
           {
             "type": "Paragraph",
@@ -597,6 +632,17 @@ expression: result
               },
               {
                 "type": "InlineDirective",
+                "directive_id": 4,
+                "span": {
+                  "start": {
+                    "line": 1,
+                    "column": 23
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 67
+                  }
+                },
                 "name": "tooltip",
                 "content": [
                   {
@@ -604,6 +650,7 @@ expression: result
                     "value": "inline help"
                   }
                 ],
+                "raw_content": "inline help",
                 "attrs": {
                   "pairs": {
                     "text": "shown on hover"
@@ -616,13 +663,25 @@ expression: result
               },
               {
                 "type": "InlineDirective",
+                "directive_id": 5,
+                "span": {
+                  "start": {
+                    "line": 1,
+                    "column": 72
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 87
+                  }
+                },
                 "name": "math",
                 "content": [
                   {
                     "type": "Text",
                     "value": "E = mc^2"
                   }
-                ]
+                ],
+                "raw_content": "E = mc^2"
               },
               {
                 "type": "Text",
@@ -662,7 +721,19 @@ expression: result
       },
       {
         "type": "BlockDirective",
+        "directive_id": 6,
+        "span": {
+          "start": {
+            "line": 67,
+            "column": 1
+          },
+          "end": {
+            "line": 69,
+            "column": 3
+          }
+        },
         "name": "math",
+        "raw_body": "\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}",
         "body": [
           {
             "type": "Paragraph",
@@ -677,6 +748,17 @@ expression: result
       },
       {
         "type": "ContainerDirective",
+        "directive_id": 7,
+        "span": {
+          "start": {
+            "line": 70,
+            "column": 1
+          },
+          "end": {
+            "line": 76,
+            "column": 12
+          }
+        },
         "name": "chapter",
         "attrs": {
           "pairs": {
@@ -684,6 +766,7 @@ expression: result
             "title": "Night Watch"
           }
         },
+        "raw_body": "## First Bell\nThe chapter begins with a heading and a short paragraph about the frozen dock.\n:::section{title=\"Inner Yard\"}\nThe section continues the report while the nested container stays open.\n:::/section",
         "body": [
           {
             "type": "Heading",
@@ -706,12 +789,24 @@ expression: result
           },
           {
             "type": "ContainerDirective",
+            "directive_id": 8,
+            "span": {
+              "start": {
+                "line": 73,
+                "column": 1
+              },
+              "end": {
+                "line": 75,
+                "column": 12
+              }
+            },
             "name": "section",
             "attrs": {
               "pairs": {
                 "title": "Inner Yard"
               }
             },
+            "raw_body": "The section continues the report while the nested container stays open.",
             "body": [
               {
                 "type": "Paragraph",

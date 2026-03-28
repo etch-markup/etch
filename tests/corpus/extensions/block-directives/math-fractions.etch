@@ -1,0 +1,7 @@
+{~ Tests fraction rendering in math directives. ~}
+
+Simple: :math[\frac{1}{2}].
+
+Nested: :math[\frac{\frac{a}{b}}{c}].
+
+Expression: :math[\frac{x + 1}{x - 1}].

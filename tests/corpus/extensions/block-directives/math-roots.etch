@@ -1,0 +1,7 @@
+{~ Tests square root and nth root rendering. ~}
+
+Square root: :math[\sqrt{x}, \sqrt{a + b}].
+
+Cube root: :math[\sqrt[3]{8}].
+
+Nth root: :math[\sqrt[n]{x}].

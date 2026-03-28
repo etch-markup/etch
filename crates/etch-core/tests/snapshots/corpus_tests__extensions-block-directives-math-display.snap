@@ -1,0 +1,93 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 5,
+            "column": 3
+          }
+        },
+        "name": "math",
+        "raw_body": "\\sum_{i=0}^{n} x_i",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\sum_{i=0}^{n} x_i"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "directive_id": 2,
+        "span": {
+          "start": {
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "line": 9,
+            "column": 3
+          }
+        },
+        "name": "math",
+        "raw_body": "\\int_0^1 f(x) \\, dx = F(1) - F(0)",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\int_0^1 f(x) \\, dx = F(1) - F(0)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "directive_id": 3,
+        "span": {
+          "start": {
+            "line": 11,
+            "column": 1
+          },
+          "end": {
+            "line": 13,
+            "column": 3
+          }
+        },
+        "name": "math",
+        "raw_body": "\\prod_{k=1}^{n} k = n!",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "\\prod_{k=1}^{n} k = n!"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

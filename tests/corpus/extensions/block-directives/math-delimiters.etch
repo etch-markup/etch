@@ -1,0 +1,7 @@
+{~ Tests \left \right delimiter pairs. ~}
+
+Parentheses: :math[\left(\frac{1}{2}\right)].
+
+Brackets: :math[\left[\frac{a}{b}\right]].
+
+Braces: :math[\left\{x \in \mathbb{R}\right\}].

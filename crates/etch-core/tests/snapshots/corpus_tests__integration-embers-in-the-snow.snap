@@ -31,7 +31,19 @@ expression: result
       },
       {
         "type": "BlockDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 13,
+            "column": 1
+          },
+          "end": {
+            "line": 15,
+            "column": 3
+          }
+        },
         "name": "dedication",
+        "raw_body": "For everyone who stayed up too late reading under the covers.",
         "body": [
           {
             "type": "Paragraph",
@@ -46,6 +58,17 @@ expression: result
       },
       {
         "type": "BlockDirective",
+        "directive_id": 2,
+        "span": {
+          "start": {
+            "line": 17,
+            "column": 1
+          },
+          "end": {
+            "line": 19,
+            "column": 3
+          }
+        },
         "name": "content-warning",
         "attrs": {
           "pairs": {
@@ -53,6 +76,7 @@ expression: result
             "tags": "melancholy"
           }
         },
+        "raw_body": "Themes of nostalgia and gentle sadness.",
         "body": [
           {
             "type": "Paragraph",
@@ -67,6 +91,17 @@ expression: result
       },
       {
         "type": "ContainerDirective",
+        "directive_id": 3,
+        "span": {
+          "start": {
+            "line": 21,
+            "column": 1
+          },
+          "end": {
+            "line": 40,
+            "column": 12
+          }
+        },
         "name": "chapter",
         "attrs": {
           "pairs": {
@@ -74,6 +109,7 @@ expression: result
             "title": "The First Snow"
           }
         },
+        "raw_body": "\nThe village woke to silence. Not the silence of sleep,\nbut the silence of snow — heavy, patient, ==absolute==.\n\n::aside\nThe author grew up in a town like this one.\n::\n\n:character[Mira]{species=wolf} stepped onto the porch,\nbreath curling like smoke. She held a letter — creased\nfrom folding and refolding — and read it one last time.\n\n> *\"I'll come back when the embers remember how to burn.\"*\n>\n> — Kael's last letter {.attribution}\n\nShe tucked it into her coat and walked into the white.\n",
         "body": [
           {
             "type": "Paragraph",
@@ -106,7 +142,19 @@ expression: result
           },
           {
             "type": "BlockDirective",
+            "directive_id": 4,
+            "span": {
+              "start": {
+                "line": 26,
+                "column": 1
+              },
+              "end": {
+                "line": 28,
+                "column": 3
+              }
+            },
             "name": "aside",
+            "raw_body": "The author grew up in a town like this one.",
             "body": [
               {
                 "type": "Paragraph",
@@ -124,6 +172,17 @@ expression: result
             "content": [
               {
                 "type": "InlineDirective",
+                "directive_id": 5,
+                "span": {
+                  "start": {
+                    "line": 1,
+                    "column": 1
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 31
+                  }
+                },
                 "name": "character",
                 "content": [
                   {
@@ -131,6 +190,7 @@ expression: result
                     "value": "Mira"
                   }
                 ],
+                "raw_content": "Mira",
                 "attrs": {
                   "pairs": {
                     "species": "wolf"
@@ -207,6 +267,17 @@ expression: result
       },
       {
         "type": "ContainerDirective",
+        "directive_id": 6,
+        "span": {
+          "start": {
+            "line": 44,
+            "column": 1
+          },
+          "end": {
+            "line": 59,
+            "column": 12
+          }
+        },
         "name": "chapter",
         "attrs": {
           "pairs": {
@@ -214,6 +285,7 @@ expression: result
             "title": "The Finding"
           }
         },
+        "raw_body": "\nThree days later, she found what she was looking for.[^1]\n\nNot Kael — not exactly. But the place where he'd been,\nmarked by a ring of stones and the ash of a fire\nthat might have been warm ==yesterday==.\n\nThe area measured roughly :math[3\\text{m} \\times 3\\text{m}],\nwith the stones arranged in a precise circle.\n\nHer address was simple:\\\n42 Northwind Road\\\nThe Village at the Edge\n",
         "body": [
           {
             "type": "Paragraph",
@@ -273,13 +345,25 @@ expression: result
               },
               {
                 "type": "InlineDirective",
+                "directive_id": 7,
+                "span": {
+                  "start": {
+                    "line": 1,
+                    "column": 27
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 60
+                  }
+                },
                 "name": "math",
                 "content": [
                   {
                     "type": "Text",
                     "value": "3\\text{m} \\times 3\\text{m}"
                   }
-                ]
+                ],
+                "raw_content": "3\\text{m} \\times 3\\text{m}"
               },
               {
                 "type": "Text",

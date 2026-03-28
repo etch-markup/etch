@@ -8,12 +8,24 @@ expression: result
     "body": [
       {
         "type": "ContainerDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 12,
+            "column": 12
+          }
+        },
         "name": "chapter",
         "attrs": {
           "pairs": {
             "title": "Lantern Watch"
           }
         },
+        "raw_body": "# Arrival\n\nThe road was clear before sunrise.\n\nThe river path stayed quiet after noon.\n\n- Check the gate\n- Lock the storehouse",
         "body": [
           {
             "type": "Heading",

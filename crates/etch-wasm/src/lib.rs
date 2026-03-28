@@ -51,7 +51,7 @@ mod tests {
         assert!(!result.errors.is_empty());
 
         let html = render_html("::aside\nMissing close");
-        assert!(html.contains("data-directive=\"aside\""));
+        assert!(html.contains("data-etch-directive=\"aside\""));
         assert!(html.contains("<p>Missing close</p>"));
     }
 

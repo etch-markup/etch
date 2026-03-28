@@ -1,0 +1,5 @@
+{~ Tests rendering of Greek letters in math directives. ~}
+
+Lowercase: :math[\alpha, \beta, \gamma, \delta, \epsilon, \theta, \lambda, \mu, \pi, \sigma, \omega].
+
+Uppercase: :math[\Gamma, \Delta, \Theta, \Lambda, \Pi, \Omega].

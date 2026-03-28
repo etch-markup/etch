@@ -15,13 +15,25 @@ expression: result
           },
           {
             "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 23
+              },
+              "end": {
+                "line": 1,
+                "column": 38
+              }
+            },
             "name": "math",
             "content": [
               {
                 "type": "Text",
                 "value": "E = mc^2"
               }
-            ]
+            ],
+            "raw_content": "E = mc^2"
           },
           {
             "type": "Text",
@@ -31,7 +43,19 @@ expression: result
       },
       {
         "type": "BlockDirective",
+        "directive_id": 2,
+        "span": {
+          "start": {
+            "line": 5,
+            "column": 1
+          },
+          "end": {
+            "line": 9,
+            "column": 3
+          }
+        },
         "name": "math",
+        "raw_body": "\\int_0^1 x^2 \\, dx = \\frac{1}{3}\nE = mc^2\n\\nabla \\cdot \\vec{F} = 0",
         "body": [
           {
             "type": "Paragraph",

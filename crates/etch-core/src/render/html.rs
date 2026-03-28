@@ -1,6 +1,6 @@
 use crate::{
     Alignment, Attributes, Block, DefinitionItem, Document, Frontmatter, Inline, ListItem,
-    TableCell,
+    TableCell, math,
 };
 use std::collections::HashSet;
 
@@ -119,18 +119,57 @@ impl HtmlRenderer {
             } => self.render_table(headers, rows, alignments, attrs.as_ref()),
             Block::ThematicBreak => "<hr>".to_string(),
             Block::BlockDirective {
+                directive_id,
                 name,
                 label,
+                raw_label,
                 attrs,
-                body,
-            } => self.render_directive("div", name, label.as_deref(), attrs.as_ref(), body),
-            Block::ContainerDirective {
-                name,
-                label,
-                attrs,
+                raw_body,
                 body,
                 ..
-            } => self.render_directive("section", name, label.as_deref(), attrs.as_ref(), body),
+            } => {
+                if name == "math" {
+                    return math::latex_to_mathml(raw_body, true);
+                }
+
+                self.render_directive(
+                    "div",
+                    "block",
+                    *directive_id,
+                    name,
+                    raw_label.as_deref(),
+                    raw_body,
+                    label.as_deref(),
+                    attrs.as_ref(),
+                    body,
+                )
+            }
+            Block::ContainerDirective {
+                directive_id,
+                name,
+                label,
+                raw_label,
+                attrs,
+                raw_body,
+                body,
+                ..
+            } => {
+                if name == "math" {
+                    return math::latex_to_mathml(raw_body, true);
+                }
+
+                self.render_directive(
+                    "section",
+                    "container",
+                    *directive_id,
+                    name,
+                    raw_label.as_deref(),
+                    raw_body,
+                    label.as_deref(),
+                    attrs.as_ref(),
+                    body,
+                )
+            }
             Block::FootnoteDefinition { label, content } => wrap_with_tag(
                 "div",
                 None,
@@ -244,7 +283,11 @@ impl HtmlRenderer {
     fn render_directive(
         &self,
         tag: &str,
+        kind: &str,
+        directive_id: u64,
         name: &str,
+        raw_label: Option<&str>,
+        raw_content: &str,
         label: Option<&[Inline]>,
         attrs: Option<&Attributes>,
         body: &[Block],
@@ -267,13 +310,22 @@ impl HtmlRenderer {
 
         inner.push_str(&self.render_blocks(body));
 
-        wrap_with_tag(
-            tag,
-            attrs,
-            &[("data-directive", name.to_string())],
-            &[],
-            &inner,
-        )
+        let mut extra_attrs = vec![
+            ("data-etch-directive", name.to_string()),
+            ("data-etch-kind", kind.to_string()),
+            ("data-etch-id", directive_id.to_string()),
+            ("data-etch-content", raw_content.to_string()),
+        ];
+
+        if let Some(raw_label) = raw_label {
+            extra_attrs.push(("data-etch-label", raw_label.to_string()));
+        }
+
+        if let Some(attrs) = attrs {
+            extra_attrs.push(("data-etch-attrs", serialize_attrs(attrs)));
+        }
+
+        wrap_with_tag(tag, None, &extra_attrs, &[], &inner)
     }
 
     fn render_inlines(&self, inlines: &[Inline]) -> String {
@@ -398,19 +450,44 @@ impl HtmlRenderer {
                     ));
                 }
                 Inline::InlineDirective {
+                    directive_id,
                     name,
                     content,
+                    raw_content,
                     attrs,
+                    ..
                 } => {
+                    if name == "math" {
+                        html.push_str(&math::latex_to_mathml(
+                            raw_content.as_deref().unwrap_or_default(),
+                            false,
+                        ));
+                        continue;
+                    }
+
                     let rendered_content = content
                         .as_deref()
                         .map(|content| self.render_inlines(content))
                         .unwrap_or_default();
 
+                    let mut extra_attrs = vec![
+                        ("data-etch-directive", name.to_string()),
+                        ("data-etch-kind", "inline".to_string()),
+                        ("data-etch-id", directive_id.to_string()),
+                        (
+                            "data-etch-content",
+                            raw_content.as_deref().unwrap_or_default().to_string(),
+                        ),
+                    ];
+
+                    if let Some(attrs) = attrs.as_ref() {
+                        extra_attrs.push(("data-etch-attrs", serialize_attrs(attrs)));
+                    }
+
                     html.push_str(&wrap_with_tag(
                         "span",
-                        attrs.as_ref(),
-                        &[("data-directive", name.to_string())],
+                        None,
+                        &extra_attrs,
                         &[],
                         &rendered_content,
                     ));
@@ -563,6 +640,34 @@ fn document_title(frontmatter: Option<&Frontmatter>) -> Option<String> {
     value.as_title_string()
 }
 
+fn serialize_attrs(attrs: &Attributes) -> String {
+    let mut fields = Vec::new();
+
+    if let Some(id) = &attrs.id {
+        fields.push(("id".to_string(), id.clone()));
+    }
+
+    if !attrs.classes.is_empty() {
+        fields.push(("class".to_string(), attrs.classes.join(" ")));
+    }
+
+    let mut pairs = attrs.pairs.iter().collect::<Vec<_>>();
+    pairs.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+    fields.extend(
+        pairs
+            .into_iter()
+            .map(|(key, value)| (key.clone(), value.clone())),
+    );
+
+    let body = fields
+        .into_iter()
+        .map(|(key, value)| format!("\"{}\":\"{}\"", escape_json(&key), escape_json(&value)))
+        .collect::<Vec<_>>()
+        .join(",");
+
+    format!("{{{body}}}")
+}
+
 fn normalize_data_attribute_name(name: &str) -> String {
     if name.starts_with("data-") {
         name.to_string()
@@ -580,6 +685,23 @@ fn escape_html_text(value: &str) -> String {
 
 fn escape_html_attr(value: &str) -> String {
     escape_html_text(value).replace('"', "&quot;")
+}
+
+fn escape_json(value: &str) -> String {
+    let mut escaped = String::new();
+
+    for ch in value.chars() {
+        match ch {
+            '\\' => escaped.push_str("\\\\"),
+            '"' => escaped.push_str("\\\""),
+            '\n' => escaped.push_str("\\n"),
+            '\r' => escaped.push_str("\\r"),
+            '\t' => escaped.push_str("\\t"),
+            _ => escaped.push(ch),
+        }
+    }
+
+    escaped
 }
 
 #[cfg(test)]
@@ -675,11 +797,18 @@ mod tests {
                     attrs: None,
                 },
                 Block::BlockDirective {
+                    directive_id: 1,
+                    span: crate::SourceSpan {
+                        start: crate::SourcePosition { line: 1, column: 1 },
+                        end: crate::SourcePosition { line: 1, column: 1 },
+                    },
                     name: "aside".to_string(),
                     label: Some(vec![Inline::Text {
                         value: "Note".to_string(),
                     }]),
+                    raw_label: Some("Note".to_string()),
                     attrs: None,
+                    raw_body: "Directive body".to_string(),
                     body: vec![Block::Paragraph {
                         content: vec![Inline::Text {
                             value: "Directive body".to_string(),
@@ -688,9 +817,16 @@ mod tests {
                     }],
                 },
                 Block::ContainerDirective {
+                    directive_id: 2,
+                    span: crate::SourceSpan {
+                        start: crate::SourcePosition { line: 1, column: 1 },
+                        end: crate::SourcePosition { line: 1, column: 1 },
+                    },
                     name: "chapter".to_string(),
                     label: None,
+                    raw_label: None,
                     attrs: None,
+                    raw_body: "[^a]".to_string(),
                     body: vec![Block::Paragraph {
                         content: vec![Inline::FootnoteReference {
                             label: "a".to_string(),
@@ -721,8 +857,8 @@ mod tests {
                 "<pre><code class=\"language-rust\">fn main() {}</code></pre>\n",
                 "<ul><li data-task=\"true\" data-checked=\"true\"><input type=\"checkbox\" disabled checked><p>Todo</p></li></ul>\n",
                 "<table><thead><tr><th style=\"text-align: center;\">Name</th></tr></thead><tbody><tr><td style=\"text-align: center;\"><a href=\"https://example.com\" title=\"Go\">Etch</a></td></tr></tbody></table>\n",
-                "<div data-directive=\"aside\"><p class=\"directive-label\">Note</p>\n<p>Directive body</p></div>\n",
-                "<section data-directive=\"chapter\"><p><sup><a href=\"#fn-a\">a</a></sup></p></section>\n",
+                "<div data-etch-directive=\"aside\" data-etch-kind=\"block\" data-etch-id=\"1\" data-etch-content=\"Directive body\" data-etch-label=\"Note\"><p class=\"directive-label\">Note</p>\n<p>Directive body</p></div>\n",
+                "<section data-etch-directive=\"chapter\" data-etch-kind=\"container\" data-etch-id=\"2\" data-etch-content=\"[^a]\"><p><sup><a href=\"#fn-a\">a</a></sup></p></section>\n",
                 "<div id=\"fn-a\" class=\"footnote\"><p>Footnote</p></div>"
             )
         );
@@ -744,15 +880,13 @@ mod tests {
         let html = render_html(&result.document);
 
         assert!(html.contains("<h1>Embers in the Snow</h1>"));
-        assert!(html.contains("<div data-directive=\"dedication\"><p>For everyone who stayed up too late reading under the covers.</p></div>"));
-        assert!(html.contains(
-            "<section data-directive=\"chapter\" data-number=\"1\" data-title=\"The First Snow\">"
-        ));
+        assert!(html.contains("<div data-etch-directive=\"dedication\" data-etch-kind=\"block\""));
+        assert!(
+            html.contains("<section data-etch-directive=\"chapter\" data-etch-kind=\"container\"")
+        );
         assert!(html.contains("<mark>absolute</mark>"));
         assert!(html.contains("<blockquote><p><em>\"I'll come back when the embers remember how to burn.\"</em></p>\n<p class=\"attribution\">"));
-        assert!(
-            html.contains("<span data-directive=\"math\">3\\text{m} \\times 3\\text{m}</span>")
-        );
+        assert!(html.contains("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">"));
         assert!(
             html.contains(
                 "Her address was simple:<br>42 Northwind Road<br>The Village at the Edge"
@@ -760,5 +894,41 @@ mod tests {
         );
         assert!(html.contains("<sup><a href=\"#fn-1\">1</a></sup>"));
         assert!(html.contains("<div id=\"fn-1\" class=\"footnote\"><p>The finding is loosely based on a Scandinavian\nfolktale about returning wolves.</p></div>"));
+    }
+
+    #[test]
+    fn renders_inline_math_as_mathml() {
+        let html = render_html(&parse("The equation :math[\\frac{1}{2}] is simple.").document);
+        assert!(html.contains(
+            "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"><mfrac><mn>1</mn><mn>2</mn></mfrac></math>"
+        ));
+        assert!(!html.contains("data-etch-directive=\"math\""));
+    }
+
+    #[test]
+    fn renders_display_math_as_mathml() {
+        let html = render_html(&parse("::math\n\\int_0^1 x^2 \\, dx\n::").document);
+        assert!(
+            html.contains("<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">")
+        );
+    }
+
+    #[test]
+    fn renders_container_math_as_mathml() {
+        let html = render_html(&parse(":::math\n\\alpha + \\beta\n:::").document);
+        assert!(html.contains(
+            "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">"
+        ));
+        assert!(html.contains("<mi>α</mi>"));
+        assert!(!html.contains("data-etch-directive=\"math\""));
+    }
+
+    #[test]
+    fn renders_unknown_inline_directive_as_placeholder() {
+        let html = render_html(&parse(":custom[hello]{foo=bar}").document);
+        assert!(html.contains("data-etch-directive=\"custom\""));
+        assert!(html.contains("data-etch-kind=\"inline\""));
+        assert!(html.contains("data-etch-content=\"hello\""));
+        assert!(html.contains("data-etch-attrs=\"{&quot;foo&quot;:&quot;bar&quot;}\""));
     }
 }

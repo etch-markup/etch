@@ -1,0 +1,152 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Arithmetic: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 13
+              },
+              "end": {
+                "line": 1,
+                "column": 60
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "a \\pm b, a \\times b, a \\div b, a \\cdot b"
+              }
+            ],
+            "raw_content": "a \\pm b, a \\times b, a \\div b, a \\cdot b"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Relations: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 12
+              },
+              "end": {
+                "line": 1,
+                "column": 72
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "a \\leq b, a \\geq b, a \\neq b, a \\approx b, a \\equiv b"
+              }
+            ],
+            "raw_content": "a \\leq b, a \\geq b, a \\neq b, a \\approx b, a \\equiv b"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Set: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 6
+              },
+              "end": {
+                "line": 1,
+                "column": 65
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "x \\in S, x \\notin S, A \\subset B, A \\cup B, A \\cap B"
+              }
+            ],
+            "raw_content": "x \\in S, x \\notin S, A \\subset B, A \\cup B, A \\cap B"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Arrows: "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 4,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 9
+              },
+              "end": {
+                "line": 1,
+                "column": 97
+              }
+            },
+            "name": "math",
+            "content": [
+              {
+                "type": "Text",
+                "value": "f: A \\to B, A \\rightarrow B, A \\leftarrow B, A \\Rightarrow B, A \\Leftrightarrow B"
+              }
+            ],
+            "raw_content": "f: A \\to B, A \\rightarrow B, A \\leftarrow B, A \\Rightarrow B, A \\Leftrightarrow B"
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

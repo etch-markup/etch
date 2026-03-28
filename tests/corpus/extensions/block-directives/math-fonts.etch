@@ -1,0 +1,7 @@
+{~ Tests math font variants. ~}
+
+Blackboard bold: :math[\mathbb{R}, \mathbb{R}^n].
+
+Calligraphic: :math[\mathcal{L}].
+
+Bold: :math[\mathbf{v}].

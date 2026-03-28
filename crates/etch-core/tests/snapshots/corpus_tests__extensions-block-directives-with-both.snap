@@ -8,6 +8,17 @@ expression: result
     "body": [
       {
         "type": "BlockDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 5,
+            "column": 3
+          }
+        },
         "name": "aside",
         "label": [
           {
@@ -15,11 +26,13 @@ expression: result
             "value": "Author's note"
           }
         ],
+        "raw_label": "Author's note",
         "attrs": {
           "classes": [
             "highlighted"
           ]
         },
+        "raw_body": "This margin note should appear with highlighted styling.",
         "body": [
           {
             "type": "Paragraph",

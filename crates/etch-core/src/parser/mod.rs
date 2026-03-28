@@ -15,7 +15,7 @@ mod thematic_break;
 
 use crate::{Block, Document, ParseError, ParseErrorKind, ParseResult};
 use directive::ContainerClose;
-use std::iter::Peekable;
+use std::{cell::Cell, iter::Peekable};
 
 use self::{
     blockquote::{blockquote_from_lines, is_blockquote_line},
@@ -35,6 +35,10 @@ use self::{
     table::table_from_lines,
     thematic_break::thematic_break_from_line,
 };
+
+thread_local! {
+    static NEXT_DIRECTIVE_ID: Cell<u64> = const { Cell::new(1) };
+}
 
 #[derive(Clone)]
 pub(crate) struct ParseContext {
@@ -70,6 +74,7 @@ impl ParseContext {
 }
 
 pub fn parse(input: &str) -> ParseResult {
+    reset_directive_ids();
     let (frontmatter, input_without_frontmatter, mut errors) = parse_frontmatter(input);
     let body = strip_comments(input_without_frontmatter);
     let body_starts_at_document_start = frontmatter.is_none();
@@ -91,6 +96,18 @@ pub fn parse(input: &str) -> ParseResult {
         },
         errors,
     }
+}
+
+pub(crate) fn next_directive_id() -> u64 {
+    NEXT_DIRECTIVE_ID.with(|next_id| {
+        let current = next_id.get();
+        next_id.set(current + 1);
+        current
+    })
+}
+
+fn reset_directive_ids() {
+    NEXT_DIRECTIVE_ID.with(|next_id| next_id.set(1));
 }
 
 pub(crate) fn parse_blocks(
@@ -230,6 +247,7 @@ where
             blocks.push(block_directive_from_lines(
                 opening,
                 lines,
+                line_offset,
                 errors,
                 leaf_context,
             ));
@@ -1133,18 +1151,34 @@ mod tests {
     fn parse_detects_basic_block_directives_before_paragraph_fallback() {
         let result = parse("::aside\nInside the aside.\n::");
 
+        let [
+            Block::BlockDirective {
+                directive_id,
+                name,
+                label,
+                raw_label,
+                attrs,
+                raw_body,
+                body,
+                ..
+            },
+        ] = result.document.body.as_slice()
+        else {
+            panic!("expected one block directive");
+        };
+        assert_eq!(*directive_id, 1);
+        assert_eq!(name, "aside");
+        assert!(label.is_none());
+        assert!(raw_label.is_none());
+        assert!(attrs.is_none());
+        assert_eq!(raw_body, "Inside the aside.");
         assert_eq!(
-            result.document.body,
-            vec![Block::BlockDirective {
-                name: "aside".to_string(),
-                label: None,
-                attrs: None,
-                body: vec![Block::Paragraph {
-                    content: vec![Inline::Text {
-                        value: "Inside the aside.".to_string(),
-                    }],
-                    attrs: None,
+            body,
+            &vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Inside the aside.".to_string(),
                 }],
+                attrs: None,
             }]
         );
     }
@@ -1153,27 +1187,26 @@ mod tests {
     fn parse_treats_blank_lines_inside_block_directives_as_body_content() {
         let result = parse("::aside\nFirst paragraph.\n\nSecond paragraph.\n::");
 
+        let [Block::BlockDirective { raw_body, body, .. }] = result.document.body.as_slice() else {
+            panic!("expected one block directive");
+        };
+        assert_eq!(raw_body, "First paragraph.\n\nSecond paragraph.");
         assert_eq!(
-            result.document.body,
-            vec![Block::BlockDirective {
-                name: "aside".to_string(),
-                label: None,
-                attrs: None,
-                body: vec![
-                    Block::Paragraph {
-                        content: vec![Inline::Text {
-                            value: "First paragraph.".to_string(),
-                        }],
-                        attrs: None,
-                    },
-                    Block::Paragraph {
-                        content: vec![Inline::Text {
-                            value: "Second paragraph.".to_string(),
-                        }],
-                        attrs: None,
-                    },
-                ],
-            }]
+            body,
+            &vec![
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "First paragraph.".to_string(),
+                    }],
+                    attrs: None,
+                },
+                Block::Paragraph {
+                    content: vec![Inline::Text {
+                        value: "Second paragraph.".to_string(),
+                    }],
+                    attrs: None,
+                },
+            ]
         );
     }
 
@@ -1183,24 +1216,42 @@ mod tests {
         let mut expected_pairs = HashMap::new();
         expected_pairs.insert("tone".to_string(), "quiet".to_string());
 
+        let [
+            Block::BlockDirective {
+                label,
+                raw_label,
+                attrs,
+                raw_body,
+                body,
+                ..
+            },
+        ] = result.document.body.as_slice()
+        else {
+            panic!("expected one block directive");
+        };
         assert_eq!(
-            result.document.body,
-            vec![Block::BlockDirective {
-                name: "aside".to_string(),
-                label: Some(vec![Inline::Text {
-                    value: "Author note".to_string(),
-                }]),
-                attrs: Some(Attributes {
-                    id: Some("callout".to_string()),
-                    classes: vec!["highlight".to_string()],
-                    pairs: expected_pairs,
-                }),
-                body: vec![Block::Paragraph {
-                    content: vec![Inline::Text {
-                        value: "Body".to_string(),
-                    }],
-                    attrs: None,
+            label,
+            &Some(vec![Inline::Text {
+                value: "Author note".to_string(),
+            }])
+        );
+        assert_eq!(raw_label.as_deref(), Some("Author note"));
+        assert_eq!(
+            attrs,
+            &Some(Attributes {
+                id: Some("callout".to_string()),
+                classes: vec!["highlight".to_string()],
+                pairs: expected_pairs,
+            })
+        );
+        assert_eq!(raw_body, "Body");
+        assert_eq!(
+            body,
+            &vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Body".to_string(),
                 }],
+                attrs: None,
             }]
         );
     }
@@ -1234,19 +1285,30 @@ mod tests {
     fn parse_supports_container_directives_with_anonymous_closes() {
         let result = parse(":::chapter\nInside the chapter.\n:::");
 
+        let [
+            Block::ContainerDirective {
+                directive_id,
+                name,
+                raw_body,
+                named_close,
+                body,
+                ..
+            },
+        ] = result.document.body.as_slice()
+        else {
+            panic!("expected one container directive");
+        };
+        assert_eq!(*directive_id, 1);
+        assert_eq!(name, "chapter");
+        assert_eq!(raw_body, "Inside the chapter.");
+        assert!(!named_close);
         assert_eq!(
-            result.document.body,
-            vec![Block::ContainerDirective {
-                name: "chapter".to_string(),
-                label: None,
-                attrs: None,
-                body: vec![Block::Paragraph {
-                    content: vec![Inline::Text {
-                        value: "Inside the chapter.".to_string(),
-                    }],
-                    attrs: None,
+            body,
+            &vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Inside the chapter.".to_string(),
                 }],
-                named_close: false,
+                attrs: None,
             }]
         );
         assert!(result.errors.is_empty());
@@ -1259,25 +1321,44 @@ mod tests {
         let mut expected_pairs = HashMap::new();
         expected_pairs.insert("title".to_string(), "Lantern Watch".to_string());
 
+        let [
+            Block::ContainerDirective {
+                label,
+                raw_label,
+                attrs,
+                raw_body,
+                named_close,
+                body,
+                ..
+            },
+        ] = result.document.body.as_slice()
+        else {
+            panic!("expected one container directive");
+        };
         assert_eq!(
-            result.document.body,
-            vec![Block::ContainerDirective {
-                name: "chapter".to_string(),
-                label: Some(vec![Inline::Text {
-                    value: "One".to_string(),
-                }]),
-                attrs: Some(Attributes {
-                    id: Some("intro".to_string()),
-                    classes: vec!["wide".to_string()],
-                    pairs: expected_pairs,
-                }),
-                body: vec![Block::Paragraph {
-                    content: vec![Inline::Text {
-                        value: "Body".to_string(),
-                    }],
-                    attrs: None,
+            label,
+            &Some(vec![Inline::Text {
+                value: "One".to_string(),
+            }])
+        );
+        assert_eq!(raw_label.as_deref(), Some("One"));
+        assert_eq!(
+            attrs,
+            &Some(Attributes {
+                id: Some("intro".to_string()),
+                classes: vec!["wide".to_string()],
+                pairs: expected_pairs,
+            })
+        );
+        assert_eq!(raw_body, "Body");
+        assert!(*named_close);
+        assert_eq!(
+            body,
+            &vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Body".to_string(),
                 }],
-                named_close: true,
+                attrs: None,
             }]
         );
         assert!(result.errors.is_empty());
@@ -1287,25 +1368,41 @@ mod tests {
     fn parse_supports_nested_container_directives() {
         let result = parse(":::chapter\n:::section\nNested body.\n:::/section\n:::/chapter");
 
+        let [
+            Block::ContainerDirective {
+                directive_id,
+                body,
+                named_close,
+                ..
+            },
+        ] = result.document.body.as_slice()
+        else {
+            panic!("expected one outer container");
+        };
+        assert_eq!(*directive_id, 1);
+        assert!(*named_close);
+        let [
+            Block::ContainerDirective {
+                directive_id,
+                raw_body,
+                named_close,
+                body,
+                ..
+            },
+        ] = body.as_slice()
+        else {
+            panic!("expected one inner container");
+        };
+        assert_eq!(*directive_id, 2);
+        assert_eq!(raw_body, "Nested body.");
+        assert!(*named_close);
         assert_eq!(
-            result.document.body,
-            vec![Block::ContainerDirective {
-                name: "chapter".to_string(),
-                label: None,
-                attrs: None,
-                body: vec![Block::ContainerDirective {
-                    name: "section".to_string(),
-                    label: None,
-                    attrs: None,
-                    body: vec![Block::Paragraph {
-                        content: vec![Inline::Text {
-                            value: "Nested body.".to_string(),
-                        }],
-                        attrs: None,
-                    }],
-                    named_close: true,
+            body,
+            &vec![Block::Paragraph {
+                content: vec![Inline::Text {
+                    value: "Nested body.".to_string(),
                 }],
-                named_close: true,
+                attrs: None,
             }]
         );
         assert!(result.errors.is_empty());
@@ -1317,33 +1414,28 @@ mod tests {
             "::aside\nThis leaf directive starts with valid text.\n\n::spoiler\nNested.\n::\n::",
         );
 
-        assert_eq!(
-            result.document.body,
-            vec![Block::BlockDirective {
-                name: "aside".to_string(),
-                label: None,
-                attrs: None,
-                body: vec![
-                    Block::Paragraph {
-                        content: vec![Inline::Text {
-                            value: "This leaf directive starts with valid text.".to_string(),
-                        }],
-                        attrs: None,
-                    },
-                    Block::BlockDirective {
-                        name: "spoiler".to_string(),
-                        label: None,
-                        attrs: None,
-                        body: vec![Block::Paragraph {
-                            content: vec![Inline::Text {
-                                value: "Nested.".to_string(),
-                            }],
-                            attrs: None,
-                        }],
-                    },
-                ],
-            }]
-        );
+        let [
+            Block::BlockDirective {
+                directive_id, body, ..
+            },
+        ] = result.document.body.as_slice()
+        else {
+            panic!("expected outer block directive");
+        };
+        assert_eq!(*directive_id, 1);
+        let [
+            _,
+            Block::BlockDirective {
+                directive_id,
+                raw_body,
+                ..
+            },
+        ] = body.as_slice()
+        else {
+            panic!("expected nested block directive");
+        };
+        assert_eq!(*directive_id, 2);
+        assert_eq!(raw_body, "Nested.");
         assert_eq!(
             result.errors,
             vec![ParseError {
@@ -1375,35 +1467,38 @@ mod tests {
     fn parse_allows_inline_directives_inside_leaf_directive_text() {
         let result = parse("::aside\nInline :tooltip[text]{info=\"x\"} is fine.\n::");
 
+        let [
+            Block::BlockDirective {
+                directive_id, body, ..
+            },
+        ] = result.document.body.as_slice()
+        else {
+            panic!("expected outer block directive");
+        };
+        assert_eq!(*directive_id, 1);
+        let [Block::Paragraph { content, .. }] = body.as_slice() else {
+            panic!("expected paragraph");
+        };
+        let Inline::InlineDirective {
+            directive_id,
+            name,
+            raw_content,
+            attrs,
+            ..
+        } = &content[1]
+        else {
+            panic!("expected inline directive");
+        };
+        assert_eq!(*directive_id, 2);
+        assert_eq!(name, "tooltip");
+        assert_eq!(raw_content.as_deref(), Some("text"));
         assert_eq!(
-            result.document.body,
-            vec![Block::BlockDirective {
-                name: "aside".to_string(),
-                label: None,
-                attrs: None,
-                body: vec![Block::Paragraph {
-                    content: vec![
-                        Inline::Text {
-                            value: "Inline ".to_string(),
-                        },
-                        Inline::InlineDirective {
-                            name: "tooltip".to_string(),
-                            content: Some(vec![Inline::Text {
-                                value: "text".to_string(),
-                            }]),
-                            attrs: Some(Attributes {
-                                id: None,
-                                classes: Vec::new(),
-                                pairs: HashMap::from([("info".to_string(), "x".to_string())]),
-                            }),
-                        },
-                        Inline::Text {
-                            value: " is fine.".to_string(),
-                        },
-                    ],
-                    attrs: None,
-                }],
-            }]
+            attrs,
+            &Some(Attributes {
+                id: None,
+                classes: Vec::new(),
+                pairs: HashMap::from([("info".to_string(), "x".to_string())]),
+            })
         );
         assert!(result.errors.is_empty());
     }
@@ -1429,21 +1524,18 @@ mod tests {
     fn parse_reports_mismatched_container_named_closes() {
         let result = parse(":::chapter\nBody\n:::/section");
 
-        assert_eq!(
-            result.document.body,
-            vec![Block::ContainerDirective {
-                name: "chapter".to_string(),
-                label: None,
-                attrs: None,
-                body: vec![Block::Paragraph {
-                    content: vec![Inline::Text {
-                        value: "Body".to_string(),
-                    }],
-                    attrs: None,
-                }],
-                named_close: true,
-            }]
-        );
+        let [
+            Block::ContainerDirective {
+                raw_body,
+                named_close,
+                ..
+            },
+        ] = result.document.body.as_slice()
+        else {
+            panic!("expected one container directive");
+        };
+        assert_eq!(raw_body, "Body");
+        assert!(*named_close);
         assert_eq!(
             result.errors,
             vec![ParseError {

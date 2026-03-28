@@ -8,7 +8,19 @@ expression: result
     "body": [
       {
         "type": "BlockDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 9,
+            "column": 3
+          }
+        },
         "name": "aside",
+        "raw_body": "This leaf directive starts with valid text.\n\n::spoiler\nThis nested directive should cause a parse error.\n::",
         "body": [
           {
             "type": "Paragraph",
@@ -21,7 +33,19 @@ expression: result
           },
           {
             "type": "BlockDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 6,
+                "column": 1
+              },
+              "end": {
+                "line": 8,
+                "column": 3
+              }
+            },
             "name": "spoiler",
+            "raw_body": "This nested directive should cause a parse error.",
             "body": [
               {
                 "type": "Paragraph",

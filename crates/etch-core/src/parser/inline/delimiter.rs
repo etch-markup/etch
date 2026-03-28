@@ -1,4 +1,4 @@
-use crate::Inline;
+use crate::{Inline, SourcePosition};
 
 use super::{
     parse_segment,
@@ -169,7 +169,12 @@ pub(super) fn try_parse_delimiter_run(input: &str, index: usize) -> Option<(Inli
         return None;
     }
 
-    let inner = parse_segment(input, index + delimiter.len(), Some(delimiter));
+    let inner = parse_segment(
+        input,
+        index + delimiter.len(),
+        SourcePosition { line: 1, column: 1 },
+        Some(delimiter),
+    );
 
     if inner.closed && !inner.nodes.is_empty() {
         return Some((delimiter.wrap(inner.nodes), inner.next_index));

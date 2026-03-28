@@ -8,12 +8,24 @@ expression: result
     "body": [
       {
         "type": "ContainerDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 5,
+            "column": 4
+          }
+        },
         "name": "chapter",
         "attrs": {
           "pairs": {
             "title": "One"
           }
         },
+        "raw_body": "The first chapter opens with a short paragraph.",
         "body": [
           {
             "type": "Paragraph",

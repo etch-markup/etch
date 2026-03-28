@@ -8,16 +8,40 @@ expression: result
     "body": [
       {
         "type": "ContainerDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 11,
+            "column": 12
+          }
+        },
         "name": "chapter",
         "attrs": {
           "pairs": {
             "title": "Storm Journal"
           }
         },
+        "raw_body": "::aside\nKeep the lamp away from the wet ledge.\n::\n\n::spoiler[Hidden note]\nThe spare key is under the blue crate.\n::",
         "body": [
           {
             "type": "BlockDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 4,
+                "column": 1
+              },
+              "end": {
+                "line": 6,
+                "column": 3
+              }
+            },
             "name": "aside",
+            "raw_body": "Keep the lamp away from the wet ledge.",
             "body": [
               {
                 "type": "Paragraph",
@@ -32,6 +56,17 @@ expression: result
           },
           {
             "type": "BlockDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 8,
+                "column": 1
+              },
+              "end": {
+                "line": 10,
+                "column": 3
+              }
+            },
             "name": "spoiler",
             "label": [
               {
@@ -39,6 +74,8 @@ expression: result
                 "value": "Hidden note"
               }
             ],
+            "raw_label": "Hidden note",
+            "raw_body": "The spare key is under the blue crate.",
             "body": [
               {
                 "type": "Paragraph",

@@ -1,0 +1,9 @@
+{~ Tests operators, relations, and arrows in math directives. ~}
+
+Arithmetic: :math[a \pm b, a \times b, a \div b, a \cdot b].
+
+Relations: :math[a \leq b, a \geq b, a \neq b, a \approx b, a \equiv b].
+
+Set: :math[x \in S, x \notin S, A \subset B, A \cup B, A \cap B].
+
+Arrows: :math[f: A \to B, A \rightarrow B, A \leftarrow B, A \Rightarrow B, A \Leftrightarrow B].

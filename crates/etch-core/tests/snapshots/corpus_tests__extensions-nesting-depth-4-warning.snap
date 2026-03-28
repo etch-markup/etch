@@ -8,34 +8,82 @@ expression: result
     "body": [
       {
         "type": "ContainerDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 11,
+            "column": 12
+          }
+        },
         "name": "chapter",
         "attrs": {
           "pairs": {
             "title": "One"
           }
         },
+        "raw_body": ":::section{title=\"Two\"}\n:::columns{count=2}\n:::column\nDeep content lives here.\n:::/column\n:::/columns\n:::/section",
         "body": [
           {
             "type": "ContainerDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 4,
+                "column": 1
+              },
+              "end": {
+                "line": 10,
+                "column": 12
+              }
+            },
             "name": "section",
             "attrs": {
               "pairs": {
                 "title": "Two"
               }
             },
+            "raw_body": ":::columns{count=2}\n:::column\nDeep content lives here.\n:::/column\n:::/columns",
             "body": [
               {
                 "type": "ContainerDirective",
+                "directive_id": 3,
+                "span": {
+                  "start": {
+                    "line": 5,
+                    "column": 1
+                  },
+                  "end": {
+                    "line": 9,
+                    "column": 12
+                  }
+                },
                 "name": "columns",
                 "attrs": {
                   "pairs": {
                     "count": "2"
                   }
                 },
+                "raw_body": ":::column\nDeep content lives here.\n:::/column",
                 "body": [
                   {
                     "type": "ContainerDirective",
+                    "directive_id": 4,
+                    "span": {
+                      "start": {
+                        "line": 6,
+                        "column": 1
+                      },
+                      "end": {
+                        "line": 8,
+                        "column": 11
+                      }
+                    },
                     "name": "column",
+                    "raw_body": "Deep content lives here.",
                     "body": [
                       {
                         "type": "Paragraph",
