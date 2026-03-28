@@ -1,14 +1,11 @@
-import initWasm, {
+import {
+  init as initWasm,
   parse as wasmParse,
   render_html as wasmRenderHtml,
   render_html_document as wasmRenderDocument,
 } from 'etch-wasm';
 
 import type { ParseResult } from './types.js';
-
-type ImportMetaWithResolve = ImportMeta & {
-  resolve?: (specifier: string) => string;
-};
 
 const NOT_INITIALIZED_ERROR =
   'Etch WASM is not initialized. Call initialize() before using parse() or renderHtml().';
@@ -181,56 +178,8 @@ export function parseToJsonFromWasm(input: string): string {
 }
 
 async function doInitialize(): Promise<void> {
-  if (shouldResolveWasmExplicitly()) {
-    await initializeWithResolvedModule();
-    initialized = true;
-    return;
-  }
-
-  try {
-    await initWasm();
-  } catch (error) {
-    await initializeWithResolvedModule(error);
-  }
-
+  initWasm();
   initialized = true;
-}
-
-function shouldResolveWasmExplicitly(): boolean {
-  return (
-    typeof process !== 'undefined' &&
-    typeof process.versions === 'object' &&
-    typeof process.versions?.node === 'string'
-  );
-}
-
-async function initializeWithResolvedModule(originalError?: unknown): Promise<void> {
-  const wasmUrl = resolveWasmUrl();
-
-  try {
-    if (wasmUrl.protocol === 'file:') {
-      const { readFile } = await import('node:fs/promises');
-      const bytes = await readFile(wasmUrl);
-      await initWasm({ module_or_path: bytes });
-      return;
-    }
-
-    await initWasm({ module_or_path: wasmUrl });
-  } catch (error) {
-    throw new Error('Failed to initialize etch-wasm.', {
-      cause: error ?? originalError,
-    });
-  }
-}
-
-function resolveWasmUrl(): URL {
-  const resolver = (import.meta as ImportMetaWithResolve).resolve;
-
-  if (typeof resolver === 'function') {
-    return new URL('etch_wasm_bg.wasm', resolver('etch-wasm/etch_wasm.js'));
-  }
-
-  return new URL('../../../crates/etch-wasm/pkg/etch_wasm_bg.wasm', import.meta.url);
 }
 
 function ensureInitialized(): void {
