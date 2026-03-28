@@ -24,3 +24,9 @@ node_modules/
 out/
 dist/
 *.vsix
+
+# Slop
+.superpowers/
+
+# macOS
+.DS_Store
