@@ -1,9 +1,15 @@
 import * as vscode from 'vscode';
 import { initialize } from './etch-kit/index.js';
-import { PluginManager } from './plugins.js';
 import { EtchPreviewManager } from './preview.js';
 
 const ETCH_LANGUAGE_ID = 'etch';
+
+type PreviewPluginManager = {
+  initialize(workspaceRoot: string): Promise<void>;
+  processHtml(html: string, document: unknown): Promise<string>;
+  watchChanges(onReload: () => void): vscode.Disposable;
+  dispose(): void;
+};
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const diagnostics = vscode.languages.createDiagnosticCollection(ETCH_LANGUAGE_ID);
@@ -11,7 +17,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   await initialize();
 
-  const pluginManager = new PluginManager();
+  const pluginManager = await createPluginManager();
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   if (workspaceRoot) {
     await pluginManager.initialize(workspaceRoot);
@@ -50,3 +56,27 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 export function deactivate(): void {}
+
+async function createPluginManager(): Promise<PreviewPluginManager> {
+  try {
+    const { PluginManager } = await import('./plugins.js');
+    return new PluginManager();
+  } catch (error) {
+    console.error('[etch] Failed to load plugin manager; continuing without plugin pipeline.', error);
+    return new NoopPluginManager();
+  }
+}
+
+class NoopPluginManager implements PreviewPluginManager {
+  public async initialize(_workspaceRoot: string): Promise<void> {}
+
+  public async processHtml(html: string, _document: unknown): Promise<string> {
+    return html;
+  }
+
+  public watchChanges(_onReload: () => void): vscode.Disposable {
+    return new vscode.Disposable(() => undefined);
+  }
+
+  public dispose(): void {}
+}

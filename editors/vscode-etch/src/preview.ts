@@ -4,8 +4,8 @@ import {
   parseWithErrors,
   renderDocument,
   type ParseError,
+  type Document as EtchDocument,
 } from './etch-kit/index.js';
-import { PluginManager } from './plugins.js';
 
 const ETCH_LANGUAGE_ID = 'etch';
 const PREVIEW_DEBOUNCE_MS = 200;
@@ -15,10 +15,14 @@ type PreviewEntry = {
   panel: vscode.WebviewPanel;
 };
 
+type PreviewPluginManager = {
+  processHtml(html: string, document: EtchDocument): Promise<string>;
+};
+
 export class EtchPreviewManager implements vscode.Disposable {
   private readonly context: vscode.ExtensionContext;
   private readonly diagnostics: vscode.DiagnosticCollection;
-  private readonly pluginManager: PluginManager;
+  private readonly pluginManager: PreviewPluginManager;
   private readonly panels = new Map<string, PreviewEntry>();
   private readonly refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly renderVersions = new Map<string, number>();
@@ -26,7 +30,7 @@ export class EtchPreviewManager implements vscode.Disposable {
   public constructor(
     context: vscode.ExtensionContext,
     diagnostics: vscode.DiagnosticCollection,
-    pluginManager: PluginManager
+    pluginManager: PreviewPluginManager
   ) {
     this.context = context;
     this.diagnostics = diagnostics;
