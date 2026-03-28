@@ -10,16 +10,16 @@ Etch's extensibility is built on two pillars:
 
 1. **Directives as the parser-level extension point.** The parser already handles inline (`:name[content]{attrs}`), block (`::name ... ::`), and container (`:::name ... :::`) directives generically. Unknown directive names are preserved in the AST without parser modification.
 
-2. **A render-time plugin pipeline as the output-level extension point.** Plugins are JS/TS modules that register handlers for directive names. At render time, the pipeline invokes the matching handler for each directive and substitutes its output into the final HTML.
+2. **A render-time plugin pipeline as the output-level extension point.** Plugins are JS/TS modules that register handlers for directive names. At render time, the pipeline invokes the matching handler for each directive placeholder and substitutes its output into the final HTML.
 
 Math is the first feature to exercise both pillars: basic math is a core, built-in capability (Tier 1), while advanced math constructs are delivered as a first-party plugin (Tier 2). Third-party plugins (e.g., anthroverse) use the same system.
 
 ### 1.1 Design Goals
 
 - **Zero-config basics.** Core math renders with no plugins, no JS dependencies, no configuration. Write `:math[\alpha]`, get a rendered alpha.
-- **Accessible plugin authoring.** Plugins are JS/TS — no Rust, no WASM compilation. A plugin is a single module exporting a well-typed object.
+- **Accessible plugin authoring.** Plugins are JS/TS — no Rust, no WASM compilation. A plugin is a single module exporting a well-typed object from `@etch-markup/etch-plugin-sdk`.
 - **Portable plugins.** One plugin works identically across CLI, VS Code, JetBrains, Neovim, and the future WYSIWYG editor. The render pipeline is pure JS, not tied to any editor.
-- **Smooth user experience.** End users interact with `etch add <name>` and `etch remove <name>`. No npm, no `node_modules`, no `package.json` in their project.
+- **Smooth user experience.** End users interact with `etch add <name>` and `etch remove <name>`. No manual npm workflow is required in their project.
 - **Graceful degradation.** Documents using unavailable plugins render with clear, actionable warnings — never silent failures.
 - **Theme-aware.** Plugins read from a shared CSS variable namespace (`--etch-*`). Switching themes re-skins core and plugin output alike.
 
@@ -128,14 +128,10 @@ interface EtchPlugin {
   version: string;
 
   /** Map of directive names to their handlers. */
-  directives: {
-    [name: string]: DirectiveHandler;
-  };
+  directives: Record<string, DirectiveHandler>;
 
   /** Optional themes this plugin provides. */
-  themes?: {
-    [name: string]: EtchTheme;
-  };
+  themes?: Record<string, EtchTheme>;
 
   /** Called once when the plugin is loaded. Use for initialization (API clients, caches, etc.). */
   setup?(ctx: PluginContext): Promise<void>;
@@ -169,17 +165,26 @@ The data structure passed to `render()`:
 
 ```typescript
 interface DirectiveNode {
+  /** Stable directive id assigned during parsing. */
+  id: number;
+
+  /** Directive kind. */
+  kind: "inline" | "block" | "container";
+
   /** Directive name, e.g., "anthroverse-char". */
   name: string;
 
-  /** Raw text content from brackets, e.g., "AzaelDragon" from :name[AzaelDragon]. */
+  /** Raw text content from brackets or block body text. */
   content: string;
 
   /** Parsed attributes from braces, e.g., { species: "dragon" } from {species=dragon}. */
   attributes: Record<string, string>;
 
-  /** Parsed child AST nodes (for container directives). */
+  /** Parsed child AST nodes. Inline directives use an empty array. */
   children: AstNode[];
+
+  /** Source span for diagnostics. */
+  span: DirectiveSpan;
 }
 ```
 
@@ -244,7 +249,7 @@ interface Completion {
 ### 3.8 Example Plugin: Anthroverse
 
 ```typescript
-import type { EtchPlugin } from "etch-plugin-sdk";
+import type { EtchPlugin } from "@etch-markup/etch-plugin-sdk";
 
 export default {
   name: "anthroverse",
@@ -319,7 +324,7 @@ Plugins are published to npm under the `etch-plugin-` prefix:
 ```
 etch add <name>              Install a plugin to the current project
 etch add <name> --global     Install a plugin globally
-etch remove <name>           Remove a plugin
+etch remove <name>           Remove a project-local plugin
 etch plugins                 List installed plugins (project + global)
 ```
 
@@ -338,6 +343,7 @@ etch plugins                 List installed plugins (project + global)
 
 1. Removes the plugin directory from `.etch/plugins/`.
 2. Removes the entry from `etch.config.json`.
+3. Leaves any global install untouched.
 
 **`etch plugins`:**
 
@@ -376,7 +382,7 @@ When building the plugin registry, the runtime resolves in this order:
 
 1. **Project-local:** `.etch/plugins/` in the working directory.
 2. **Global:** `~/.etch/plugins/`.
-3. **Config-declared:** plugins listed in `etch.config.json` (used for validation — the plugin must exist in one of the above locations).
+3. **Config-declared:** plugins listed in `etch.config.json` must resolve from one of the above locations.
 4. **Frontmatter:** per-file `plugins` field merges additively with the project config.
 
 If a plugin is declared in config or frontmatter but not installed, the renderer emits a warning (not an error) and renders a fallback placeholder.
@@ -406,7 +412,7 @@ If a plugin is declared in config or frontmatter but not installed, the renderer
 ```
 
 - **`plugins`** — array of plugin names (strings) or objects with `name` and `config`.
-- **`theme`** — active theme name. Can be a built-in theme, a plugin-provided theme, or a user-defined theme.
+- **`theme`** — active theme name. Can be a built-in theme or a plugin-provided theme.
 
 ### 5.2 Per-File Frontmatter
 
@@ -460,14 +466,15 @@ interface EtchTheme {
 
 ### 6.2 Theme Sources
 
-Themes can come from three places (in priority order for conflicts):
+Themes can come from two places:
 
-1. **User-defined** — custom themes in `etch.config.json`.
-2. **Plugin-provided** — themes shipped in a plugin's `themes` field.
-3. **Built-in** — themes shipped with `etch-core`:
+1. **Plugin-provided** — themes shipped in a plugin's `themes` field.
+2. **Built-in** — themes shipped with Etch:
    - `default` — clean serif (current Georgia-based theme).
    - `minimal` — sans-serif, compact.
    - `academic` — LaTeX-like appearance.
+
+If a plugin theme and a built-in theme share a name, the plugin theme wins. Unknown theme names fall back to `default`.
 
 ### 6.3 How Themes Apply
 
@@ -496,9 +503,9 @@ On `etch.config.json` change: reload the plugin registry and re-render active pr
 
 On every document edit (debounced):
 
-1. **Parse** (WASM) — `etch_wasm.parse(source)` → AST + diagnostics. Core math directives produce MathML. Unknown directives produce generic AST nodes.
-2. **Core render** (WASM) — `etch_wasm.render_html(source)` → HTML with MathML for math, placeholder elements for plugin directives (`<div data-etch-directive="name" data-etch-content="..." data-etch-attrs="...">`).
-3. **Plugin pipeline** (JS) — walk placeholder elements, find matching plugin handler, call `handler.render(node, ctx)`, replace placeholder with output. If no handler: render fallback warning with install instructions.
+1. **Parse** (WASM) — `etch_wasm.parse(source)` → AST + diagnostics. Core math directives produce MathML. Unknown directives remain directive AST nodes.
+2. **Core render** (WASM) — `etch_wasm.render_html(source)` → HTML with MathML for math, placeholder elements for plugin directives (`<div data-etch-directive="name" data-etch-kind="block" data-etch-id="1" ...>` or `<span ...>` for inline directives).
+3. **Plugin pipeline** (JS) — walk placeholder elements, find matching plugin handler, build a `DirectiveNode` from the parsed AST via directive id lookup, call `handler.render(node, ctx)`, replace placeholder with output. If no handler: render fallback warning.
 4. **Assemble** — inject theme CSS variables, inject collected plugin styles, wrap in preview shell (CSP, fonts), post to webview.
 
 ### 7.3 Editor Intelligence
@@ -513,13 +520,13 @@ Plugins providing `EditorSupport` enhance the IDE experience:
 
 When a document references a directive with no installed handler:
 
-- **Preview:** renders a visible warning box: `⚠ Unknown directive: <name>. Install with: etch add <plugin-name>`.
+- **Preview:** renders a visible warning box: `Unknown directive: <name>`.
 - **Diagnostics:** emits an information-level diagnostic on the directive's source location.
 - **No silent failures.** The document always renders — unhandled directives degrade to visible, helpful placeholders.
 
 ### 7.5 Cross-Editor Portability
 
-The render pipeline is pure JS — not VS Code-specific. Any editor integration follows the same pattern:
+The render pipeline lives in `@etch-markup/etch-plugin-pipeline` and is pure JS — not VS Code-specific. Any editor integration follows the same pattern:
 
 1. Read config, discover plugins from `.etch/plugins/` and `~/.etch/plugins/`.
 2. Load plugin modules, call `setup()`.
@@ -532,16 +539,16 @@ The render pipeline is pure JS — not VS Code-specific. Any editor integration 
 
 ## 8. Plugin SDK
 
-The `etch-plugin-sdk` package provides:
+The `@etch-markup/etch-plugin-sdk` package provides:
 
-- **TypeScript types** — `EtchPlugin`, `DirectiveHandler`, `DirectiveNode`, `RenderContext`, `EditorSupport`, `EtchTheme`, `Completion`, `PluginContext`.
-- **Utility functions** — helpers for common tasks (HTML escaping, attribute parsing, CSS scoping).
+- **TypeScript types** — `AstNode`, `Document`, `DirectiveSpan`, `DirectiveNode`, `RenderContext`, `EditorSupport`, `EtchTheme`, `Completion`, `PluginContext`, `DirectiveHandler`, `EtchPlugin`.
+- **Utility functions** — helpers for common tasks (`escapeHtml`, `parseAttributes`).
 - **No runtime dependency** — the SDK is types and utilities only. Plugins do not bundle the SDK at runtime.
 
 Plugin authors install it as a dev dependency:
 
 ```
-npm install --save-dev etch-plugin-sdk
+npm install --save-dev @etch-markup/etch-plugin-sdk
 ```
 
 ---
