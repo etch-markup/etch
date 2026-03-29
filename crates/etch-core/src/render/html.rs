@@ -153,12 +153,6 @@ impl HtmlRenderer {
                     "aside" => self.render_aside_block(attrs.as_ref(), label.as_deref(), body),
                     "figure" => self.render_figure_block(attrs.as_ref(), label.as_deref(), body),
                     "details" => self.render_details_block(attrs.as_ref(), label.as_deref(), body),
-                    "spoiler" => self.render_spoiler_block(
-                        *directive_id,
-                        attrs.as_ref(),
-                        label.as_deref(),
-                        body,
-                    ),
                     "toc" => self.render_toc(attrs.as_ref()),
                     "pagebreak" => self.render_pagebreak(attrs.as_ref()),
                     _ => self.render_directive(
@@ -463,72 +457,6 @@ impl HtmlRenderer {
         wrap_with_tag("details", attrs, &[], &["details"], &inner)
     }
 
-    fn render_spoiler_block(
-        &self,
-        directive_id: u64,
-        attrs: Option<&Attributes>,
-        label: Option<&[Inline]>,
-        body: &[Block],
-    ) -> String {
-        let toggle_id = format!("spoiler-toggle-{directive_id}");
-        let mut card_inner = String::new();
-
-        card_inner.push_str(&wrap_with_tag(
-            "p",
-            None,
-            &[("class", "spoiler-label".to_string())],
-            &[],
-            &label
-                .map(|label| self.render_inlines(label))
-                .unwrap_or_else(|| "Spoiler".to_string()),
-        ));
-
-        if !body.is_empty() {
-            card_inner.push('\n');
-        }
-
-        card_inner.push_str(&wrap_with_tag(
-            "div",
-            None,
-            &[("class", "spoiler-content".to_string())],
-            &[],
-            &format!(
-                "{}\n{}",
-                wrap_with_tag(
-                    "label",
-                    None,
-                    &[
-                        ("for", toggle_id.clone()),
-                        ("class", "spoiler-overlay".to_string())
-                    ],
-                    &[],
-                    "Reveal spoiler"
-                ),
-                self.render_blocks(body)
-            ),
-        ));
-
-        let toggle = render_void_tag(
-            "input",
-            None,
-            &[
-                ("id", toggle_id.clone()),
-                ("class", "spoiler-toggle".to_string()),
-                ("type", "checkbox".to_string()),
-            ],
-            &[],
-        );
-        let card = wrap_with_tag("div", None, &[], &["spoiler-card"], &card_inner);
-
-        wrap_with_tag(
-            "div",
-            attrs,
-            &[],
-            &["spoiler"],
-            &format!("{toggle}\n{card}"),
-        )
-    }
-
     fn render_toc(&self, attrs: Option<&Attributes>) -> String {
         let items = self
             .headings
@@ -804,6 +732,32 @@ impl HtmlRenderer {
                         &self.render_inlines(content),
                     ));
                 }
+                Inline::Spoiler { content } => {
+                    let inner_content = self.render_inlines(content);
+                    let checkbox = render_void_tag(
+                        "input",
+                        None,
+                        &[
+                            ("type", "checkbox".to_string()),
+                            ("class", "spoiler-toggle".to_string()),
+                        ],
+                        &[],
+                    );
+                    let span = wrap_with_tag(
+                        "span",
+                        None,
+                        &[],
+                        &["spoiler-content"],
+                        &inner_content,
+                    );
+                    html.push_str(&wrap_with_tag(
+                        "label",
+                        None,
+                        &[],
+                        &["spoiler"],
+                        &format!("{checkbox}{span}"),
+                    ));
+                }
                 Inline::Insert { content } => {
                     html.push_str(&wrap_with_tag(
                         "ins",
@@ -1042,7 +996,8 @@ fn collect_inline_text(inlines: &[Inline], text: &mut String) {
             | Inline::Superscript { content }
             | Inline::Subscript { content }
             | Inline::Highlight { content }
-            | Inline::Insert { content } => collect_inline_text(content, text),
+            | Inline::Insert { content }
+            | Inline::Spoiler { content } => collect_inline_text(content, text),
             Inline::Link { content, .. } => collect_inline_text(content, text),
             Inline::Image { alt, .. } => text.push_str(alt),
             Inline::AutoLink { url } => text.push_str(url),
@@ -1550,9 +1505,9 @@ mod tests {
         // Inline math
         assert!(html.contains("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">"));
 
-        // Spoiler block
-        assert!(html.contains("<div class=\"spoiler\">"));
-        assert!(html.contains("<p class=\"spoiler-label\">What she found inside the ring</p>"));
+        // Inline spoiler
+        assert!(html.contains("<label class=\"spoiler\">"));
+        assert!(html.contains("<span class=\"spoiler-content\">a small wooden box, half-buried in ash</span>"));
 
         // Hard line breaks
         assert!(
@@ -1636,18 +1591,11 @@ mod tests {
     }
 
     #[test]
-    fn renders_spoiler_directive() {
-        let html = render_html(&parse("::spoiler[Endgame]\nThe hero wins.\n::").document);
-        assert!(html.contains("<div class=\"spoiler\">"));
+    fn renders_inline_spoiler() {
+        let html = render_html(&parse("This is ||secret text|| here.").document);
+        assert!(html.contains("<label class=\"spoiler\">"));
         assert!(html.contains("class=\"spoiler-toggle\""));
-        assert!(html.contains("<p class=\"spoiler-label\">Endgame</p>"));
-        assert!(html.contains("<p>The hero wins.</p>"));
-    }
-
-    #[test]
-    fn renders_spoiler_without_label() {
-        let html = render_html(&parse("::spoiler\nSecret.\n::").document);
-        assert!(html.contains("<p class=\"spoiler-label\">Spoiler</p>"));
+        assert!(html.contains("<span class=\"spoiler-content\">secret text</span>"));
     }
 
     #[test]

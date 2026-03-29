@@ -1,6 +1,5 @@
 ---
 source: crates/etch-core/tests/corpus_tests.rs
-assertion_line: 895
 expression: result
 ---
 {
@@ -270,7 +269,7 @@ expression: result
             "column": 1
           },
           "end": {
-            "line": 67,
+            "line": 64,
             "column": 12
           }
         },
@@ -280,7 +279,7 @@ expression: result
             "title": "The Finding"
           }
         },
-        "raw_body": "\nThree days later, she found what she was looking for.[^1]\n\nNot Kael — not exactly. But the place where he'd been,\nmarked by a ring of stones and the ash of a fire\nthat might have been warm ==yesterday==.\n\nThe area measured roughly :math[3\\text{m} \\times 3\\text{m}],\nwith the stones arranged in a precise circle.\n\n::spoiler[What she found inside the ring]\nA small wooden box, half-buried in ash, containing\na photograph and a train ticket dated three years prior.\n::\n\nHer address was simple:\\\n42 Northwind Road\\\nThe Village at the Edge\n",
+        "raw_body": "\nThree days later, she found what she was looking for.[^1]\n\nNot Kael — not exactly. But the place where he'd been,\nmarked by a ring of stones and the ash of a fire\nthat might have been warm ==yesterday==.\n\nThe area measured roughly :math[3\\text{m} \\times 3\\text{m}],\nwith the stones arranged in a precise circle.\n\nWhat she found inside the ring: ||a small wooden box, half-buried in ash||.\n\nHer address was simple:\\\n42 Northwind Road\\\nThe Village at the Edge\n",
         "body": [
           {
             "type": "Paragraph",
@@ -374,43 +373,24 @@ expression: result
             ]
           },
           {
-            "type": "BlockDirective",
-            "directive_id": 8,
-            "span": {
-              "start": {
-                "line": 58,
-                "column": 1
-              },
-              "end": {
-                "line": 61,
-                "column": 3
-              }
-            },
-            "name": "spoiler",
-            "label": [
+            "type": "Paragraph",
+            "content": [
               {
                 "type": "Text",
-                "value": "What she found inside the ring"
-              }
-            ],
-            "raw_label": "What she found inside the ring",
-            "raw_body": "A small wooden box, half-buried in ash, containing\na photograph and a train ticket dated three years prior.",
-            "body": [
+                "value": "What she found inside the ring: "
+              },
               {
-                "type": "Paragraph",
+                "type": "Spoiler",
                 "content": [
                   {
                     "type": "Text",
-                    "value": "A small wooden box, half-buried in ash, containing"
-                  },
-                  {
-                    "type": "SoftBreak"
-                  },
-                  {
-                    "type": "Text",
-                    "value": "a photograph and a train ticket dated three years prior."
+                    "value": "a small wooden box, half-buried in ash"
                   }
                 ]
+              },
+              {
+                "type": "Text",
+                "value": "."
               }
             ]
           },

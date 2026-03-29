@@ -112,12 +112,32 @@ impl PlusDelimiter {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) enum PipeDelimiter {
+    Spoiler,
+}
+
+impl PipeDelimiter {
+    fn len(self) -> usize {
+        match self {
+            Self::Spoiler => 2,
+        }
+    }
+
+    fn wrap(self, content: Vec<Inline>) -> Inline {
+        match self {
+            Self::Spoiler => Inline::Spoiler { content },
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) enum Delimiter {
     Star(StarDelimiter),
     Tilde(TildeDelimiter),
     Caret(CaretDelimiter),
     Equal(EqualDelimiter),
     Plus(PlusDelimiter),
+    Pipe(PipeDelimiter),
 }
 
 impl Delimiter {
@@ -128,6 +148,7 @@ impl Delimiter {
             Self::Caret(delimiter) => delimiter.len(),
             Self::Equal(delimiter) => delimiter.len(),
             Self::Plus(delimiter) => delimiter.len(),
+            Self::Pipe(delimiter) => delimiter.len(),
         }
     }
 
@@ -138,6 +159,7 @@ impl Delimiter {
             Self::Caret(_) => b'^',
             Self::Equal(_) => b'=',
             Self::Plus(_) => b'+',
+            Self::Pipe(_) => b'|',
         }
     }
 
@@ -148,6 +170,7 @@ impl Delimiter {
             Self::Caret(delimiter) => delimiter.wrap(content),
             Self::Equal(delimiter) => delimiter.wrap(content),
             Self::Plus(delimiter) => delimiter.wrap(content),
+            Self::Pipe(delimiter) => delimiter.wrap(content),
         }
     }
 
@@ -158,6 +181,7 @@ impl Delimiter {
             Self::Caret(delimiter) => run_len == delimiter.len(),
             Self::Equal(delimiter) => run_len == delimiter.len(),
             Self::Plus(delimiter) => run_len == delimiter.len(),
+            Self::Pipe(delimiter) => run_len == delimiter.len(),
         }
     }
 }
@@ -208,6 +232,10 @@ fn parse_delimiter(input: &str, index: usize) -> Option<Delimiter> {
         },
         b'+' => match count_delimiters(input, index, byte) {
             2 => Some(Delimiter::Plus(PlusDelimiter::Insert)),
+            _ => None,
+        },
+        b'|' => match count_delimiters(input, index, byte) {
+            2 => Some(Delimiter::Pipe(PipeDelimiter::Spoiler)),
             _ => None,
         },
         _ => None,

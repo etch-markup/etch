@@ -54,7 +54,6 @@ const SHARED_DIRECTIVE_CSS = `
 .note > :first-child,
 .aside > :first-child,
 .details-content > :first-child,
-.spoiler-content > :first-child,
 .task-list-item__content > :first-child {
   margin-top: 0;
 }
@@ -62,7 +61,6 @@ const SHARED_DIRECTIVE_CSS = `
 .note > :last-child,
 .aside > :last-child,
 .details-content > :last-child,
-.spoiler-content > :last-child,
 .task-list-item__content > :last-child {
   margin-bottom: 0;
 }
@@ -100,79 +98,35 @@ details[open] > summary {
 }
 
 .spoiler {
-  margin: 1rem 0;
+  cursor: pointer;
 }
 
-.spoiler-toggle {
+.spoiler .spoiler-toggle {
   position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
+  width: 1px;
+  height: 1px;
   opacity: 0;
   pointer-events: none;
 }
 
-.spoiler-card {
-  display: block;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--etch-kbd-border);
-  border-radius: 0.5rem;
-}
-
-.spoiler-label {
-  margin: 0;
-  font-weight: 600;
-}
-
-.spoiler-content {
-  position: relative;
-  margin-top: 0.65rem;
-  padding: 0.35rem 0.5rem;
-  border-radius: 0.35rem;
+.spoiler .spoiler-content {
   background: var(--etch-spoiler-bg);
   color: transparent;
-  filter: blur(0.38rem);
+  border-radius: 0.25em;
+  padding: 0.05em 0.35em;
   user-select: none;
-  transition: color 140ms ease, filter 140ms ease;
+  transition: color 180ms ease, background 180ms ease;
 }
 
-.spoiler-content > * {
-  visibility: hidden;
+.spoiler:hover .spoiler-content {
+  background: color-mix(in srgb, var(--etch-spoiler-bg) 70%, transparent);
 }
 
-.spoiler-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  cursor: pointer;
-  color: transparent;
-}
-
-.spoiler-overlay::after {
-  content: "Click to reveal";
-  position: absolute;
-  inset: auto 0.5rem 0.35rem auto;
-  color: var(--etch-muted);
-  font-size: 0.85em;
-  letter-spacing: 0.01em;
-}
-
-.spoiler-toggle:focus-visible + .spoiler-card {
-  outline: 2px solid var(--etch-accent);
-  outline-offset: 2px;
-}
-
-.spoiler-toggle:checked + .spoiler-card .spoiler-content {
+.spoiler .spoiler-toggle:checked + .spoiler-content {
   color: inherit;
-  filter: none;
+  background: transparent;
+  cursor: text;
   user-select: text;
-}
-
-.spoiler-toggle:checked + .spoiler-card .spoiler-content > * {
-  visibility: visible;
-}
-
-.spoiler-toggle:checked + .spoiler-card .spoiler-overlay {
-  display: none;
 }
 
 .task-list {

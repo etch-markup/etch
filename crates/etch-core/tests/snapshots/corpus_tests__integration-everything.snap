@@ -894,49 +894,37 @@ expression: result
         ]
       },
       {
-        "type": "BlockDirective",
-        "directive_id": 12,
-        "span": {
-          "start": {
-            "line": 91,
-            "column": 1
-          },
-          "end": {
-            "line": 93,
-            "column": 3
-          }
-        },
-        "name": "spoiler",
-        "label": [
+        "type": "Paragraph",
+        "content": [
           {
             "type": "Text",
-            "value": "Classified reconnaissance report"
-          }
-        ],
-        "raw_label": "Classified reconnaissance report",
-        "raw_body": "The northern pass is unguarded between midnight and dawn.",
-        "body": [
+            "value": "The northern pass is "
+          },
           {
-            "type": "Paragraph",
+            "type": "Spoiler",
             "content": [
               {
                 "type": "Text",
-                "value": "The northern pass is unguarded between midnight and dawn."
+                "value": "unguarded between midnight and dawn"
               }
             ]
+          },
+          {
+            "type": "Text",
+            "value": "."
           }
         ]
       },
       {
         "type": "BlockDirective",
-        "directive_id": 13,
+        "directive_id": 12,
         "span": {
           "start": {
-            "line": 95,
+            "line": 93,
             "column": 1
           },
           "end": {
-            "line": 97,
+            "line": 95,
             "column": 3
           }
         },
@@ -956,14 +944,14 @@ expression: result
       },
       {
         "type": "ContainerDirective",
-        "directive_id": 14,
+        "directive_id": 13,
         "span": {
           "start": {
-            "line": 99,
+            "line": 97,
             "column": 1
           },
           "end": {
-            "line": 123,
+            "line": 121,
             "column": 12
           }
         },
@@ -996,14 +984,14 @@ expression: result
           },
           {
             "type": "ContainerDirective",
-            "directive_id": 15,
+            "directive_id": 14,
             "span": {
               "start": {
-                "line": 105,
+                "line": 103,
                 "column": 1
               },
               "end": {
-                "line": 121,
+                "line": 119,
                 "column": 12
               }
             },
@@ -1026,14 +1014,14 @@ expression: result
               },
               {
                 "type": "ContainerDirective",
-                "directive_id": 16,
+                "directive_id": 15,
                 "span": {
                   "start": {
-                    "line": 109,
+                    "line": 107,
                     "column": 1
                   },
                   "end": {
-                    "line": 119,
+                    "line": 117,
                     "column": 12
                   }
                 },
@@ -1048,14 +1036,14 @@ expression: result
                 "body": [
                   {
                     "type": "ContainerDirective",
-                    "directive_id": 17,
+                    "directive_id": 16,
                     "span": {
                       "start": {
-                        "line": 111,
+                        "line": 109,
                         "column": 1
                       },
                       "end": {
-                        "line": 113,
+                        "line": 111,
                         "column": 4
                       }
                     },
@@ -1076,14 +1064,14 @@ expression: result
                   },
                   {
                     "type": "ContainerDirective",
-                    "directive_id": 18,
+                    "directive_id": 17,
                     "span": {
                       "start": {
-                        "line": 115,
+                        "line": 113,
                         "column": 1
                       },
                       "end": {
-                        "line": 117,
+                        "line": 115,
                         "column": 4
                       }
                     },

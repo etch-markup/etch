@@ -9,7 +9,6 @@ const RESERVED_DIRECTIVES = new Set([
   "aside",
   "figure",
   "details",
-  "spoiler",
   "section",
   "chapter",
   "columns",

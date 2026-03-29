@@ -88,9 +88,7 @@ The function iterates over each byte, accumulating a running total.
 It is intentionally naive for demonstration purposes.
 ::
 
-::spoiler[Classified reconnaissance report]
-The northern pass is unguarded between midnight and dawn.
-::
+The northern pass is ||unguarded between midnight and dawn||.
 
 ::math
 \sum_{i=1}^{n} i = \frac{n(n+1)}{2}

@@ -249,6 +249,9 @@ pub enum Inline {
     /// ++inserted++ — inserted text.
     Insert { content: Vec<Inline> },
 
+    /// ||hidden|| — inline spoiler (Discord-style, click to reveal).
+    Spoiler { content: Vec<Inline> },
+
     /// [text](url "title") — a hyperlink.
     Link {
         /// The URL target.

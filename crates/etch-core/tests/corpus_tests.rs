@@ -45,6 +45,7 @@ macro_rules! corpus_test {
 // - core/inline/highlight.etch
 // - core/inline/inline-code.etch
 // - core/inline/insert.etch
+// - core/inline/spoiler.etch
 // - core/inline/nested.etch
 // - core/inline/strikethrough.etch
 // - core/inline/strong.etch
@@ -335,6 +336,11 @@ corpus_test!(
     core_inline_insert,
     "../../../tests/corpus/core/inline/insert.etch",
     "core-inline-insert"
+);
+corpus_test!(
+    core_inline_spoiler,
+    "../../../tests/corpus/core/inline/spoiler.etch",
+    "core-inline-spoiler"
 );
 corpus_test!(
     core_inline_nested,
