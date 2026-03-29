@@ -21,7 +21,8 @@
   ],
   "main": "./out/extension.js",
   "scripts": {
-    "compile": "pnpm --dir ../.. --filter @etch-markup/etch-kit build && pnpm --dir ../.. --filter @etch-markup/etch-plugin-sdk build && pnpm --dir ../.. --filter @etch-markup/etch-plugin-pipeline build && tsc -p ./ && node ./scripts/postbuild.mjs",
+    "build:wasm": "node ./scripts/build-wasm.mjs",
+    "compile": "node ./scripts/build-wasm.mjs && pnpm --dir ../.. --filter @etch-markup/etch-kit build && pnpm --dir ../.. --filter @etch-markup/etch-plugin-sdk build && pnpm --dir ../.. --filter @etch-markup/etch-plugin-pipeline build && tsc -p ./ && node ./scripts/postbuild.mjs",
     "watch": "node ./scripts/watch.mjs",
     "package": "vsce package --no-dependencies",
     "publish:vsce": "vsce publish --no-dependencies",

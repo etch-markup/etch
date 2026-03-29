@@ -1,19 +1,24 @@
 import { spawn } from 'node:child_process';
-import { watchFile, unwatchFile } from 'node:fs';
+import { watch } from 'node:fs';
 import process from 'node:process';
 
 import {
+  buildWasmPackage,
   copyTestFixtures,
   copyWasmAsset,
   createVendoredEtchKitContext,
   createVendoredPipelineContext,
   extensionRoot,
-  wasmSourceFile,
+  wasmManifestFile,
+  wasmSourceRoot,
 } from './vendor-build.mjs';
 
 const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 const childProcesses = [];
+const wasmWatchers = [];
 let shuttingDown = false;
+let wasmBuildRunning = false;
+let wasmBuildQueued = false;
 
 await runInitialCompile();
 
@@ -26,12 +31,14 @@ await vendoredPipelineContext.watch();
 await copyWasmAsset();
 await copyTestFixtures();
 
-watchFile(wasmSourceFile, { interval: 250 }, () => {
-  void copyWasmAsset().catch((error) => {
-    console.error('[watch:wasm] Failed to copy updated WASM asset.');
-    console.error(error);
-  });
-});
+wasmWatchers.push(
+  watch(wasmManifestFile, () => {
+    void rebuildWasmArtifacts();
+  }),
+  watch(wasmSourceRoot, () => {
+    void rebuildWasmArtifacts();
+  })
+);
 
 childProcesses.push(
   spawnWatcher('etch-kit', [
@@ -122,7 +129,10 @@ async function shutdown(exitCode) {
   }
 
   shuttingDown = true;
-  unwatchFile(wasmSourceFile);
+
+  for (const watcher of wasmWatchers) {
+    watcher.close();
+  }
 
   for (const child of childProcesses) {
     child.kill('SIGTERM');
@@ -134,4 +144,26 @@ async function shutdown(exitCode) {
   ]);
 
   process.exit(exitCode);
+}
+
+async function rebuildWasmArtifacts() {
+  if (wasmBuildRunning) {
+    wasmBuildQueued = true;
+    return;
+  }
+
+  wasmBuildRunning = true;
+
+  try {
+    do {
+      wasmBuildQueued = false;
+      await buildWasmPackage();
+      await copyWasmAsset();
+    } while (wasmBuildQueued);
+  } catch (error) {
+    console.error('[watch:wasm] Failed to rebuild the wasm package.');
+    console.error(error);
+  } finally {
+    wasmBuildRunning = false;
+  }
 }

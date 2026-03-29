@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process';
 import { cp, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,12 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const extensionRoot = path.resolve(__dirname, '..');
+export const workspaceRoot = path.resolve(extensionRoot, '..', '..');
+export const wasmCrateRoot = path.resolve(workspaceRoot, 'crates', 'etch-wasm');
+export const wasmManifestFile = path.join(wasmCrateRoot, 'Cargo.toml');
+export const wasmSourceRoot = path.join(wasmCrateRoot, 'src');
 export const wasmSourceFile = path.resolve(
-  extensionRoot,
-  '..',
-  '..',
-  'crates',
-  'etch-wasm',
+  wasmCrateRoot,
   'pkg',
   'etch_wasm_bg.wasm'
 );
@@ -62,6 +63,14 @@ export async function copyWasmAsset() {
   await cp(wasmSourceFile, vendoredWasmOutfile);
 }
 
+export async function buildWasmPackage() {
+  await runCommand(
+    'wasm-pack',
+    ['build', 'crates/etch-wasm', '--target', 'bundler', '--out-dir', 'pkg'],
+    workspaceRoot
+  );
+}
+
 export async function copyTestFixtures() {
   await mkdir(outTestFixtureRoot, { recursive: true });
   await cp(testFixtureSourceRoot, outTestFixtureRoot, { recursive: true });
@@ -100,4 +109,28 @@ function createBuildOptions(entryPoint, outfile) {
     target: 'node20',
     external: ['node:*'],
   };
+}
+
+function runCommand(command, args, cwd) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: 'inherit',
+      env: process.env,
+    });
+
+    child.on('exit', (code, signal) => {
+      if (signal) {
+        reject(new Error(`${command} exited from signal ${signal}.`));
+        return;
+      }
+
+      if (code === 0) {
+        resolve(undefined);
+        return;
+      }
+
+      reject(new Error(`${command} exited with code ${code ?? 'unknown'}.`));
+    });
+  });
 }
