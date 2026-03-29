@@ -149,11 +149,10 @@ export class EtchPreviewManager implements vscode.Disposable {
     this.diagnostics.delete(document.uri);
     this.renderVersions.delete(key);
 
-    const entry = this.panelsByDocument.get(key);
-
-    if (entry) {
-      entry.panel.dispose();
-    }
+    // Only remove the document mapping — keep the panel alive and in the
+    // source-column map so handleActiveEditorChange can rebind it to the
+    // next active etch file (mirrors the Markdown preview behavior).
+    this.panelsByDocument.delete(key);
   }
 
   public handleActiveEditorChange(editor: vscode.TextEditor | undefined): void {
