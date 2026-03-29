@@ -749,13 +749,8 @@ impl HtmlRenderer {
                         ],
                         &[],
                     );
-                    let span = wrap_with_tag(
-                        "span",
-                        None,
-                        &[],
-                        &["spoiler-content"],
-                        &inner_content,
-                    );
+                    let span =
+                        wrap_with_tag("span", None, &[], &["spoiler-content"], &inner_content);
                     html.push_str(&wrap_with_tag(
                         "label",
                         None,
@@ -1532,7 +1527,9 @@ mod tests {
 
         // Inline spoiler
         assert!(html.contains("<label class=\"spoiler\">"));
-        assert!(html.contains("<span class=\"spoiler-content\">a small wooden box, half-buried in ash</span>"));
+        assert!(html.contains(
+            "<span class=\"spoiler-content\">a small wooden box, half-buried in ash</span>"
+        ));
 
         // Hard line breaks
         assert!(

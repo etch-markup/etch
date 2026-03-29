@@ -219,7 +219,13 @@ fn parse_segment(
             continue;
         }
 
-        if byte == b'*' || byte == b'~' || byte == b'^' || byte == b'=' || byte == b'+' || byte == b'|' {
+        if byte == b'*'
+            || byte == b'~'
+            || byte == b'^'
+            || byte == b'='
+            || byte == b'+'
+            || byte == b'|'
+        {
             push_text(&mut nodes, &input[text_start..index]);
 
             if let Some((inline, next_index)) = try_parse_delimiter_run(input, index, depth) {

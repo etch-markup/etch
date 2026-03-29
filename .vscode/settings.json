@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "etch-markup",
+        "projectKey": "etch-markup_etch"
+    }
+}
