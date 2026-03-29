@@ -186,7 +186,11 @@ impl Delimiter {
     }
 }
 
-pub(super) fn try_parse_delimiter_run(input: &str, index: usize) -> Option<(Inline, usize)> {
+pub(super) fn try_parse_delimiter_run(
+    input: &str,
+    index: usize,
+    depth: usize,
+) -> Option<(Inline, usize)> {
     let delimiter = parse_delimiter(input, index)?;
 
     if !can_open(input, index, delimiter) {
@@ -198,6 +202,7 @@ pub(super) fn try_parse_delimiter_run(input: &str, index: usize) -> Option<(Inli
         index + delimiter.len(),
         SourcePosition { line: 1, column: 1 },
         Some(delimiter),
+        depth + 1,
     );
 
     if inner.closed && !inner.nodes.is_empty() {

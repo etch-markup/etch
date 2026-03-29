@@ -7,4 +7,9 @@ edition = "2024"
 serde = { version = "1.0.228", features = ["derive"]}
 
 [dev-dependencies]
-insta = { version = "1.46.3", features = ["json"]}
+insta = { version = "1.46.3", features = ["json"] }
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "parse_render"
+harness = false

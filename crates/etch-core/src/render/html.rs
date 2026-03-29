@@ -22,13 +22,12 @@ impl HtmlRenderer {
         Self::default()
     }
 
-    pub fn render(&self, document: &Document) -> String {
-        let mut renderer = self.clone();
-        renderer.headings = collect_headings(&document.body);
-        renderer.render_blocks(&document.body)
+    pub fn render(&mut self, document: &Document) -> String {
+        self.headings = collect_headings(&document.body);
+        self.render_blocks(&document.body)
     }
 
-    pub fn render_document(&self, document: &Document) -> String {
+    pub fn render_document(&mut self, document: &Document) -> String {
         let body = self.render(document);
         let title = document_title(document.frontmatter.as_ref())
             .unwrap_or_else(|| "Etch Document".to_string());
@@ -53,11 +52,14 @@ impl HtmlRenderer {
     }
 
     fn render_blocks(&self, blocks: &[Block]) -> String {
-        blocks
-            .iter()
-            .map(|block| self.render_block(block))
-            .collect::<Vec<_>>()
-            .join("\n")
+        let mut result = String::new();
+        for (i, block) in blocks.iter().enumerate() {
+            if i > 0 {
+                result.push('\n');
+            }
+            result.push_str(&self.render_block(block));
+        }
+        result
     }
 
     fn render_block(&self, block: &Block) -> String {
@@ -119,11 +121,10 @@ impl HtmlRenderer {
                 } else {
                     Vec::new()
                 };
-                let inner = items
+                let inner: String = items
                     .iter()
                     .map(|item| self.render_list_item(item))
-                    .collect::<Vec<_>>()
-                    .join("");
+                    .collect();
 
                 wrap_with_tag(tag, attrs.as_ref(), &[], &extra_classes, &inner)
             }
@@ -230,11 +231,10 @@ impl HtmlRenderer {
                 )
             }
             Block::DefinitionList { items, attrs } => {
-                let inner = items
+                let inner: String = items
                     .iter()
                     .map(|item| self.render_definition_item(item))
-                    .collect::<Vec<_>>()
-                    .join("");
+                    .collect();
 
                 wrap_with_tag("dl", attrs.as_ref(), &[], &[], &inner)
             }
@@ -275,28 +275,25 @@ impl HtmlRenderer {
         alignments: &[Alignment],
         attrs: Option<&Attributes>,
     ) -> String {
-        let head_cells = headers
+        let head_cells: String = headers
             .iter()
             .enumerate()
             .map(|(index, cell)| self.render_table_cell("th", cell, alignments.get(index)))
-            .collect::<Vec<_>>()
-            .join("");
+            .collect();
         let thead = format!("<thead><tr>{}</tr></thead>", head_cells);
 
-        let body_rows = rows
+        let body_rows: String = rows
             .iter()
             .map(|row| {
-                let cells = row
+                let cells: String = row
                     .iter()
                     .enumerate()
                     .map(|(index, cell)| self.render_table_cell("td", cell, alignments.get(index)))
-                    .collect::<Vec<_>>()
-                    .join("");
+                    .collect();
 
                 format!("<tr>{}</tr>", cells)
             })
-            .collect::<Vec<_>>()
-            .join("");
+            .collect();
         let tbody = format!("<tbody>{}</tbody>", body_rows);
 
         wrap_with_tag("table", attrs, &[], &[], &format!("{}{}", thead, tbody))
@@ -325,12 +322,11 @@ impl HtmlRenderer {
 
     fn render_definition_item(&self, item: &DefinitionItem) -> String {
         let term = wrap_with_tag("dt", None, &[], &[], &self.render_inlines(&item.term));
-        let definitions = item
+        let definitions: String = item
             .definitions
             .iter()
             .map(|definition| wrap_with_tag("dd", None, &[], &[], &self.render_blocks(definition)))
-            .collect::<Vec<_>>()
-            .join("");
+            .collect();
 
         format!("{}{}", term, definitions)
     }
@@ -453,7 +449,7 @@ impl HtmlRenderer {
     }
 
     fn render_toc(&self, attrs: Option<&Attributes>) -> String {
-        let items = self
+        let items: String = self
             .headings
             .iter()
             .map(|(_, text, slug)| {
@@ -463,8 +459,7 @@ impl HtmlRenderer {
                     escape_html_text(text),
                 )
             })
-            .collect::<Vec<_>>()
-            .join("");
+            .collect();
 
         wrap_with_tag(
             "nav",

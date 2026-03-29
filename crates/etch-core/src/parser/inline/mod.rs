@@ -16,6 +16,8 @@ use self::{
     util::{next_char_len, push_text},
 };
 
+const MAX_INLINE_DEPTH: usize = 64;
+
 struct ParseResult {
     nodes: Vec<Inline>,
     next_index: usize,
@@ -40,6 +42,7 @@ pub(crate) fn parse_inlines_with_position(
             column: start_column,
         },
         None,
+        0,
     )
     .nodes
 }
@@ -62,9 +65,19 @@ fn parse_segment(
     mut index: usize,
     mut position: SourcePosition,
     stop: Option<Delimiter>,
+    depth: usize,
 ) -> ParseResult {
     let mut nodes = Vec::new();
     let mut text_start = index;
+
+    if depth >= MAX_INLINE_DEPTH {
+        push_text(&mut nodes, &input[text_start..input.len()]);
+        return ParseResult {
+            nodes,
+            next_index: input.len(),
+            closed: false,
+        };
+    }
 
     while index < input.len() {
         if let Some(delimiter) = stop {
@@ -209,7 +222,7 @@ fn parse_segment(
         if byte == b'*' || byte == b'~' || byte == b'^' || byte == b'=' || byte == b'+' || byte == b'|' {
             push_text(&mut nodes, &input[text_start..index]);
 
-            if let Some((inline, next_index)) = try_parse_delimiter_run(input, index) {
+            if let Some((inline, next_index)) = try_parse_delimiter_run(input, index, depth) {
                 nodes.push(inline);
                 position = advance_position(position, &input[index..next_index]);
                 index = next_index;
@@ -1141,5 +1154,15 @@ mod tests {
                 value: "\\*not italic\\* and \\[literal\\] \\\\".to_string(),
             }]
         );
+    }
+
+    #[test]
+    fn deeply_nested_delimiters_do_not_stack_overflow() {
+        // Build input with 100 nested emphasis delimiters — well beyond MAX_INLINE_DEPTH
+        let open: String = "*a".repeat(100);
+        let close: String = "a*".repeat(100);
+        let input = format!("{}{}", open, close);
+        // Should not panic or stack overflow; just returns some parsed result
+        let _ = parse_inlines(&input);
     }
 }
