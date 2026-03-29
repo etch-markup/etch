@@ -1,5 +1,6 @@
 ---
 source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 895
 expression: result
 ---
 {
@@ -42,7 +43,7 @@ expression: result
             "column": 3
           }
         },
-        "name": "dedication",
+        "name": "aside",
         "raw_body": "For everyone who stayed up too late reading under the covers.",
         "body": [
           {
@@ -69,11 +70,17 @@ expression: result
             "column": 3
           }
         },
-        "name": "content-warning",
+        "name": "note",
+        "label": [
+          {
+            "type": "Text",
+            "value": "Content note"
+          }
+        ],
+        "raw_label": "Content note",
         "attrs": {
           "pairs": {
-            "level": "mild",
-            "tags": "melancholy"
+            "type": "caution"
           }
         },
         "raw_body": "Themes of nostalgia and gentle sadness.",
@@ -90,7 +97,7 @@ expression: result
         ]
       },
       {
-        "type": "ContainerDirective",
+        "type": "BlockDirective",
         "directive_id": 3,
         "span": {
           "start": {
@@ -98,18 +105,34 @@ expression: result
             "column": 1
           },
           "end": {
-            "line": 40,
+            "line": 22,
+            "column": 3
+          }
+        },
+        "name": "toc",
+        "raw_body": "",
+        "body": []
+      },
+      {
+        "type": "ContainerDirective",
+        "directive_id": 4,
+        "span": {
+          "start": {
+            "line": 24,
+            "column": 1
+          },
+          "end": {
+            "line": 43,
             "column": 12
           }
         },
         "name": "chapter",
         "attrs": {
           "pairs": {
-            "number": "1",
             "title": "The First Snow"
           }
         },
-        "raw_body": "\nThe village woke to silence. Not the silence of sleep,\nbut the silence of snow — heavy, patient, ==absolute==.\n\n::aside\nThe author grew up in a town like this one.\n::\n\n:character[Mira]{species=wolf} stepped onto the porch,\nbreath curling like smoke. She held a letter — creased\nfrom folding and refolding — and read it one last time.\n\n> *\"I'll come back when the embers remember how to burn.\"*\n>\n> — Kael's last letter {.attribution}\n\nShe tucked it into her coat and walked into the white.\n",
+        "raw_body": "\nThe village woke to silence. Not the silence of sleep,\nbut the silence of snow — heavy, patient, ==absolute==.\n\n::aside\nThe author grew up in a town like this one.\n::\n\nMira stepped onto the porch,\nbreath curling like smoke. She held a letter — creased\nfrom folding and refolding — and read it one last time.\n\n> *\"I'll come back when the embers remember how to burn.\"*\n>\n> — Kael's last letter {.attribution}\n\nShe tucked it into her coat and walked into the white.\n",
         "body": [
           {
             "type": "Paragraph",
@@ -142,14 +165,14 @@ expression: result
           },
           {
             "type": "BlockDirective",
-            "directive_id": 4,
+            "directive_id": 5,
             "span": {
               "start": {
-                "line": 26,
+                "line": 29,
                 "column": 1
               },
               "end": {
-                "line": 28,
+                "line": 31,
                 "column": 3
               }
             },
@@ -171,35 +194,8 @@ expression: result
             "type": "Paragraph",
             "content": [
               {
-                "type": "InlineDirective",
-                "directive_id": 5,
-                "span": {
-                  "start": {
-                    "line": 1,
-                    "column": 1
-                  },
-                  "end": {
-                    "line": 1,
-                    "column": 31
-                  }
-                },
-                "name": "character",
-                "content": [
-                  {
-                    "type": "Text",
-                    "value": "Mira"
-                  }
-                ],
-                "raw_content": "Mira",
-                "attrs": {
-                  "pairs": {
-                    "species": "wolf"
-                  }
-                }
-              },
-              {
                 "type": "Text",
-                "value": " stepped onto the porch,"
+                "value": "Mira stepped onto the porch,"
               },
               {
                 "type": "SoftBreak"
@@ -270,22 +266,21 @@ expression: result
         "directive_id": 6,
         "span": {
           "start": {
-            "line": 44,
+            "line": 47,
             "column": 1
           },
           "end": {
-            "line": 59,
+            "line": 67,
             "column": 12
           }
         },
         "name": "chapter",
         "attrs": {
           "pairs": {
-            "number": "2",
             "title": "The Finding"
           }
         },
-        "raw_body": "\nThree days later, she found what she was looking for.[^1]\n\nNot Kael — not exactly. But the place where he'd been,\nmarked by a ring of stones and the ash of a fire\nthat might have been warm ==yesterday==.\n\nThe area measured roughly :math[3\\text{m} \\times 3\\text{m}],\nwith the stones arranged in a precise circle.\n\nHer address was simple:\\\n42 Northwind Road\\\nThe Village at the Edge\n",
+        "raw_body": "\nThree days later, she found what she was looking for.[^1]\n\nNot Kael — not exactly. But the place where he'd been,\nmarked by a ring of stones and the ash of a fire\nthat might have been warm ==yesterday==.\n\nThe area measured roughly :math[3\\text{m} \\times 3\\text{m}],\nwith the stones arranged in a precise circle.\n\n::spoiler[What she found inside the ring]\nA small wooden box, half-buried in ash, containing\na photograph and a train ticket dated three years prior.\n::\n\nHer address was simple:\\\n42 Northwind Road\\\nThe Village at the Edge\n",
         "body": [
           {
             "type": "Paragraph",
@@ -375,6 +370,47 @@ expression: result
               {
                 "type": "Text",
                 "value": "with the stones arranged in a precise circle."
+              }
+            ]
+          },
+          {
+            "type": "BlockDirective",
+            "directive_id": 8,
+            "span": {
+              "start": {
+                "line": 58,
+                "column": 1
+              },
+              "end": {
+                "line": 61,
+                "column": 3
+              }
+            },
+            "name": "spoiler",
+            "label": [
+              {
+                "type": "Text",
+                "value": "What she found inside the ring"
+              }
+            ],
+            "raw_label": "What she found inside the ring",
+            "raw_body": "A small wooden box, half-buried in ash, containing\na photograph and a train ticket dated three years prior.",
+            "body": [
+              {
+                "type": "Paragraph",
+                "content": [
+                  {
+                    "type": "Text",
+                    "value": "A small wooden box, half-buried in ash, containing"
+                  },
+                  {
+                    "type": "SoftBreak"
+                  },
+                  {
+                    "type": "Text",
+                    "value": "a photograph and a train ticket dated three years prior."
+                  }
+                ]
               }
             ]
           },

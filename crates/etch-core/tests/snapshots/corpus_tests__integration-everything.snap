@@ -44,6 +44,23 @@ expression: result
         }
       },
       {
+        "type": "BlockDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 18,
+            "column": 1
+          },
+          "end": {
+            "line": 19,
+            "column": 3
+          }
+        },
+        "name": "toc",
+        "raw_body": "",
+        "body": []
+      },
+      {
         "type": "Paragraph",
         "content": [
           {
@@ -200,38 +217,90 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "The field report mentions "
+            "value": "The "
           },
           {
             "type": "InlineDirective",
-            "directive_id": 1,
+            "directive_id": 2,
             "span": {
               "start": {
                 "line": 1,
-                "column": 27
+                "column": 5
               },
               "end": {
                 "line": 1,
-                "column": 62
+                "column": 51
               }
             },
-            "name": "name",
+            "name": "abbr",
             "content": [
               {
                 "type": "Text",
-                "value": "River Cache"
+                "value": "HTML"
               }
             ],
-            "raw_content": "River Cache",
+            "raw_content": "HTML",
             "attrs": {
               "pairs": {
-                "role": "checkpoint"
+                "title": "HyperText Markup Language"
               }
             }
           },
           {
             "type": "Text",
-            "value": " and hides  inside the sentence before the list begins."
+            "value": " specification defines elements like "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 3,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 88
+              },
+              "end": {
+                "line": 1,
+                "column": 106
+              }
+            },
+            "name": "kbd",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Ctrl+Shift+I"
+              }
+            ],
+            "raw_content": "Ctrl+Shift+I"
+          },
+          {
+            "type": "Text",
+            "value": " for developer tools. As noted in "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 4,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 140
+              },
+              "end": {
+                "line": 1,
+                "column": 176
+              }
+            },
+            "name": "cite",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The Design of Everyday Things"
+              }
+            ],
+            "raw_content": "The Design of Everyday Things"
+          },
+          {
+            "type": "Text",
+            "value": ", affordances matter."
           }
         ]
       },
@@ -250,42 +319,64 @@ expression: result
         }
       },
       {
-        "type": "Paragraph",
-        "content": [
+        "type": "BlockDirective",
+        "directive_id": 5,
+        "span": {
+          "start": {
+            "line": 27,
+            "column": 1
+          },
+          "end": {
+            "line": 29,
+            "column": 3
+          }
+        },
+        "name": "figure",
+        "label": [
           {
-            "type": "Image",
-            "url": "img/camp-diagram.png",
-            "alt": "Camp diagram",
-            "attrs": {
-              "classes": [
-                "rounded"
-              ],
-              "pairs": {
-                "width": "80%"
+            "type": "Text",
+            "value": "Camp layout overview"
+          }
+        ],
+        "raw_label": "Camp layout overview",
+        "raw_body": "![Camp diagram](img/camp-diagram.png){width=80% .rounded}",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Image",
+                "url": "img/camp-diagram.png",
+                "alt": "Camp diagram",
+                "attrs": {
+                  "classes": [
+                    "rounded"
+                  ],
+                  "pairs": {
+                    "width": "80%"
+                  }
+                }
               }
-            }
+            ]
           }
         ]
       },
       {
-        "type": "Paragraph",
-        "content": [
-          {
-            "type": "InlineDirective",
-            "directive_id": 2,
-            "span": {
-              "start": {
-                "line": 1,
-                "column": 1
-              },
-              "end": {
-                "line": 1,
-                "column": 11
-              }
-            },
-            "name": "pagebreak"
+        "type": "BlockDirective",
+        "directive_id": 6,
+        "span": {
+          "start": {
+            "line": 31,
+            "column": 1
+          },
+          "end": {
+            "line": 32,
+            "column": 3
           }
-        ]
+        },
+        "name": "pagebreak",
+        "raw_body": "",
+        "body": []
       },
       {
         "type": "List",
@@ -597,81 +688,45 @@ expression: result
       },
       {
         "type": "BlockDirective",
-        "directive_id": 3,
+        "directive_id": 7,
         "span": {
           "start": {
-            "line": 60,
+            "line": 70,
             "column": 1
           },
           "end": {
-            "line": 66,
+            "line": 76,
             "column": 3
           }
         },
-        "name": "aside",
+        "name": "note",
         "label": [
           {
             "type": "Text",
-            "value": "Field note"
+            "value": "Important"
           }
         ],
-        "raw_label": "Field note",
-        "attrs": {
-          "classes": [
-            "highlighted"
-          ]
-        },
-        "raw_body": "This leaf block holds :tooltip[inline help]{text=\"shown on hover\"} and :math[E = mc^2] in flowing text.\n\nIt also keeps blank lines inside the fenced body without ending early.\n\n- First aside item",
+        "raw_label": "Important",
+        "raw_body": "This leaf block holds inline formatting and :math[E = mc^2] in flowing text.\n\nIt also keeps blank lines inside the fenced body without ending early.\n\n- First note item",
         "body": [
           {
             "type": "Paragraph",
             "content": [
               {
                 "type": "Text",
-                "value": "This leaf block holds "
+                "value": "This leaf block holds inline formatting and "
               },
               {
                 "type": "InlineDirective",
-                "directive_id": 4,
+                "directive_id": 8,
                 "span": {
                   "start": {
                     "line": 1,
-                    "column": 23
+                    "column": 45
                   },
                   "end": {
                     "line": 1,
-                    "column": 67
-                  }
-                },
-                "name": "tooltip",
-                "content": [
-                  {
-                    "type": "Text",
-                    "value": "inline help"
-                  }
-                ],
-                "raw_content": "inline help",
-                "attrs": {
-                  "pairs": {
-                    "text": "shown on hover"
-                  }
-                }
-              },
-              {
-                "type": "Text",
-                "value": " and "
-              },
-              {
-                "type": "InlineDirective",
-                "directive_id": 5,
-                "span": {
-                  "start": {
-                    "line": 1,
-                    "column": 72
-                  },
-                  "end": {
-                    "line": 1,
-                    "column": 87
+                    "column": 60
                   }
                 },
                 "name": "math",
@@ -709,7 +764,7 @@ expression: result
                     "content": [
                       {
                         "type": "Text",
-                        "value": "First aside item"
+                        "value": "First note item"
                       }
                     ]
                   }
@@ -721,14 +776,167 @@ expression: result
       },
       {
         "type": "BlockDirective",
-        "directive_id": 6,
+        "directive_id": 9,
         "span": {
           "start": {
-            "line": 67,
+            "line": 78,
             "column": 1
           },
           "end": {
-            "line": 69,
+            "line": 80,
+            "column": 3
+          }
+        },
+        "name": "note",
+        "label": [
+          {
+            "type": "Text",
+            "value": "Watch out!"
+          }
+        ],
+        "raw_label": "Watch out!",
+        "attrs": {
+          "pairs": {
+            "type": "warning"
+          }
+        },
+        "raw_body": "This action cannot be undone.",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "This action cannot be undone."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "directive_id": 10,
+        "span": {
+          "start": {
+            "line": 82,
+            "column": 1
+          },
+          "end": {
+            "line": 84,
+            "column": 3
+          }
+        },
+        "name": "aside",
+        "label": [
+          {
+            "type": "Text",
+            "value": "Field note"
+          }
+        ],
+        "raw_label": "Field note",
+        "attrs": {
+          "classes": [
+            "highlighted"
+          ]
+        },
+        "raw_body": "The aside provides contextual information that supplements the main narrative.",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The aside provides contextual information that supplements the main narrative."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "directive_id": 11,
+        "span": {
+          "start": {
+            "line": 86,
+            "column": 1
+          },
+          "end": {
+            "line": 89,
+            "column": 3
+          }
+        },
+        "name": "details",
+        "label": [
+          {
+            "type": "Text",
+            "value": "How does the checksum work?"
+          }
+        ],
+        "raw_label": "How does the checksum work?",
+        "raw_body": "The function iterates over each byte, accumulating a running total.\nIt is intentionally naive for demonstration purposes.",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The function iterates over each byte, accumulating a running total."
+              },
+              {
+                "type": "SoftBreak"
+              },
+              {
+                "type": "Text",
+                "value": "It is intentionally naive for demonstration purposes."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "directive_id": 12,
+        "span": {
+          "start": {
+            "line": 91,
+            "column": 1
+          },
+          "end": {
+            "line": 93,
+            "column": 3
+          }
+        },
+        "name": "spoiler",
+        "label": [
+          {
+            "type": "Text",
+            "value": "Classified reconnaissance report"
+          }
+        ],
+        "raw_label": "Classified reconnaissance report",
+        "raw_body": "The northern pass is unguarded between midnight and dawn.",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The northern pass is unguarded between midnight and dawn."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "BlockDirective",
+        "directive_id": 13,
+        "span": {
+          "start": {
+            "line": 95,
+            "column": 1
+          },
+          "end": {
+            "line": 97,
             "column": 3
           }
         },
@@ -748,25 +956,24 @@ expression: result
       },
       {
         "type": "ContainerDirective",
-        "directive_id": 7,
+        "directive_id": 14,
         "span": {
           "start": {
-            "line": 70,
+            "line": 99,
             "column": 1
           },
           "end": {
-            "line": 76,
+            "line": 123,
             "column": 12
           }
         },
         "name": "chapter",
         "attrs": {
           "pairs": {
-            "number": "3",
             "title": "Night Watch"
           }
         },
-        "raw_body": "## First Bell\nThe chapter begins with a heading and a short paragraph about the frozen dock.\n:::section{title=\"Inner Yard\"}\nThe section continues the report while the nested container stays open.\n:::/section",
+        "raw_body": "\n## First Bell\n\nThe chapter begins with a heading and a short paragraph about the frozen dock.\n\n:::section{title=\"Inner Yard\"}\n\nThe section continues the report while the nested container stays open.\n\n:::columns{count=2 gap=\"1.5rem\"}\n\n:::column\nThe left column describes the western approach, where lanterns hang every ten paces along the stone wall.\n:::\n\n:::column\nThe right column covers the eastern gate, still locked since the last inspection.\n:::\n\n:::/columns\n\n:::/section\n",
         "body": [
           {
             "type": "Heading",
@@ -789,14 +996,14 @@ expression: result
           },
           {
             "type": "ContainerDirective",
-            "directive_id": 8,
+            "directive_id": 15,
             "span": {
               "start": {
-                "line": 73,
+                "line": 105,
                 "column": 1
               },
               "end": {
-                "line": 75,
+                "line": 121,
                 "column": 12
               }
             },
@@ -806,7 +1013,7 @@ expression: result
                 "title": "Inner Yard"
               }
             },
-            "raw_body": "The section continues the report while the nested container stays open.",
+            "raw_body": "\nThe section continues the report while the nested container stays open.\n\n:::columns{count=2 gap=\"1.5rem\"}\n\n:::column\nThe left column describes the western approach, where lanterns hang every ten paces along the stone wall.\n:::\n\n:::column\nThe right column covers the eastern gate, still locked since the last inspection.\n:::\n\n:::/columns\n",
             "body": [
               {
                 "type": "Paragraph",
@@ -816,6 +1023,87 @@ expression: result
                     "value": "The section continues the report while the nested container stays open."
                   }
                 ]
+              },
+              {
+                "type": "ContainerDirective",
+                "directive_id": 16,
+                "span": {
+                  "start": {
+                    "line": 109,
+                    "column": 1
+                  },
+                  "end": {
+                    "line": 119,
+                    "column": 12
+                  }
+                },
+                "name": "columns",
+                "attrs": {
+                  "pairs": {
+                    "count": "2",
+                    "gap": "1.5rem"
+                  }
+                },
+                "raw_body": "\n:::column\nThe left column describes the western approach, where lanterns hang every ten paces along the stone wall.\n:::\n\n:::column\nThe right column covers the eastern gate, still locked since the last inspection.\n:::\n",
+                "body": [
+                  {
+                    "type": "ContainerDirective",
+                    "directive_id": 17,
+                    "span": {
+                      "start": {
+                        "line": 111,
+                        "column": 1
+                      },
+                      "end": {
+                        "line": 113,
+                        "column": 4
+                      }
+                    },
+                    "name": "column",
+                    "raw_body": "The left column describes the western approach, where lanterns hang every ten paces along the stone wall.",
+                    "body": [
+                      {
+                        "type": "Paragraph",
+                        "content": [
+                          {
+                            "type": "Text",
+                            "value": "The left column describes the western approach, where lanterns hang every ten paces along the stone wall."
+                          }
+                        ]
+                      }
+                    ],
+                    "named_close": false
+                  },
+                  {
+                    "type": "ContainerDirective",
+                    "directive_id": 18,
+                    "span": {
+                      "start": {
+                        "line": 115,
+                        "column": 1
+                      },
+                      "end": {
+                        "line": 117,
+                        "column": 4
+                      }
+                    },
+                    "name": "column",
+                    "raw_body": "The right column covers the eastern gate, still locked since the last inspection.",
+                    "body": [
+                      {
+                        "type": "Paragraph",
+                        "content": [
+                          {
+                            "type": "Text",
+                            "value": "The right column covers the eastern gate, still locked since the last inspection."
+                          }
+                        ]
+                      }
+                    ],
+                    "named_close": false
+                  }
+                ],
+                "named_close": true
               }
             ],
             "named_close": true
@@ -840,5 +1128,18 @@ expression: result
       }
     ]
   },
-  "errors": []
+  "errors": [
+    {
+      "kind": "Warning",
+      "message": "Structural directive nesting reached 4 levels at ':::column'",
+      "line": 111,
+      "column": 1
+    },
+    {
+      "kind": "Warning",
+      "message": "Structural directive nesting reached 4 levels at ':::column'",
+      "line": 115,
+      "column": 1
+    }
+  ]
 }

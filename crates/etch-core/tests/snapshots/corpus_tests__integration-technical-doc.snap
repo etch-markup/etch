@@ -1,5 +1,6 @@
 ---
 source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 915
 expression: result
 ---
 {
@@ -34,7 +35,7 @@ expression: result
         "content": [
           {
             "type": "Text",
-            "value": "The refill model uses "
+            "value": "The "
           },
           {
             "type": "InlineDirective",
@@ -42,11 +43,42 @@ expression: result
             "span": {
               "start": {
                 "line": 1,
-                "column": 23
+                "column": 5
               },
               "end": {
                 "line": 1,
-                "column": 40
+                "column": 58
+              }
+            },
+            "name": "abbr",
+            "content": [
+              {
+                "type": "Text",
+                "value": "API"
+              }
+            ],
+            "raw_content": "API",
+            "attrs": {
+              "pairs": {
+                "title": "Application Programming Interface"
+              }
+            }
+          },
+          {
+            "type": "Text",
+            "value": " refill model uses "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 2,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 77
+              },
+              "end": {
+                "line": 1,
+                "column": 94
               }
             },
             "name": "math",
@@ -78,7 +110,7 @@ expression: result
       },
       {
         "type": "BlockDirective",
-        "directive_id": 2,
+        "directive_id": 3,
         "span": {
           "start": {
             "line": 13,
@@ -104,12 +136,108 @@ expression: result
         ]
       },
       {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "For more background, see "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 4,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 26
+              },
+              "end": {
+                "line": 1,
+                "column": 61
+              }
+            },
+            "name": "cite",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Tanenbaum, Computer Networks"
+              }
+            ],
+            "raw_content": "Tanenbaum, Computer Networks"
+          },
+          {
+            "type": "Text",
+            "value": " on token bucket algorithms."
+          }
+        ]
+      },
+      {
         "type": "Heading",
         "level": 2,
         "content": [
           {
             "type": "Text",
             "value": "Rust Client"
+          }
+        ]
+      },
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Press "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 5,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 25
+              }
+            },
+            "name": "kbd",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Ctrl+Shift+B"
+              }
+            ],
+            "raw_content": "Ctrl+Shift+B"
+          },
+          {
+            "type": "Text",
+            "value": " to build the project, or "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 6,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 51
+              },
+              "end": {
+                "line": 1,
+                "column": 59
+              }
+            },
+            "name": "kbd",
+            "content": [
+              {
+                "type": "Text",
+                "value": "F5"
+              }
+            ],
+            "raw_content": "F5"
+          },
+          {
+            "type": "Text",
+            "value": " to run with the debugger attached."
           }
         ]
       },
@@ -278,7 +406,38 @@ expression: result
                   "content": [
                     {
                       "type": "Text",
-                      "value": "A temporary allowance above the steady-state request rate."
+                      "value": "A temporary allowance above the steady-state "
+                    },
+                    {
+                      "type": "InlineDirective",
+                      "directive_id": 7,
+                      "span": {
+                        "start": {
+                          "line": 1,
+                          "column": 46
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 84
+                        }
+                      },
+                      "name": "abbr",
+                      "content": [
+                        {
+                          "type": "Text",
+                          "value": "QoS"
+                        }
+                      ],
+                      "raw_content": "QoS",
+                      "attrs": {
+                        "pairs": {
+                          "title": "Quality of Service"
+                        }
+                      }
+                    },
+                    {
+                      "type": "Text",
+                      "value": " request rate."
                     }
                   ]
                 }

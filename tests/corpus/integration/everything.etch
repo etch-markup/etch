@@ -14,15 +14,22 @@ This document exercises every major Etch feature at least once.
 It is meant to stay readable while still acting as an adversarial smoke test.
 ~}
 # Everything Document {#everything .wide lang=en}
+
+::toc
+::
+
 This paragraph has *italic*, **bold**, ***both***, ~~strike~~, `code`, x^2^, H~2~O, ==mark==, ++insert++, \*literal asterisks\*, a [reference link](https://docs.etch-lang.dev/reference), a bare autolink https://example.com, and a footnote.[^sink]
 
-The field report mentions :name[River Cache]{role=checkpoint} and hides {~ an inline note ~} inside the sentence before the list begins.
+The :abbr[HTML]{title="HyperText Markup Language"} specification defines elements like :kbd[Ctrl+Shift+I] for developer tools. As noted in :cite[The Design of Everyday Things], affordances matter.
 
 This paragraph uses paragraph-level attributes to stand apart from the rest of the page. {.lead}
 
+::figure[Camp layout overview]
 ![Camp diagram](img/camp-diagram.png){width=80% .rounded}
+::
 
-:pagebreak
+::pagebreak
+::
 
 - Unordered supplies include rope and dried fruit
 - A second bullet keeps the ordinary list syntax visible
@@ -46,32 +53,73 @@ Protocol
 
 Checksum
 : A `code` value used to verify the copied record.
+
 ```rust
 pub fn checksum(bytes: &[u8]) -> u32 {
     bytes.iter().fold(0, |acc, b| acc + (*b as u32))
 }
 ```
 {.line-numbers highlight=2}
+
 North Gate Lodge\
 42 Lantern Row\
 Frost Harbor
 
 ---
-::aside[Field note]{.highlighted}
-This leaf block holds :tooltip[inline help]{text="shown on hover"} and :math[E = mc^2] in flowing text.
+
+::note[Important]
+This leaf block holds inline formatting and :math[E = mc^2] in flowing text.
 
 It also keeps blank lines inside the fenced body without ending early.
 
-- First aside item
+- First note item
 ::
+
+::note[Watch out!]{type=warning}
+This action cannot be undone.
+::
+
+::aside[Field note]{.highlighted}
+The aside provides contextual information that supplements the main narrative.
+::
+
+::details[How does the checksum work?]
+The function iterates over each byte, accumulating a running total.
+It is intentionally naive for demonstration purposes.
+::
+
+::spoiler[Classified reconnaissance report]
+The northern pass is unguarded between midnight and dawn.
+::
+
 ::math
 \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
 ::
-:::chapter{title="Night Watch" number=3}
+
+:::chapter{title="Night Watch"}
+
 ## First Bell
+
 The chapter begins with a heading and a short paragraph about the frozen dock.
+
 :::section{title="Inner Yard"}
+
 The section continues the report while the nested container stays open.
+
+:::columns{count=2 gap="1.5rem"}
+
+:::column
+The left column describes the western approach, where lanterns hang every ten paces along the stone wall.
+:::
+
+:::column
+The right column covers the eastern gate, still locked since the last inspection.
+:::
+
+:::/columns
+
 :::/section
+
 :::/chapter
+
 [^sink]: The footnote closes the document with one last parser check.

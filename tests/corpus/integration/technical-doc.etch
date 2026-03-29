@@ -8,13 +8,17 @@ date: 2026-03-24
 
 {~ TODO: add an example for distributed refill coordination ~}
 
-The refill model uses :math[r \times t] tokens over time, where `r` is the refill rate.[^rate]
+The :abbr[API]{title="Application Programming Interface"} refill model uses :math[r \times t] tokens over time, where `r` is the refill rate.[^rate]
 
 ::math
 tokens(t) = \min(capacity, tokens_0 + r t)
 ::
 
+For more background, see :cite[Tanenbaum, Computer Networks] on token bucket algorithms.
+
 ## Rust Client
+
+Press :kbd[Ctrl+Shift+B] to build the project, or :kbd[F5] to run with the debugger attached.
 
 ```rust
 pub fn allow(tokens: u32, requested: u32) -> bool {
@@ -33,6 +37,6 @@ Capacity
 : The maximum number of tokens the bucket can hold.
 
 Burst
-: A temporary allowance above the steady-state request rate.
+: A temporary allowance above the steady-state :abbr[QoS]{title="Quality of Service"} request rate.
 
 [^rate]: Production systems usually derive `r` from a per-second throughput budget.

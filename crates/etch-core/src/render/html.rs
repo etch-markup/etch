@@ -1410,22 +1410,44 @@ mod tests {
 
         let html = render_html(&result.document);
 
+        // Title heading with auto-id
         assert!(html.contains("<h1 id=\"embers-in-the-snow\">Embers in the Snow</h1>"));
-        assert!(html.contains("<div data-etch-directive=\"dedication\" data-etch-kind=\"block\""));
-        assert!(html.contains(
-            "<section class=\"chapter\" aria-label=\"The First Snow\" data-number=\"1\" data-title=\"The First Snow\">"
-        ));
+
+        // Dedication rendered as aside (was ::dedication, now ::aside)
         assert!(html.contains("<aside class=\"aside\">"));
+        assert!(html.contains("stayed up too late reading under the covers"));
+
+        // Content note rendered as note with type=caution
+        assert!(html.contains("class=\"note note--caution\""));
+        assert!(html.contains("role=\"note\""));
+        assert!(html.contains("Themes of nostalgia"));
+
+        // Table of contents
+        assert!(html.contains("<nav class=\"toc\""));
+
+        // Chapter container
+        assert!(html.contains("<section class=\"chapter\""));
+        assert!(html.contains("aria-label=\"The First Snow\""));
+
+        // Highlight marks
         assert!(html.contains("<mark>absolute</mark>"));
-        assert!(html.contains("<blockquote><p><em>\"I'll come back when the embers remember how to burn.\"</em></p>\n<p class=\"attribution\">"));
+
+        // Blockquote with attribution
+        assert!(html.contains("<blockquote><p><em>\"I'll come back when the embers remember how to burn.\"</em></p>"));
+
+        // Inline math
         assert!(html.contains("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">"));
-        assert!(
-            html.contains(
-                "Her address was simple:<br>42 Northwind Road<br>The Village at the Edge"
-            )
-        );
+
+        // Spoiler block
+        assert!(html.contains("<details class=\"spoiler\">"));
+        assert!(html.contains("<summary>What she found inside the ring</summary>"));
+
+        // Hard line breaks
+        assert!(html.contains("Her address was simple:<br>42 Northwind Road<br>The Village at the Edge"));
+
+        // Footnotes
         assert!(html.contains("<sup><a href=\"#fn-1\">1</a></sup>"));
-        assert!(html.contains("<div id=\"fn-1\" class=\"footnote\"><p>The finding is loosely based on a Scandinavian\nfolktale about returning wolves.</p></div>"));
+        assert!(html.contains("<div id=\"fn-1\" class=\"footnote\">"));
     }
 
     #[test]

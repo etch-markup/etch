@@ -10,15 +10,18 @@ rating: general
 
 # Embers in the Snow
 
-::dedication
+::aside
 For everyone who stayed up too late reading under the covers.
 ::
 
-::content-warning{level=mild tags="melancholy"}
+::note[Content note]{type=caution}
 Themes of nostalgia and gentle sadness.
 ::
 
-:::chapter{number=1 title="The First Snow"}
+::toc
+::
+
+:::chapter{title="The First Snow"}
 
 The village woke to silence. Not the silence of sleep,
 but the silence of snow — heavy, patient, ==absolute==.
@@ -27,7 +30,7 @@ but the silence of snow — heavy, patient, ==absolute==.
 The author grew up in a town like this one.
 ::
 
-:character[Mira]{species=wolf} stepped onto the porch,
+Mira stepped onto the porch,
 breath curling like smoke. She held a letter — creased
 from folding and refolding — and read it one last time.
 
@@ -41,7 +44,7 @@ She tucked it into her coat and walked into the white.
 
 ---
 
-:::chapter{number=2 title="The Finding"}
+:::chapter{title="The Finding"}
 
 Three days later, she found what she was looking for.[^1]
 
@@ -51,6 +54,11 @@ that might have been warm ==yesterday==.
 
 The area measured roughly :math[3\text{m} \times 3\text{m}],
 with the stones arranged in a precise circle.
+
+::spoiler[What she found inside the ring]
+A small wooden box, half-buried in ash, containing
+a photograph and a train ticket dated three years prior.
+::
 
 Her address was simple:\
 42 Northwind Road\
