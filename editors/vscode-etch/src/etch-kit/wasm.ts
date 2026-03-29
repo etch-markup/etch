@@ -15,20 +15,32 @@ export const DEFAULT_STANDALONE_STYLES = `html {
 
 body {
   margin: 0;
-  padding: 3rem 1.5rem;
-  font-family: var(--etch-body-font, Georgia, "Times New Roman", serif);
+  padding: clamp(1.25rem, 4vw, 3rem) clamp(1rem, 4vw, 2.25rem);
+  font-family: var(
+    --etch-body-font,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif
+  );
   line-height: 1.7;
   background: var(--etch-bg, var(--vscode-editor-background));
   color: var(--etch-text, var(--vscode-editor-foreground));
 }
 
 main {
-  max-width: 72ch;
+  width: min(100%, 58rem);
   margin: 0 auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--etch-heading-font, Georgia, "Times New Roman", serif);
+  font-family: var(
+    --etch-heading-font,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif
+  );
   line-height: 1.2;
   margin: 2rem 0 1rem;
 }
@@ -96,6 +108,15 @@ img {
   border-top: 1px solid color-mix(in srgb, var(--etch-text, var(--vscode-editor-foreground)) 20%, transparent);
 }
 
+.footnote-label {
+  margin: 0 0 0.5rem;
+  color: var(--etch-muted, var(--vscode-descriptionForeground, var(--vscode-editor-foreground)));
+}
+
+.footnote-label sup {
+  font-weight: 600;
+}
+
 .directive-label {
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -109,6 +130,128 @@ math[display="block"] {
   display: block;
   text-align: center;
   margin: 1em 0;
+}
+
+.note,
+.aside {
+  padding: 0.65rem 1rem;
+}
+
+.note > :first-child,
+.aside > :first-child,
+.details-content > :first-child,
+.spoiler-content > :first-child,
+.task-list-item__content > :first-child {
+  margin-top: 0;
+}
+
+.note > :last-child,
+.aside > :last-child,
+.details-content > :last-child,
+.spoiler-content > :last-child,
+.task-list-item__content > :last-child {
+  margin-bottom: 0;
+}
+
+.details-content {
+  padding: 0.75rem 1rem 0.85rem;
+}
+
+.spoiler {
+  margin: 1rem 0;
+}
+
+.spoiler-toggle {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spoiler-card {
+  display: block;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--etch-text, var(--vscode-editor-foreground)) 20%, transparent);
+  border-radius: 0.5rem;
+}
+
+.spoiler-label {
+  margin: 0;
+  font-weight: 600;
+}
+
+.spoiler-content {
+  position: relative;
+  margin-top: 0.65rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.35rem;
+  background: var(--etch-spoiler-bg, color-mix(in srgb, var(--etch-code-bg, var(--vscode-textCodeBlock-background)) 85%, transparent));
+  color: transparent;
+  filter: blur(0.38rem);
+  user-select: none;
+  transition: color 140ms ease, filter 140ms ease;
+}
+
+.spoiler-content > * {
+  visibility: hidden;
+}
+
+.spoiler-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+  color: transparent;
+}
+
+.spoiler-overlay::after {
+  content: "Click to reveal";
+  position: absolute;
+  inset: auto 0.5rem 0.35rem auto;
+  color: var(--etch-muted, var(--vscode-descriptionForeground, var(--vscode-editor-foreground)));
+  font-size: 0.85em;
+  letter-spacing: 0.01em;
+}
+
+.spoiler-toggle:focus-visible + .spoiler-card {
+  outline: 2px solid var(--etch-accent, var(--vscode-textLink-foreground));
+  outline-offset: 2px;
+}
+
+.spoiler-toggle:checked + .spoiler-card .spoiler-content {
+  color: inherit;
+  filter: none;
+  user-select: text;
+}
+
+.spoiler-toggle:checked + .spoiler-card .spoiler-content > * {
+  visibility: visible;
+}
+
+.spoiler-toggle:checked + .spoiler-card .spoiler-overlay {
+  display: none;
+}
+
+.task-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.task-list-item__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.task-list-item__checkbox {
+  margin: 0.2rem 0 0;
+  flex: none;
+}
+
+.task-list-item__content {
+  flex: 1;
+  min-width: 0;
 }
 
 .etch-missing-plugin {

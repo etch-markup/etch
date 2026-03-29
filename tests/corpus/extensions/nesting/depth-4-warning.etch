@@ -1,10 +1,14 @@
-{~ note: valid but triggers depth-4 linter warning ~}
+{~ note: valid but reaches the structural nesting warning threshold ~}
 
 :::chapter{title="One"}
 :::section{title="Two"}
 :::columns{count=2}
 :::column
+:::stack
+:::pane
 Deep content lives here.
+:::/pane
+:::/stack
 :::/column
 :::/columns
 :::/section

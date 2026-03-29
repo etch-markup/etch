@@ -406,7 +406,7 @@ pub enum ParseErrorKind {
     /// Examples: mismatched named close, directive inside leaf, unclosed directive.
     Error,
     /// A soft warning: the document is valid but may have issues.
-    /// Examples: structural nesting beyond 4 levels.
+    /// Examples: structural nesting beyond 6 levels.
     Warning,
 }
 

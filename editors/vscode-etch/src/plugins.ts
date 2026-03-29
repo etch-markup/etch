@@ -64,7 +64,7 @@ const SHARED_DIRECTIVE_CSS = `
 
 .note {
   margin: 1rem 0;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
   border-left: 4px solid var(--etch-note-border);
   background: var(--etch-note-bg);
   border-radius: 0 0.5rem 0.5rem 0;
@@ -102,9 +102,25 @@ const SHARED_DIRECTIVE_CSS = `
 
 .aside {
   margin: 1rem 0;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
   border-left: 3px solid var(--etch-accent);
   font-style: italic;
+}
+
+.note > :first-child,
+.aside > :first-child,
+.details-content > :first-child,
+.spoiler-content > :first-child,
+.task-list-item__content > :first-child {
+  margin-top: 0;
+}
+
+.note > :last-child,
+.aside > :last-child,
+.details-content > :last-child,
+.spoiler-content > :last-child,
+.task-list-item__content > :last-child {
+  margin-bottom: 0;
 }
 
 figure {
@@ -119,39 +135,130 @@ figcaption {
   opacity: 0.7;
 }
 
-details,
-.spoiler {
+details {
   margin: 1rem 0;
   border: 1px solid var(--etch-kbd-border);
   border-radius: 0.5rem;
 }
 
-details > summary,
-.spoiler > summary {
-  padding: 0.5rem 1rem;
+details > summary {
+  padding: 0.6rem 1rem;
   cursor: pointer;
   font-weight: 600;
 }
 
-details[open] > summary,
-.spoiler[open] > summary {
+details[open] > summary {
   border-bottom: 1px solid var(--etch-kbd-border);
 }
 
-details > :not(summary),
-.spoiler > :not(summary) {
-  padding: 0 1rem;
+.details-content {
+  padding: 0.75rem 1rem 0.85rem;
 }
 
-.spoiler > summary {
-  background: var(--etch-spoiler-bg);
+.spoiler {
+  margin: 1rem 0;
+}
+
+.spoiler-toggle {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spoiler-card {
+  display: block;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--etch-kbd-border);
   border-radius: 0.5rem;
 }
 
-.spoiler:not([open]) > summary::after {
-  content: ' (click to reveal)';
-  font-weight: 400;
-  opacity: 0.6;
+.spoiler-label {
+  margin: 0;
+  font-weight: 600;
+}
+
+.spoiler-content {
+  position: relative;
+  margin-top: 0.65rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.35rem;
+  background: var(--etch-spoiler-bg);
+  color: transparent;
+  filter: blur(0.38rem);
+  user-select: none;
+  transition: color 140ms ease, filter 140ms ease;
+}
+
+.spoiler-content > * {
+  visibility: hidden;
+}
+
+.spoiler-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+  color: transparent;
+}
+
+.spoiler-overlay::after {
+  content: 'Click to reveal';
+  position: absolute;
+  inset: auto 0.5rem 0.35rem auto;
+  color: var(--etch-muted);
+  font-size: 0.85em;
+  letter-spacing: 0.01em;
+}
+
+.spoiler-toggle:focus-visible + .spoiler-card {
+  outline: 2px solid var(--etch-accent);
+  outline-offset: 2px;
+}
+
+.spoiler-toggle:checked + .spoiler-card .spoiler-content {
+  color: inherit;
+  filter: none;
+  user-select: text;
+}
+
+.spoiler-toggle:checked + .spoiler-card .spoiler-content > * {
+  visibility: visible;
+}
+
+.spoiler-toggle:checked + .spoiler-card .spoiler-overlay {
+  display: none;
+}
+
+.task-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.task-list-item__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.task-list-item__checkbox {
+  margin: 0.2rem 0 0;
+  flex: none;
+}
+
+.task-list-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.footnote-label {
+  margin: 0 0 0.5rem;
+  color: var(--etch-muted);
+}
+
+.footnote-label sup {
+  font-weight: 600;
 }
 
 .columns {
@@ -225,8 +332,10 @@ const BUILTIN_THEMES: Record<string, ThemeDefinition> = {
     variables: {
       '--etch-bg': '#ffffff',
       '--etch-text': '#1a1a1a',
-      '--etch-heading-font': 'Georgia, serif',
-      '--etch-body-font': 'Georgia, serif',
+      '--etch-heading-font':
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      '--etch-body-font':
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       '--etch-accent': '#2563eb',
       '--etch-code-bg': '#f5f5f5',
       '--etch-note-bg': '#f0f7ff',
@@ -344,6 +453,105 @@ const BUILTIN_THEMES: Record<string, ThemeDefinition> = {
     },
   },
   academic: {
+    variables: {
+      '--etch-bg': '#fcfcfa',
+      '--etch-text': '#171717',
+      '--etch-heading-font':
+        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
+      '--etch-body-font':
+        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
+      '--etch-accent': '#1f4d7a',
+      '--etch-code-bg': '#f4f4f1',
+      '--etch-note-bg': '#f3f6fb',
+      '--etch-note-border': '#5a7ea6',
+      '--etch-note-tip-bg': '#f2f6f0',
+      '--etch-note-tip-border': '#5d7a4a',
+      '--etch-note-warning-bg': '#fbf5e8',
+      '--etch-note-warning-border': '#a9781f',
+      '--etch-note-caution-bg': '#f9efe7',
+      '--etch-note-caution-border': '#b36b3d',
+      '--etch-note-danger-bg': '#f8e9e8',
+      '--etch-note-danger-border': '#a64b4b',
+      '--etch-spoiler-bg': '#ece9e1',
+      '--etch-kbd-bg': '#ece9e1',
+      '--etch-kbd-border': '#c7c0b2',
+      '--etch-muted': '#5b6170',
+      '--etch-border': 'rgba(115, 130, 155, 0.3)',
+      '--etch-surface': 'rgba(115, 130, 155, 0.08)',
+      '--etch-surface-strong': 'rgba(115, 130, 155, 0.16)',
+      '--etch-code-text': '#171717',
+      '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
+      '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
+      '--etch-warning-text': '#171717',
+    },
+    css: SHARED_DIRECTIVE_CSS,
+    darkMode: {
+      variables: {
+        '--etch-bg': '#191a1d',
+        '--etch-text': '#e6e7eb',
+        '--etch-code-bg': '#23252a',
+        '--etch-note-bg': '#1d2430',
+        '--etch-note-border': '#89a5c6',
+        '--etch-note-tip-bg': '#1a221d',
+        '--etch-note-tip-border': '#8ba978',
+        '--etch-note-warning-bg': '#292317',
+        '--etch-note-warning-border': '#d3a34a',
+        '--etch-note-caution-bg': '#2b2018',
+        '--etch-note-caution-border': '#d08a59',
+        '--etch-note-danger-bg': '#2b1d1d',
+        '--etch-note-danger-border': '#d78888',
+        '--etch-spoiler-bg': '#23252a',
+        '--etch-kbd-bg': '#23252a',
+        '--etch-kbd-border': '#5d6572',
+        '--etch-muted': '#c6ccd8',
+        '--etch-border': 'rgba(148, 163, 184, 0.24)',
+        '--etch-surface': 'rgba(127, 127, 127, 0.12)',
+        '--etch-surface-strong': 'rgba(127, 127, 127, 0.18)',
+        '--etch-code-text': '#f5f4ef',
+        '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
+        '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
+        '--etch-warning-text': '#e6e7eb',
+      },
+    },
+  },
+  paper: {
+    variables: {
+      '--etch-bg': '#ffffff',
+      '--etch-text': '#111111',
+      '--etch-heading-font':
+        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
+      '--etch-body-font':
+        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
+      '--etch-accent': '#1c3d6e',
+      '--etch-code-bg': '#f7f7f4',
+      '--etch-note-bg': '#f7f8fb',
+      '--etch-note-border': '#4f6f9a',
+      '--etch-note-tip-bg': '#f5f8f2',
+      '--etch-note-tip-border': '#5d7a4a',
+      '--etch-note-warning-bg': '#fbf6ea',
+      '--etch-note-warning-border': '#9e7629',
+      '--etch-note-caution-bg': '#faf0e8',
+      '--etch-note-caution-border': '#b56f42',
+      '--etch-note-danger-bg': '#f9eceb',
+      '--etch-note-danger-border': '#a64f4f',
+      '--etch-spoiler-bg': '#ece9e1',
+      '--etch-kbd-bg': '#f2f2ee',
+      '--etch-kbd-border': '#cfc8bc',
+      '--etch-muted': '#5a6068',
+      '--etch-border': 'rgba(17, 17, 17, 0.18)',
+      '--etch-surface': 'rgba(17, 17, 17, 0.04)',
+      '--etch-surface-strong': 'rgba(17, 17, 17, 0.08)',
+      '--etch-code-text': '#111111',
+      '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
+      '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
+      '--etch-warning-text': '#111111',
+    },
+    css: `${SHARED_DIRECTIVE_CSS}
+html {
+  color-scheme: light;
+}`,
+  },
+  fancy: {
     variables: {
       '--etch-bg': '#fffff8',
       '--etch-text': '#111111',

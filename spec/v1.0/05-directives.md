@@ -291,7 +291,7 @@ This input, from `tests/corpus/extensions/container-directives/mismatched-close.
 3. **Structural directives**: A structural directive MAY contain ordinary block content, block directives, and other structural directives.
 4. **Inline directives in leaf bodies**: Inline directives that appear within paragraph text, heading text, list-item text, or other inline-bearing content inside a leaf directive are valid. They do not count as nested block-level directives.
 5. **Defaults**: Unknown or unregistered directive names MUST default to `leaf` unless an implementation explicitly declares them structural.
-6. **Structural nesting warning**: Structural nesting beyond four levels is valid but SHOULD produce a linter warning. It is not a parse error.
+6. **Structural nesting warning**: Structural nesting beyond six levels is valid but SHOULD produce a linter warning. It is not a parse error.
 
 ### Normative Examples
 
@@ -311,21 +311,25 @@ Deep content lives here.
 
 This pattern, exercised by `tests/corpus/extensions/nesting/structural-in-structural.etch` and `tests/corpus/extensions/nesting/depth-4-warning.etch`, is valid structural nesting.
 
-`✓ Valid but warns at depth four`
+`✓ Valid but warns at depth six`
 
 ```etch
 :::chapter{title="One"}
 :::section{title="Two"}
 :::columns{count=2}
 :::column
+:::stack
+:::pane
 Deep content lives here.
+:::/pane
+:::/stack
 :::/column
 :::/columns
 :::/section
 :::/chapter
 ```
 
-This input, from `tests/corpus/extensions/nesting/depth-4-warning.etch`, is valid but SHOULD trigger a linter warning because it reaches four structural levels.
+This input, from `tests/corpus/extensions/nesting/depth-4-warning.etch`, is valid but SHOULD trigger a linter warning because it reaches six structural levels.
 
 `✗ Leaf contains directive`
 

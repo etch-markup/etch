@@ -112,7 +112,7 @@ Etch distinguishes hard parse errors from soft parse warnings. A conforming pars
 2. **Mismatched named close**: When a container directive opened as `:::name` is later closed by `:::/other-name`, the parser MUST report an `Error`.
 3. **Directive inside a leaf directive**: When a block directive or container directive appears inside the body of a leaf directive, the parser MUST report an `Error`.
 4. **Unclosed directive**: When a block directive or container directive reaches end of input without a valid closing fence, the parser MUST report an `Error`.
-5. **Structural nesting warning threshold**: Structural directive nesting that reaches four levels or deeper SHOULD produce a `Warning`. This is not a parse error and does not make the document invalid.
+5. **Structural nesting warning threshold**: Structural directive nesting that reaches six levels or deeper SHOULD produce a `Warning`. This is not a parse error and does not make the document invalid.
 6. **Partial parsing requirement**: Even when one or more `Error` conditions occur, a conforming parser SHOULD continue parsing as far as practical and SHOULD return a partial AST together with the accumulated issue list.
 7. **Recovery after mismatched named close**: When a mismatched named close is encountered, the parser SHOULD close the current container at that location, record the error, and preserve the container body parsed up to that point.
 8. **Recovery after directive-in-leaf error**: When a nested directive is encountered inside a leaf directive, the parser SHOULD preserve the nested directive in the partial AST while also recording the error.
@@ -154,21 +154,25 @@ This body reaches end of input without a closing fence.
 
 This input is invalid. A conforming parser MUST report an `Error` for the missing closing fence and SHOULD still preserve the `BlockDirective` and its parsed body in the partial AST.
 
-`✓ Valid but warns at structural depth four`
+`✓ Valid but warns at structural depth six`
 
 ```etch
 :::chapter{title="One"}
 :::section{title="Two"}
 :::columns{count=2}
 :::column
+:::stack
+:::pane
 Deep content lives here.
+:::/pane
+:::/stack
 :::/column
 :::/columns
 :::/section
 :::/chapter
 ```
 
-This input, from `tests/corpus/extensions/nesting/depth-4-warning.etch`, is valid. A conforming parser SHOULD report a `Warning` when the fourth structural container is opened.
+This input, from `tests/corpus/extensions/nesting/depth-4-warning.etch`, is valid. A conforming parser SHOULD report a `Warning` when the sixth structural container is opened.
 
 ## 9.4 CommonMark Divergences
 

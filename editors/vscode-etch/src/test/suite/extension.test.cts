@@ -149,7 +149,7 @@ suite('Etch Extension', () => {
 
       assert.match(processed, /<div class="card">hello\|<p>hello<\/p><\/div>/);
       assert.match(processed, /<style data-etch-pipeline="theme">/);
-      assert.match(processed, /--etch-bg: #fffff8;/);
+      assert.match(processed, /--etch-bg: #fcfcfa;/);
       assert.match(
         processed,
         /<math xmlns="http:\/\/www\.w3\.org\/1998\/Math\/MathML"><mfrac><mn>1<\/mn><mn>2<\/mn><\/mfrac><\/math>/

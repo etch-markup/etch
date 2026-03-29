@@ -470,9 +470,11 @@ Themes can come from two places:
 
 1. **Plugin-provided** — themes shipped in a plugin's `themes` field.
 2. **Built-in** — themes shipped with Etch:
-   - `default` — clean serif (current Georgia-based theme).
+   - `default` — clean sans-serif reading theme.
    - `minimal` — sans-serif, compact.
-   - `academic` — LaTeX-like appearance.
+   - `academic` — scholarly serif theme.
+   - `paper` — flat white, print-like serif theme.
+   - `fancy` — ornate serif theme with the older academic styling.
 
 If a plugin theme and a built-in theme share a name, the plugin theme wins. Unknown theme names fall back to `default`.
 

@@ -47,6 +47,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }),
     vscode.workspace.onDidCloseTextDocument((document) => {
       previewManager.handleDocumentClose(document);
+    }),
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      previewManager.handleActiveEditorChange(editor);
     })
   );
 

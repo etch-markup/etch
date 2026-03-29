@@ -114,13 +114,18 @@ impl HtmlRenderer {
                 attrs,
             } => {
                 let tag = if *ordered { "ol" } else { "ul" };
+                let extra_classes = if items.iter().any(|item| item.checked.is_some()) {
+                    vec!["task-list"]
+                } else {
+                    Vec::new()
+                };
                 let inner = items
                     .iter()
                     .map(|item| self.render_list_item(item))
                     .collect::<Vec<_>>()
                     .join("");
 
-                wrap_with_tag(tag, attrs.as_ref(), &[], &[], &inner)
+                wrap_with_tag(tag, attrs.as_ref(), &[], &extra_classes, &inner)
             }
             Block::Table {
                 headers,
@@ -147,8 +152,9 @@ impl HtmlRenderer {
                     "note" => self.render_note_block(attrs.as_ref(), label.as_deref(), body),
                     "aside" => self.render_aside_block(attrs.as_ref(), label.as_deref(), body),
                     "figure" => self.render_figure_block(attrs.as_ref(), label.as_deref(), body),
-                    "details" | "spoiler" => self.render_details_block(
-                        name.as_str(),
+                    "details" => self.render_details_block(attrs.as_ref(), label.as_deref(), body),
+                    "spoiler" => self.render_spoiler_block(
+                        *directive_id,
                         attrs.as_ref(),
                         label.as_deref(),
                         body,
@@ -200,16 +206,40 @@ impl HtmlRenderer {
                     ),
                 }
             }
-            Block::FootnoteDefinition { label, content } => wrap_with_tag(
-                "div",
-                None,
-                &[
-                    ("id", footnote_id(label)),
-                    ("class", "footnote".to_string()),
-                ],
-                &[],
-                &self.render_blocks(content),
-            ),
+            Block::FootnoteDefinition { label, content } => {
+                let reference = wrap_with_tag(
+                    "a",
+                    None,
+                    &[("href", format!("#{}", footnote_ref_id(label)))],
+                    &[],
+                    &escape_html_text(label),
+                );
+                let label_html = wrap_with_tag(
+                    "p",
+                    None,
+                    &[("class", "footnote-label".to_string())],
+                    &[],
+                    &wrap_with_tag("sup", None, &[], &[], &reference),
+                );
+                let blocks = self.render_blocks(content);
+                let inner = if blocks.is_empty() {
+                    label_html
+                } else {
+                    format!("{label_html}\n{blocks}")
+                };
+
+                wrap_with_tag(
+                    "div",
+                    None,
+                    &[
+                        ("id", footnote_id(label)),
+                        ("class", "footnote".to_string()),
+                        ("data-footnote-label", label.clone()),
+                    ],
+                    &[],
+                    &inner,
+                )
+            }
             Block::DefinitionList { items, attrs } => {
                 let inner = items
                     .iter()
@@ -225,22 +255,28 @@ impl HtmlRenderer {
     fn render_list_item(&self, item: &ListItem) -> String {
         let mut extra_attrs = Vec::new();
         let mut inner = String::new();
+        let mut extra_classes = Vec::new();
 
         if let Some(checked) = item.checked {
             extra_attrs.push(("data-task", "true".to_string()));
             extra_attrs.push(("data-checked", checked.to_string()));
-            inner.push_str("<input type=\"checkbox\" disabled");
+            extra_classes.push("task-list-item");
+            inner.push_str("<div class=\"task-list-item__body\">");
+            inner.push_str("<input class=\"task-list-item__checkbox\" type=\"checkbox\" disabled");
 
             if checked {
                 inner.push_str(" checked");
             }
 
             inner.push('>');
+            inner.push_str("<div class=\"task-list-item__content\">");
+            inner.push_str(&self.render_blocks(&item.content));
+            inner.push_str("</div></div>");
+        } else {
+            inner.push_str(&self.render_blocks(&item.content));
         }
 
-        inner.push_str(&self.render_blocks(&item.content));
-
-        wrap_with_tag("li", None, &extra_attrs, &[], &inner)
+        wrap_with_tag("li", None, &extra_attrs, &extra_classes, &inner)
     }
 
     fn render_table(
@@ -394,17 +430,11 @@ impl HtmlRenderer {
 
     fn render_details_block(
         &self,
-        name: &str,
         attrs: Option<&Attributes>,
         label: Option<&[Inline]>,
         body: &[Block],
     ) -> String {
         let mut inner = String::new();
-        let default_summary = if name == "spoiler" {
-            "Spoiler"
-        } else {
-            "Details"
-        };
 
         if let Some(label) = label {
             inner.push_str(&wrap_with_tag(
@@ -415,16 +445,88 @@ impl HtmlRenderer {
                 &self.render_inlines(label),
             ));
         } else {
-            inner.push_str(&wrap_with_tag("summary", None, &[], &[], default_summary));
+            inner.push_str(&wrap_with_tag("summary", None, &[], &[], "Details"));
         }
 
         if !body.is_empty() {
             inner.push('\n');
         }
 
-        inner.push_str(&self.render_blocks(body));
+        inner.push_str(&wrap_with_tag(
+            "div",
+            None,
+            &[("class", "details-content".to_string())],
+            &[],
+            &self.render_blocks(body),
+        ));
 
-        wrap_with_tag("details", attrs, &[], &[name], &inner)
+        wrap_with_tag("details", attrs, &[], &["details"], &inner)
+    }
+
+    fn render_spoiler_block(
+        &self,
+        directive_id: u64,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        let toggle_id = format!("spoiler-toggle-{directive_id}");
+        let mut card_inner = String::new();
+
+        card_inner.push_str(&wrap_with_tag(
+            "p",
+            None,
+            &[("class", "spoiler-label".to_string())],
+            &[],
+            &label
+                .map(|label| self.render_inlines(label))
+                .unwrap_or_else(|| "Spoiler".to_string()),
+        ));
+
+        if !body.is_empty() {
+            card_inner.push('\n');
+        }
+
+        card_inner.push_str(&wrap_with_tag(
+            "div",
+            None,
+            &[("class", "spoiler-content".to_string())],
+            &[],
+            &format!(
+                "{}\n{}",
+                wrap_with_tag(
+                    "label",
+                    None,
+                    &[
+                        ("for", toggle_id.clone()),
+                        ("class", "spoiler-overlay".to_string())
+                    ],
+                    &[],
+                    "Reveal spoiler"
+                ),
+                self.render_blocks(body)
+            ),
+        ));
+
+        let toggle = render_void_tag(
+            "input",
+            None,
+            &[
+                ("id", toggle_id.clone()),
+                ("class", "spoiler-toggle".to_string()),
+                ("type", "checkbox".to_string()),
+            ],
+            &[],
+        );
+        let card = wrap_with_tag("div", None, &[], &["spoiler-card"], &card_inner);
+
+        wrap_with_tag(
+            "div",
+            attrs,
+            &[],
+            &["spoiler"],
+            &format!("{toggle}\n{card}"),
+        )
     }
 
     fn render_toc(&self, attrs: Option<&Attributes>) -> String {
@@ -879,7 +981,10 @@ impl HtmlRenderer {
                     let reference = wrap_with_tag(
                         "a",
                         None,
-                        &[("href", format!("#{}", footnote_id(label)))],
+                        &[
+                            ("id", footnote_ref_id(label)),
+                            ("href", format!("#{}", footnote_id(label))),
+                        ],
                         &[],
                         &escape_html_text(label),
                     );
@@ -1156,6 +1261,10 @@ fn footnote_id(label: &str) -> String {
     format!("fn-{}", label)
 }
 
+fn footnote_ref_id(label: &str) -> String {
+    format!("fnref-{}", label)
+}
+
 fn document_title(frontmatter: Option<&Frontmatter>) -> Option<String> {
     let frontmatter = frontmatter?;
     let value = frontmatter.fields.get("title")?;
@@ -1386,11 +1495,11 @@ mod tests {
                 "<h1 id=\"auto-heading\">Auto Heading</h1>\n",
                 "<p>Hello <em>world</em> and <strong>friends</strong>.</p>\n",
                 "<pre><code class=\"language-rust\">fn main() {}</code></pre>\n",
-                "<ul><li data-task=\"true\" data-checked=\"true\"><input type=\"checkbox\" disabled checked><p>Todo</p></li></ul>\n",
+                "<ul class=\"task-list\"><li class=\"task-list-item\" data-task=\"true\" data-checked=\"true\"><div class=\"task-list-item__body\"><input class=\"task-list-item__checkbox\" type=\"checkbox\" disabled checked><div class=\"task-list-item__content\"><p>Todo</p></div></div></li></ul>\n",
                 "<table><thead><tr><th style=\"text-align: center;\">Name</th></tr></thead><tbody><tr><td style=\"text-align: center;\"><a href=\"https://example.com\" title=\"Go\">Etch</a></td></tr></tbody></table>\n",
                 "<aside class=\"aside\"><p class=\"directive-label\">Note</p>\n<p>Directive body</p></aside>\n",
-                "<section class=\"chapter\"><p><sup><a href=\"#fn-a\">a</a></sup></p></section>\n",
-                "<div id=\"fn-a\" class=\"footnote\"><p>Footnote</p></div>"
+                "<section class=\"chapter\"><p><sup><a id=\"fnref-a\" href=\"#fn-a\">a</a></sup></p></section>\n",
+                "<div id=\"fn-a\" class=\"footnote\" data-footnote-label=\"a\"><p class=\"footnote-label\"><sup><a href=\"#fnref-a\">a</a></sup></p>\n<p>Footnote</p></div>"
             )
         );
 
@@ -1420,6 +1529,7 @@ mod tests {
         // Content note rendered as note with type=caution
         assert!(html.contains("class=\"note note--caution\""));
         assert!(html.contains("role=\"note\""));
+        assert!(html.contains("<p class=\"note-label\">Content note</p>"));
         assert!(html.contains("Themes of nostalgia"));
 
         // Table of contents
@@ -1433,21 +1543,30 @@ mod tests {
         assert!(html.contains("<mark>absolute</mark>"));
 
         // Blockquote with attribution
-        assert!(html.contains("<blockquote><p><em>\"I'll come back when the embers remember how to burn.\"</em></p>"));
+        assert!(html.contains(
+            "<blockquote><p><em>\"I'll come back when the embers remember how to burn.\"</em></p>"
+        ));
 
         // Inline math
         assert!(html.contains("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">"));
 
         // Spoiler block
-        assert!(html.contains("<details class=\"spoiler\">"));
-        assert!(html.contains("<summary>What she found inside the ring</summary>"));
+        assert!(html.contains("<div class=\"spoiler\">"));
+        assert!(html.contains("<p class=\"spoiler-label\">What she found inside the ring</p>"));
 
         // Hard line breaks
-        assert!(html.contains("Her address was simple:<br>42 Northwind Road<br>The Village at the Edge"));
+        assert!(
+            html.contains(
+                "Her address was simple:<br>42 Northwind Road<br>The Village at the Edge"
+            )
+        );
 
         // Footnotes
-        assert!(html.contains("<sup><a href=\"#fn-1\">1</a></sup>"));
-        assert!(html.contains("<div id=\"fn-1\" class=\"footnote\">"));
+        assert!(html.contains("<sup><a id=\"fnref-1\" href=\"#fn-1\">1</a></sup>"));
+        assert!(html.contains("<div id=\"fn-1\" class=\"footnote\" data-footnote-label=\"1\">"));
+        assert!(
+            html.contains("<p class=\"footnote-label\"><sup><a href=\"#fnref-1\">1</a></sup></p>")
+        );
     }
 
     #[test]
@@ -1519,15 +1638,33 @@ mod tests {
     #[test]
     fn renders_spoiler_directive() {
         let html = render_html(&parse("::spoiler[Endgame]\nThe hero wins.\n::").document);
-        assert!(html.contains("<details class=\"spoiler\">"));
-        assert!(html.contains("<summary>Endgame</summary>"));
+        assert!(html.contains("<div class=\"spoiler\">"));
+        assert!(html.contains("class=\"spoiler-toggle\""));
+        assert!(html.contains("<p class=\"spoiler-label\">Endgame</p>"));
         assert!(html.contains("<p>The hero wins.</p>"));
     }
 
     #[test]
     fn renders_spoiler_without_label() {
         let html = render_html(&parse("::spoiler\nSecret.\n::").document);
-        assert!(html.contains("<summary>Spoiler</summary>"));
+        assert!(html.contains("<p class=\"spoiler-label\">Spoiler</p>"));
+    }
+
+    #[test]
+    fn renders_footnote_definition_with_reference_label() {
+        let html = render_html(&parse("Body[^type]\n\n[^type]: Footnote body.").document);
+        assert!(html.contains("<sup><a id=\"fnref-type\" href=\"#fn-type\">type</a></sup>"));
+        assert!(html.contains(
+            "<div id=\"fn-type\" class=\"footnote\" data-footnote-label=\"type\"><p class=\"footnote-label\"><sup><a href=\"#fnref-type\">type</a></sup></p>"
+        ));
+    }
+
+    #[test]
+    fn renders_task_lists_with_inline_checkbox_layout_wrapper() {
+        let html = render_html(&parse("- [x] Done.\n- [ ] Next.").document);
+        assert!(html.contains("<ul class=\"task-list\">"));
+        assert!(html.contains("class=\"task-list-item__body\""));
+        assert!(html.contains("class=\"task-list-item__content\"><p>Done.</p>"));
     }
 
     #[test]

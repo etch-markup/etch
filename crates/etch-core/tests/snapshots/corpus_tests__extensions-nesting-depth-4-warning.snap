@@ -15,7 +15,7 @@ expression: result
             "column": 1
           },
           "end": {
-            "line": 11,
+            "line": 15,
             "column": 12
           }
         },
@@ -25,7 +25,7 @@ expression: result
             "title": "One"
           }
         },
-        "raw_body": ":::section{title=\"Two\"}\n:::columns{count=2}\n:::column\nDeep content lives here.\n:::/column\n:::/columns\n:::/section",
+        "raw_body": ":::section{title=\"Two\"}\n:::columns{count=2}\n:::column\n:::stack\n:::pane\nDeep content lives here.\n:::/pane\n:::/stack\n:::/column\n:::/columns\n:::/section",
         "body": [
           {
             "type": "ContainerDirective",
@@ -36,7 +36,7 @@ expression: result
                 "column": 1
               },
               "end": {
-                "line": 10,
+                "line": 14,
                 "column": 12
               }
             },
@@ -46,7 +46,7 @@ expression: result
                 "title": "Two"
               }
             },
-            "raw_body": ":::columns{count=2}\n:::column\nDeep content lives here.\n:::/column\n:::/columns",
+            "raw_body": ":::columns{count=2}\n:::column\n:::stack\n:::pane\nDeep content lives here.\n:::/pane\n:::/stack\n:::/column\n:::/columns",
             "body": [
               {
                 "type": "ContainerDirective",
@@ -57,7 +57,7 @@ expression: result
                     "column": 1
                   },
                   "end": {
-                    "line": 9,
+                    "line": 13,
                     "column": 12
                   }
                 },
@@ -67,7 +67,7 @@ expression: result
                     "count": "2"
                   }
                 },
-                "raw_body": ":::column\nDeep content lives here.\n:::/column",
+                "raw_body": ":::column\n:::stack\n:::pane\nDeep content lives here.\n:::/pane\n:::/stack\n:::/column",
                 "body": [
                   {
                     "type": "ContainerDirective",
@@ -78,21 +78,59 @@ expression: result
                         "column": 1
                       },
                       "end": {
-                        "line": 8,
+                        "line": 12,
                         "column": 11
                       }
                     },
                     "name": "column",
-                    "raw_body": "Deep content lives here.",
+                    "raw_body": ":::stack\n:::pane\nDeep content lives here.\n:::/pane\n:::/stack",
                     "body": [
                       {
-                        "type": "Paragraph",
-                        "content": [
-                          {
-                            "type": "Text",
-                            "value": "Deep content lives here."
+                        "type": "ContainerDirective",
+                        "directive_id": 5,
+                        "span": {
+                          "start": {
+                            "line": 7,
+                            "column": 1
+                          },
+                          "end": {
+                            "line": 11,
+                            "column": 10
                           }
-                        ]
+                        },
+                        "name": "stack",
+                        "raw_body": ":::pane\nDeep content lives here.\n:::/pane",
+                        "body": [
+                          {
+                            "type": "ContainerDirective",
+                            "directive_id": 6,
+                            "span": {
+                              "start": {
+                                "line": 8,
+                                "column": 1
+                              },
+                              "end": {
+                                "line": 10,
+                                "column": 9
+                              }
+                            },
+                            "name": "pane",
+                            "raw_body": "Deep content lives here.",
+                            "body": [
+                              {
+                                "type": "Paragraph",
+                                "content": [
+                                  {
+                                    "type": "Text",
+                                    "value": "Deep content lives here."
+                                  }
+                                ]
+                              }
+                            ],
+                            "named_close": true
+                          }
+                        ],
+                        "named_close": true
                       }
                     ],
                     "named_close": true
@@ -111,8 +149,8 @@ expression: result
   "errors": [
     {
       "kind": "Warning",
-      "message": "Structural directive nesting reached 4 levels at ':::column'",
-      "line": 6,
+      "message": "Structural directive nesting reached 6 levels at ':::pane'",
+      "line": 8,
       "column": 1
     }
   ]

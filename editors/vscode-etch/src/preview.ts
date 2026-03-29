@@ -13,6 +13,8 @@ const PREVIEW_DEBOUNCE_MS = 200;
 type PreviewEntry = {
   documentUri: string;
   panel: vscode.WebviewPanel;
+  sourceColumn: vscode.ViewColumn;
+  previewColumn: vscode.ViewColumn;
 };
 
 type PreviewPluginManager = {
@@ -23,7 +25,8 @@ export class EtchPreviewManager implements vscode.Disposable {
   private readonly context: vscode.ExtensionContext;
   private readonly diagnostics: vscode.DiagnosticCollection;
   private readonly pluginManager: PreviewPluginManager;
-  private readonly panels = new Map<string, PreviewEntry>();
+  private readonly panelsByDocument = new Map<string, PreviewEntry>();
+  private readonly panelsBySourceColumn = new Map<string, PreviewEntry>();
   private readonly refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly renderVersions = new Map<string, number>();
 
@@ -49,15 +52,30 @@ export class EtchPreviewManager implements vscode.Disposable {
     }
 
     const key = document.uri.toString();
-    const existing = this.panels.get(key);
-    const targetColumn = toSide
-      ? this.getSideColumn(editor.viewColumn)
-      : editor.viewColumn ?? vscode.ViewColumn.Active;
+    const sourceColumn = this.resolveSourceColumn(editor.viewColumn);
+    const sourceKey = this.getColumnKey(sourceColumn);
+    const existing = this.panelsBySourceColumn.get(sourceKey);
+    const existingForDocument = this.panelsByDocument.get(key);
+    const targetColumn = toSide ? this.getSideColumn(sourceColumn) : sourceColumn;
 
     if (existing) {
+      this.bindPreviewToDocument(existing, document, sourceColumn, targetColumn);
       existing.panel.title = this.getPanelTitle(document);
       existing.panel.reveal(targetColumn, true);
       await this.renderPreview(document, existing.panel);
+      return;
+    }
+
+    if (existingForDocument) {
+      this.bindPreviewToDocument(
+        existingForDocument,
+        document,
+        sourceColumn,
+        targetColumn
+      );
+      existingForDocument.panel.title = this.getPanelTitle(document);
+      existingForDocument.panel.reveal(targetColumn, true);
+      await this.renderPreview(document, existingForDocument.panel);
       return;
     }
 
@@ -74,11 +92,18 @@ export class EtchPreviewManager implements vscode.Disposable {
       }
     );
 
-    this.panels.set(key, { documentUri: key, panel });
+    panel.iconPath = this.getPreviewIconPath();
+
+    const entry = {
+      documentUri: key,
+      panel,
+      sourceColumn,
+      previewColumn: targetColumn,
+    };
+    this.registerPreview(entry);
 
     panel.onDidDispose(() => {
-      this.panels.delete(key);
-      this.renderVersions.delete(key);
+      this.unregisterPreview(entry);
     });
 
     await this.renderPreview(document, panel);
@@ -124,11 +149,34 @@ export class EtchPreviewManager implements vscode.Disposable {
     this.diagnostics.delete(document.uri);
     this.renderVersions.delete(key);
 
-    const entry = this.panels.get(key);
+    const entry = this.panelsByDocument.get(key);
 
     if (entry) {
       entry.panel.dispose();
     }
+  }
+
+  public handleActiveEditorChange(editor: vscode.TextEditor | undefined): void {
+    const document = editor?.document;
+
+    if (!document || document.languageId !== ETCH_LANGUAGE_ID) {
+      return;
+    }
+
+    const sourceColumn = this.resolveSourceColumn(editor.viewColumn);
+    const entry = this.panelsBySourceColumn.get(this.getColumnKey(sourceColumn));
+
+    if (!entry || entry.documentUri === document.uri.toString()) {
+      return;
+    }
+
+    this.bindPreviewToDocument(
+      entry,
+      document,
+      sourceColumn,
+      entry.previewColumn
+    );
+    void this.renderPreview(document, entry.panel);
   }
 
   public dispose(): void {
@@ -139,15 +187,16 @@ export class EtchPreviewManager implements vscode.Disposable {
     this.refreshTimers.clear();
     this.renderVersions.clear();
 
-    for (const entry of this.panels.values()) {
+    for (const entry of this.panelsByDocument.values()) {
       entry.panel.dispose();
     }
 
-    this.panels.clear();
+    this.panelsByDocument.clear();
+    this.panelsBySourceColumn.clear();
   }
 
   public async refreshAllPreviews(): Promise<void> {
-    for (const [key, entry] of this.panels.entries()) {
+    for (const [key, entry] of this.panelsByDocument.entries()) {
       const document = vscode.workspace.textDocuments.find(
         (candidate) => candidate.uri.toString() === key
       );
@@ -159,7 +208,7 @@ export class EtchPreviewManager implements vscode.Disposable {
   }
 
   private async updateDocument(document: vscode.TextDocument): Promise<void> {
-    const entry = this.panels.get(document.uri.toString());
+    const entry = this.panelsByDocument.get(document.uri.toString());
 
     if (!entry) {
       this.renderDiagnostics(document);
@@ -360,12 +409,65 @@ export class EtchPreviewManager implements vscode.Disposable {
     return segments[segments.length - 1] || document.fileName || 'Untitled';
   }
 
+  private registerPreview(entry: PreviewEntry): void {
+    this.panelsByDocument.set(entry.documentUri, entry);
+    this.panelsBySourceColumn.set(this.getColumnKey(entry.sourceColumn), entry);
+  }
+
+  private unregisterPreview(entry: PreviewEntry): void {
+    this.panelsByDocument.delete(entry.documentUri);
+    this.panelsBySourceColumn.delete(this.getColumnKey(entry.sourceColumn));
+    this.renderVersions.delete(entry.documentUri);
+  }
+
+  private bindPreviewToDocument(
+    entry: PreviewEntry,
+    document: vscode.TextDocument,
+    sourceColumn: vscode.ViewColumn,
+    previewColumn: vscode.ViewColumn
+  ): void {
+    const nextKey = document.uri.toString();
+    const previousDocumentUri = entry.documentUri;
+    const previousSourceKey = this.getColumnKey(entry.sourceColumn);
+
+    if (previousDocumentUri !== nextKey) {
+      this.panelsByDocument.delete(previousDocumentUri);
+      this.renderVersions.delete(previousDocumentUri);
+    }
+
+    if (previousSourceKey !== this.getColumnKey(sourceColumn)) {
+      this.panelsBySourceColumn.delete(previousSourceKey);
+    }
+
+    entry.documentUri = nextKey;
+    entry.sourceColumn = sourceColumn;
+    entry.previewColumn = previewColumn;
+    this.registerPreview(entry);
+  }
+
+  private getPreviewIconPath(): { light: vscode.Uri; dark: vscode.Uri } {
+    return {
+      light: vscode.Uri.joinPath(this.context.extensionUri, 'media', 'preview-light.svg'),
+      dark: vscode.Uri.joinPath(this.context.extensionUri, 'media', 'preview-dark.svg'),
+    };
+  }
+
+  private resolveSourceColumn(
+    column: vscode.ViewColumn | undefined
+  ): vscode.ViewColumn {
+    return column ?? vscode.ViewColumn.One;
+  }
+
+  private getColumnKey(column: vscode.ViewColumn): string {
+    return String(column);
+  }
+
   private isLatestRender(
     key: string,
     version: number,
     panel: vscode.WebviewPanel
   ): boolean {
-    const entry = this.panels.get(key);
+    const entry = this.panelsByDocument.get(key);
     return entry?.panel === panel && this.renderVersions.get(key) === version;
   }
 

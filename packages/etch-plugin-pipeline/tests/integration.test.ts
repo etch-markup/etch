@@ -82,7 +82,7 @@ describe("math and extensibility integration", () => {
     );
 
     expect(result).toContain('data-etch-pipeline="theme"');
-    expect(result).toContain("--etch-bg: #fffff8;");
+    expect(result).toContain("--etch-bg: #fcfcfa;");
     expect(result).toContain("@media (prefers-color-scheme: dark)");
   });
 });

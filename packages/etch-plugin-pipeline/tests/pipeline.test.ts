@@ -206,8 +206,14 @@ describe("discovery", () => {
 describe("themes", () => {
   it("assembles built-in themes with dark mode", () => {
     const css = assembleThemeCSS(BUILTIN_THEMES.academic);
-    expect(css).toContain("--etch-bg: #fffff8;");
+    expect(css).toContain("--etch-bg: #fcfcfa;");
     expect(css).toContain("@media (prefers-color-scheme: dark)");
+  });
+
+  it("keeps the paper theme locked to a light paper surface", () => {
+    const css = assembleThemeCSS(BUILTIN_THEMES.paper);
+    expect(css).toContain("--etch-bg: #ffffff;");
+    expect(css).toContain("color-scheme: light;");
   });
 });
 

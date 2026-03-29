@@ -40,6 +40,8 @@ thread_local! {
     static NEXT_DIRECTIVE_ID: Cell<u64> = const { Cell::new(1) };
 }
 
+const STRUCTURAL_NESTING_WARNING_THRESHOLD: usize = 6;
+
 #[derive(Clone)]
 pub(crate) struct ParseContext {
     allow_nested_block_directives: bool,
@@ -205,7 +207,7 @@ where
                 });
             }
             let structural_context = context.clone().for_container_body();
-            if structural_context.structural_depth >= 4 {
+            if structural_context.structural_depth >= STRUCTURAL_NESTING_WARNING_THRESHOLD {
                 errors.push(ParseError {
                     kind: ParseErrorKind::Warning,
                     message: format!(
@@ -1504,17 +1506,17 @@ mod tests {
     }
 
     #[test]
-    fn parse_warns_when_structural_nesting_reaches_four_levels() {
+    fn parse_warns_when_structural_nesting_reaches_six_levels() {
         let result = parse(
-            ":::chapter\n:::section\n:::columns\n:::column\nDeep content.\n:::/column\n:::/columns\n:::/section\n:::/chapter",
+            ":::chapter\n:::section\n:::columns\n:::column\n:::stack\n:::pane\nDeep content.\n:::/pane\n:::/stack\n:::/column\n:::/columns\n:::/section\n:::/chapter",
         );
 
         assert_eq!(
             result.errors,
             vec![ParseError {
                 kind: ParseErrorKind::Warning,
-                message: "Structural directive nesting reached 4 levels at ':::column'".to_string(),
-                line: 4,
+                message: "Structural directive nesting reached 6 levels at ':::pane'".to_string(),
+                line: 6,
                 column: Some(1),
             }]
         );
