@@ -1,0 +1,53 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 806
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "The common shorthand is "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 25
+              },
+              "end": {
+                "line": 1,
+                "column": 70
+              }
+            },
+            "name": "abbr",
+            "content": [
+              {
+                "type": "Text",
+                "value": "WHO"
+              }
+            ],
+            "raw_content": "WHO",
+            "attrs": {
+              "pairs": {
+                "title": "World Health Organization"
+              }
+            }
+          },
+          {
+            "type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

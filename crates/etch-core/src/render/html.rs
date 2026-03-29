@@ -13,15 +13,19 @@ pub fn render_html_document(document: &Document) -> String {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct HtmlRenderer;
+pub struct HtmlRenderer {
+    headings: Vec<(u8, String, String)>,
+}
 
 impl HtmlRenderer {
     pub fn new() -> Self {
-        Self
+        Self::default()
     }
 
     pub fn render(&self, document: &Document) -> String {
-        self.render_blocks(&document.body)
+        let mut renderer = self.clone();
+        renderer.headings = collect_headings(&document.body);
+        renderer.render_blocks(&document.body)
     }
 
     pub fn render_document(&self, document: &Document) -> String {
@@ -59,6 +63,12 @@ impl HtmlRenderer {
     fn render_block(&self, block: &Block) -> String {
         match block {
             Block::Paragraph { content, attrs } => {
+                if attrs.is_none() && content.len() == 1 {
+                    if let Some(html) = self.render_special_single_inline_paragraph(&content[0]) {
+                        return html;
+                    }
+                }
+
                 wrap_with_tag("p", attrs.as_ref(), &[], &[], &self.render_inlines(content))
             }
             Block::Heading {
@@ -67,9 +77,10 @@ impl HtmlRenderer {
                 attrs,
             } => {
                 let tag = format!("h{}", (*level).clamp(1, 6));
+                let heading_attrs = heading_attributes(attrs.as_ref(), content);
                 wrap_with_tag(
                     &tag,
-                    attrs.as_ref(),
+                    heading_attrs.as_ref(),
                     &[],
                     &[],
                     &self.render_inlines(content),
@@ -132,17 +143,30 @@ impl HtmlRenderer {
                     return math::latex_to_mathml(raw_body, true);
                 }
 
-                self.render_directive(
-                    "div",
-                    "block",
-                    *directive_id,
-                    name,
-                    raw_label.as_deref(),
-                    raw_body,
-                    label.as_deref(),
-                    attrs.as_ref(),
-                    body,
-                )
+                match name.as_str() {
+                    "note" => self.render_note_block(attrs.as_ref(), label.as_deref(), body),
+                    "aside" => self.render_aside_block(attrs.as_ref(), label.as_deref(), body),
+                    "figure" => self.render_figure_block(attrs.as_ref(), label.as_deref(), body),
+                    "details" | "spoiler" => self.render_details_block(
+                        name.as_str(),
+                        attrs.as_ref(),
+                        label.as_deref(),
+                        body,
+                    ),
+                    "toc" => self.render_toc(attrs.as_ref()),
+                    "pagebreak" => self.render_pagebreak(attrs.as_ref()),
+                    _ => self.render_directive(
+                        "div",
+                        "block",
+                        *directive_id,
+                        name,
+                        raw_label.as_deref(),
+                        raw_body,
+                        label.as_deref(),
+                        attrs.as_ref(),
+                        body,
+                    ),
+                }
             }
             Block::ContainerDirective {
                 directive_id,
@@ -158,17 +182,23 @@ impl HtmlRenderer {
                     return math::latex_to_mathml(raw_body, true);
                 }
 
-                self.render_directive(
-                    "section",
-                    "container",
-                    *directive_id,
-                    name,
-                    raw_label.as_deref(),
-                    raw_body,
-                    label.as_deref(),
-                    attrs.as_ref(),
-                    body,
-                )
+                match name.as_str() {
+                    "section" => self.render_section_block(attrs.as_ref(), label.as_deref(), body),
+                    "chapter" => self.render_chapter_block(attrs.as_ref(), label.as_deref(), body),
+                    "columns" => self.render_columns_block(attrs.as_ref(), label.as_deref(), body),
+                    "column" => self.render_column_block(attrs.as_ref(), label.as_deref(), body),
+                    _ => self.render_directive(
+                        "section",
+                        "container",
+                        *directive_id,
+                        name,
+                        raw_label.as_deref(),
+                        raw_body,
+                        label.as_deref(),
+                        attrs.as_ref(),
+                        body,
+                    ),
+                }
             }
             Block::FootnoteDefinition { label, content } => wrap_with_tag(
                 "div",
@@ -278,6 +308,281 @@ impl HtmlRenderer {
             .join("");
 
         format!("{}{}", term, definitions)
+    }
+
+    fn render_note_block(
+        &self,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        const VALID_TYPES: &[&str] = &["info", "tip", "warning", "caution", "danger"];
+
+        let note_type = attrs
+            .and_then(|attrs| attrs.pairs.get("type"))
+            .filter(|value| VALID_TYPES.contains(&value.as_str()))
+            .map(String::as_str);
+        let modifier_class = note_type.map(|note_type| format!("note--{note_type}"));
+        let mut classes = vec!["note"];
+
+        if let Some(modifier_class) = modifier_class.as_deref() {
+            classes.push(modifier_class);
+        }
+
+        let mut inner = String::new();
+
+        if let Some(label) = label {
+            inner.push_str(&wrap_with_tag(
+                "p",
+                None,
+                &[("class", "note-label".to_string())],
+                &[],
+                &self.render_inlines(label),
+            ));
+
+            if !body.is_empty() {
+                inner.push('\n');
+            }
+        }
+
+        inner.push_str(&self.render_blocks(body));
+
+        wrap_with_tag(
+            "aside",
+            attrs,
+            &[("role", "note".to_string())],
+            &classes,
+            &inner,
+        )
+    }
+
+    fn render_aside_block(
+        &self,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        wrap_with_tag(
+            "aside",
+            attrs,
+            &[],
+            &["aside"],
+            &self.render_labeled_blocks(label, "directive-label", body),
+        )
+    }
+
+    fn render_figure_block(
+        &self,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        let (attrs, caption) = take_attr(attrs, "caption");
+        let mut inner = self.render_blocks(body);
+        let caption = label.map(|label| self.render_inlines(label)).or(caption);
+
+        if let Some(caption) = caption {
+            if !inner.is_empty() {
+                inner.push('\n');
+            }
+
+            inner.push_str(&wrap_with_tag("figcaption", None, &[], &[], &caption));
+        }
+
+        wrap_with_tag("figure", attrs.as_ref(), &[], &[], &inner)
+    }
+
+    fn render_details_block(
+        &self,
+        name: &str,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        let mut inner = String::new();
+        let default_summary = if name == "spoiler" {
+            "Spoiler"
+        } else {
+            "Details"
+        };
+
+        if let Some(label) = label {
+            inner.push_str(&wrap_with_tag(
+                "summary",
+                None,
+                &[],
+                &[],
+                &self.render_inlines(label),
+            ));
+        } else {
+            inner.push_str(&wrap_with_tag("summary", None, &[], &[], default_summary));
+        }
+
+        if !body.is_empty() {
+            inner.push('\n');
+        }
+
+        inner.push_str(&self.render_blocks(body));
+
+        wrap_with_tag("details", attrs, &[], &[name], &inner)
+    }
+
+    fn render_toc(&self, attrs: Option<&Attributes>) -> String {
+        let items = self
+            .headings
+            .iter()
+            .map(|(_, text, slug)| {
+                format!(
+                    "<li><a href=\"#{}\">{}</a></li>",
+                    escape_html_attr(slug),
+                    escape_html_text(text),
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("");
+
+        wrap_with_tag(
+            "nav",
+            attrs,
+            &[("aria-label", "Table of contents".to_string())],
+            &["toc"],
+            &wrap_with_tag("ol", None, &[], &[], &items),
+        )
+    }
+
+    fn render_pagebreak(&self, attrs: Option<&Attributes>) -> String {
+        wrap_with_tag("div", attrs, &[], &["page-break"], "")
+    }
+
+    fn render_section_block(
+        &self,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        let mut extra_attrs = Vec::new();
+
+        if let Some(title) = attrs.and_then(|attrs| attrs.pairs.get("title")) {
+            extra_attrs.push(("aria-label", title.clone()));
+        }
+
+        wrap_with_tag(
+            "section",
+            attrs,
+            &extra_attrs,
+            &[],
+            &self.render_labeled_blocks(label, "directive-label", body),
+        )
+    }
+
+    fn render_chapter_block(
+        &self,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        let mut extra_attrs = Vec::new();
+
+        if let Some(title) = attrs.and_then(|attrs| attrs.pairs.get("title")) {
+            extra_attrs.push(("aria-label", title.clone()));
+        }
+
+        wrap_with_tag(
+            "section",
+            attrs,
+            &extra_attrs,
+            &["chapter"],
+            &self.render_labeled_blocks(label, "directive-label", body),
+        )
+    }
+
+    fn render_columns_block(
+        &self,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        let count = attrs
+            .and_then(|attrs| attrs.pairs.get("count"))
+            .map(String::as_str)
+            .unwrap_or("2");
+        let gap = attrs.and_then(|attrs| attrs.pairs.get("gap"));
+        let mut style = format!("--columns-count: {count}");
+
+        if let Some(gap) = gap {
+            style.push_str(&format!("; --columns-gap: {gap}"));
+        }
+
+        wrap_with_tag(
+            "div",
+            attrs,
+            &[("style", style)],
+            &["columns"],
+            &self.render_labeled_blocks(label, "directive-label", body),
+        )
+    }
+
+    fn render_column_block(
+        &self,
+        attrs: Option<&Attributes>,
+        label: Option<&[Inline]>,
+        body: &[Block],
+    ) -> String {
+        wrap_with_tag(
+            "div",
+            attrs,
+            &[],
+            &["column"],
+            &self.render_labeled_blocks(label, "directive-label", body),
+        )
+    }
+
+    fn render_labeled_blocks(
+        &self,
+        label: Option<&[Inline]>,
+        label_class: &str,
+        body: &[Block],
+    ) -> String {
+        let mut inner = String::new();
+
+        if let Some(label) = label {
+            inner.push_str(&wrap_with_tag(
+                "p",
+                None,
+                &[("class", label_class.to_string())],
+                &[],
+                &self.render_inlines(label),
+            ));
+
+            if !body.is_empty() {
+                inner.push('\n');
+            }
+        }
+
+        inner.push_str(&self.render_blocks(body));
+        inner
+    }
+
+    fn render_special_single_inline_paragraph(&self, inline: &Inline) -> Option<String> {
+        let Inline::InlineDirective {
+            name,
+            content,
+            attrs,
+            ..
+        } = inline
+        else {
+            return None;
+        };
+
+        if attrs.is_some() || content.is_some() {
+            return None;
+        }
+
+        match name.as_str() {
+            "pagebreak" => Some(self.render_pagebreak(None)),
+            "toc" => Some(self.render_toc(None)),
+            _ => None,
+        }
     }
 
     fn render_directive(
@@ -465,6 +770,84 @@ impl HtmlRenderer {
                         continue;
                     }
 
+                    if name == "pagebreak" {
+                        html.push_str(&wrap_with_tag(
+                            "span",
+                            attrs.as_ref(),
+                            &[("aria-hidden", "true".to_string())],
+                            &["page-break"],
+                            "",
+                        ));
+                        continue;
+                    }
+
+                    if name == "toc" {
+                        html.push_str(&wrap_with_tag(
+                            "span",
+                            attrs.as_ref(),
+                            &[
+                                ("role", "navigation".to_string()),
+                                ("aria-label", "Table of contents".to_string()),
+                            ],
+                            &["toc"],
+                            "",
+                        ));
+                        continue;
+                    }
+
+                    if name == "abbr" {
+                        let (attrs, title) = take_attr(attrs.as_ref(), "title");
+                        let mut extra_attrs = Vec::new();
+
+                        if let Some(title) = title {
+                            extra_attrs.push(("title", title));
+                        }
+
+                        html.push_str(&wrap_with_tag(
+                            "abbr",
+                            attrs.as_ref(),
+                            &extra_attrs,
+                            &[],
+                            &self.render_inlines(content.as_deref().unwrap_or(&[])),
+                        ));
+                        continue;
+                    }
+
+                    if name == "kbd" {
+                        let raw = raw_content.as_deref().unwrap_or_default();
+                        let keys = raw.split('+').map(str::trim).collect::<Vec<_>>();
+
+                        if keys.len() > 1 {
+                            html.push_str(
+                                &keys
+                                    .iter()
+                                    .map(|key| format!("<kbd>{}</kbd>", escape_html_text(key)))
+                                    .collect::<Vec<_>>()
+                                    .join("+"),
+                            );
+                        } else {
+                            html.push_str(&wrap_with_tag(
+                                "kbd",
+                                attrs.as_ref(),
+                                &[],
+                                &[],
+                                &escape_html_text(raw.trim()),
+                            ));
+                        }
+                        continue;
+                    }
+
+                    if name == "cite" {
+                        html.push_str(&wrap_with_tag(
+                            "cite",
+                            attrs.as_ref(),
+                            &[],
+                            &[],
+                            &self.render_inlines(content.as_deref().unwrap_or(&[])),
+                        ));
+                        continue;
+                    }
+
                     let rendered_content = content
                         .as_deref()
                         .map(|content| self.render_inlines(content))
@@ -510,6 +893,146 @@ impl HtmlRenderer {
 
         html
     }
+}
+
+fn take_attr(attrs: Option<&Attributes>, key: &str) -> (Option<Attributes>, Option<String>) {
+    let mut cloned = attrs.cloned();
+    let value = cloned.as_mut().and_then(|attrs| attrs.pairs.remove(key));
+    (cloned, value)
+}
+
+fn heading_attributes(attrs: Option<&Attributes>, content: &[Inline]) -> Option<Attributes> {
+    let mut cloned = attrs.cloned();
+    let slug = heading_slug(content);
+
+    match (&mut cloned, slug) {
+        (Some(attrs), Some(slug)) if attrs.id.is_none() => {
+            attrs.id = Some(slug);
+            cloned
+        }
+        (None, Some(slug)) => Some(Attributes {
+            id: Some(slug),
+            classes: Vec::new(),
+            pairs: std::collections::HashMap::new(),
+        }),
+        _ => cloned,
+    }
+}
+
+fn heading_slug(content: &[Inline]) -> Option<String> {
+    let mut text = String::new();
+    collect_inline_text(content, &mut text);
+    let slug = slugify(&text);
+
+    if slug.is_empty() { None } else { Some(slug) }
+}
+
+fn collect_inline_text(inlines: &[Inline], text: &mut String) {
+    for inline in inlines {
+        match inline {
+            Inline::Text { value } | Inline::InlineCode { value } => text.push_str(value),
+            Inline::Emphasis { content }
+            | Inline::Strong { content }
+            | Inline::Strikethrough { content }
+            | Inline::Superscript { content }
+            | Inline::Subscript { content }
+            | Inline::Highlight { content }
+            | Inline::Insert { content } => collect_inline_text(content, text),
+            Inline::Link { content, .. } => collect_inline_text(content, text),
+            Inline::Image { alt, .. } => text.push_str(alt),
+            Inline::AutoLink { url } => text.push_str(url),
+            Inline::InlineDirective {
+                content,
+                raw_content,
+                ..
+            } => {
+                if let Some(content) = content {
+                    collect_inline_text(content, text);
+                } else if let Some(raw_content) = raw_content {
+                    text.push_str(raw_content);
+                }
+            }
+            Inline::FootnoteReference { label } => text.push_str(label),
+            Inline::SoftBreak | Inline::HardBreak => text.push(' '),
+        }
+    }
+}
+
+fn slugify(value: &str) -> String {
+    let mut slug = String::new();
+    let mut last_was_dash = false;
+
+    for ch in value.chars().flat_map(|ch| ch.to_lowercase()) {
+        if ch.is_alphanumeric() {
+            slug.push(ch);
+            last_was_dash = false;
+        } else if !slug.is_empty() && !last_was_dash {
+            slug.push('-');
+            last_was_dash = true;
+        }
+    }
+
+    while slug.ends_with('-') {
+        slug.pop();
+    }
+
+    slug
+}
+
+fn collect_headings(blocks: &[Block]) -> Vec<(u8, String, String)> {
+    let mut headings = Vec::new();
+    collect_headings_into(blocks, &mut headings);
+    headings
+}
+
+fn collect_headings_into(blocks: &[Block], headings: &mut Vec<(u8, String, String)>) {
+    for block in blocks {
+        match block {
+            Block::Heading {
+                level,
+                content,
+                attrs,
+            } => {
+                let text = heading_text(content);
+                let id = attrs
+                    .as_ref()
+                    .and_then(|attrs| attrs.id.clone())
+                    .or_else(|| heading_slug(content))
+                    .unwrap_or_default();
+
+                headings.push((*level, text, id));
+            }
+            Block::BlockQuote { content, .. } => collect_headings_into(content, headings),
+            Block::List { items, .. } => {
+                for item in items {
+                    collect_headings_into(&item.content, headings);
+                }
+            }
+            Block::BlockDirective { body, .. } | Block::ContainerDirective { body, .. } => {
+                collect_headings_into(body, headings);
+            }
+            Block::FootnoteDefinition { content, .. } => {
+                collect_headings_into(content, headings);
+            }
+            Block::DefinitionList { items, .. } => {
+                for item in items {
+                    for definition in &item.definitions {
+                        collect_headings_into(definition, headings);
+                    }
+                }
+            }
+            Block::Paragraph { .. }
+            | Block::CodeBlock { .. }
+            | Block::Table { .. }
+            | Block::ThematicBreak => {}
+        }
+    }
+}
+
+fn heading_text(content: &[Inline]) -> String {
+    let mut text = String::new();
+    collect_inline_text(content, &mut text);
+    text
 }
 
 fn render_voidless_tag(tag: &str, attrs: &[(&str, String)], inner: &str) -> String {
@@ -735,6 +1258,13 @@ mod tests {
                         pairs: HashMap::from([("tone".to_string(), "warm".to_string())]),
                     }),
                 },
+                Block::Heading {
+                    level: 1,
+                    content: vec![Inline::Text {
+                        value: "Auto Heading".to_string(),
+                    }],
+                    attrs: None,
+                },
                 Block::Paragraph {
                     content: vec![
                         Inline::Text {
@@ -853,12 +1383,13 @@ mod tests {
             fragment,
             concat!(
                 "<h2 id=\"hero\" class=\"display\" data-tone=\"warm\">Title</h2>\n",
+                "<h1 id=\"auto-heading\">Auto Heading</h1>\n",
                 "<p>Hello <em>world</em> and <strong>friends</strong>.</p>\n",
                 "<pre><code class=\"language-rust\">fn main() {}</code></pre>\n",
                 "<ul><li data-task=\"true\" data-checked=\"true\"><input type=\"checkbox\" disabled checked><p>Todo</p></li></ul>\n",
                 "<table><thead><tr><th style=\"text-align: center;\">Name</th></tr></thead><tbody><tr><td style=\"text-align: center;\"><a href=\"https://example.com\" title=\"Go\">Etch</a></td></tr></tbody></table>\n",
-                "<div data-etch-directive=\"aside\" data-etch-kind=\"block\" data-etch-id=\"1\" data-etch-content=\"Directive body\" data-etch-label=\"Note\"><p class=\"directive-label\">Note</p>\n<p>Directive body</p></div>\n",
-                "<section data-etch-directive=\"chapter\" data-etch-kind=\"container\" data-etch-id=\"2\" data-etch-content=\"[^a]\"><p><sup><a href=\"#fn-a\">a</a></sup></p></section>\n",
+                "<aside class=\"aside\"><p class=\"directive-label\">Note</p>\n<p>Directive body</p></aside>\n",
+                "<section class=\"chapter\"><p><sup><a href=\"#fn-a\">a</a></sup></p></section>\n",
                 "<div id=\"fn-a\" class=\"footnote\"><p>Footnote</p></div>"
             )
         );
@@ -879,11 +1410,12 @@ mod tests {
 
         let html = render_html(&result.document);
 
-        assert!(html.contains("<h1>Embers in the Snow</h1>"));
+        assert!(html.contains("<h1 id=\"embers-in-the-snow\">Embers in the Snow</h1>"));
         assert!(html.contains("<div data-etch-directive=\"dedication\" data-etch-kind=\"block\""));
-        assert!(
-            html.contains("<section data-etch-directive=\"chapter\" data-etch-kind=\"container\"")
-        );
+        assert!(html.contains(
+            "<section class=\"chapter\" aria-label=\"The First Snow\" data-number=\"1\" data-title=\"The First Snow\">"
+        ));
+        assert!(html.contains("<aside class=\"aside\">"));
         assert!(html.contains("<mark>absolute</mark>"));
         assert!(html.contains("<blockquote><p><em>\"I'll come back when the embers remember how to burn.\"</em></p>\n<p class=\"attribution\">"));
         assert!(html.contains("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">"));
@@ -894,6 +1426,190 @@ mod tests {
         );
         assert!(html.contains("<sup><a href=\"#fn-1\">1</a></sup>"));
         assert!(html.contains("<div id=\"fn-1\" class=\"footnote\"><p>The finding is loosely based on a Scandinavian\nfolktale about returning wolves.</p></div>"));
+    }
+
+    #[test]
+    fn renders_note_directive() {
+        let html = render_html(&parse("::note[Important]\nDo not forget this.\n::").document);
+        assert!(html.contains("<aside class=\"note\""));
+        assert!(html.contains("role=\"note\""));
+        assert!(html.contains("<p class=\"note-label\">Important</p>"));
+        assert!(html.contains("<p>Do not forget this.</p>"));
+        assert!(html.contains("</aside>"));
+    }
+
+    #[test]
+    fn renders_note_with_type() {
+        let html = render_html(&parse("::note{type=warning}\nWatch out.\n::").document);
+        assert!(html.contains("class=\"note note--warning\""));
+        assert!(html.contains("role=\"note\""));
+    }
+
+    #[test]
+    fn renders_note_with_unknown_type_as_plain_note() {
+        let html = render_html(&parse("::note{type=banana}\nHmm.\n::").document);
+        assert!(html.contains("class=\"note\""));
+        assert!(!html.contains("note--banana"));
+    }
+
+    #[test]
+    fn renders_aside_directive() {
+        let html = render_html(&parse("::aside\nSidebar content.\n::").document);
+        assert!(html.contains("<aside class=\"aside\">"));
+        assert!(html.contains("<p>Sidebar content.</p>"));
+        assert!(html.contains("</aside>"));
+    }
+
+    #[test]
+    fn renders_figure_directive() {
+        let html = render_html(&parse("::figure[A fine photo]\n![photo](/img.jpg)\n::").document);
+        assert!(html.contains("<figure>"));
+        assert!(html.contains("<img src=\"/img.jpg\""));
+        assert!(html.contains("<figcaption>A fine photo</figcaption>"));
+        assert!(html.contains("</figure>"));
+    }
+
+    #[test]
+    fn renders_figure_without_caption() {
+        let html = render_html(&parse("::figure\n![photo](/img.jpg)\n::").document);
+        assert!(html.contains("<figure>"));
+        assert!(!html.contains("<figcaption>"));
+    }
+
+    #[test]
+    fn renders_details_directive() {
+        let html = render_html(
+            &parse("::details[How does this work?]\nIt works like magic.\n::").document,
+        );
+        assert!(html.contains("<details class=\"details\">"));
+        assert!(html.contains("<summary>How does this work?</summary>"));
+        assert!(html.contains("<p>It works like magic.</p>"));
+        assert!(html.contains("</details>"));
+    }
+
+    #[test]
+    fn renders_details_without_summary() {
+        let html = render_html(&parse("::details\nHidden content.\n::").document);
+        assert!(html.contains("<details class=\"details\">"));
+        assert!(html.contains("<summary>Details</summary>"));
+    }
+
+    #[test]
+    fn renders_spoiler_directive() {
+        let html = render_html(&parse("::spoiler[Endgame]\nThe hero wins.\n::").document);
+        assert!(html.contains("<details class=\"spoiler\">"));
+        assert!(html.contains("<summary>Endgame</summary>"));
+        assert!(html.contains("<p>The hero wins.</p>"));
+    }
+
+    #[test]
+    fn renders_spoiler_without_label() {
+        let html = render_html(&parse("::spoiler\nSecret.\n::").document);
+        assert!(html.contains("<summary>Spoiler</summary>"));
+    }
+
+    #[test]
+    fn renders_heading_with_auto_id() {
+        let html = render_html(&parse("# Hello World").document);
+        assert!(html.contains("<h1 id=\"hello-world\">Hello World</h1>"));
+    }
+
+    #[test]
+    fn renders_heading_preserves_explicit_id() {
+        let html = render_html(&parse("# Hello {#custom}").document);
+        assert!(html.contains("id=\"custom\""));
+        assert!(!html.contains("id=\"hello\""));
+    }
+
+    #[test]
+    fn renders_toc_directive() {
+        let html = render_html(&parse("# One\n\n::toc\n::\n\n## Two\n\n## Three").document);
+        assert!(html.contains("<nav class=\"toc\""));
+        assert!(html.contains("<li><a href=\"#one\">One</a></li>"));
+        assert!(html.contains("<li><a href=\"#two\">Two</a></li>"));
+        assert!(html.contains("<li><a href=\"#three\">Three</a></li>"));
+    }
+
+    #[test]
+    fn renders_pagebreak_directive() {
+        let html = render_html(&parse("Before\n\n::pagebreak\n::\n\nAfter").document);
+        assert!(html.contains("<div class=\"page-break\"></div>"));
+    }
+
+    #[test]
+    fn renders_abbr_directive() {
+        let html = render_html(
+            &parse("The :abbr[HTML]{title=\"HyperText Markup Language\"} spec.").document,
+        );
+        assert!(html.contains("<abbr title=\"HyperText Markup Language\">HTML</abbr>"));
+    }
+
+    #[test]
+    fn renders_abbr_without_title() {
+        let html = render_html(&parse("The :abbr[CSS] spec.").document);
+        assert!(html.contains("<abbr>CSS</abbr>"));
+    }
+
+    #[test]
+    fn renders_kbd_directive() {
+        let html = render_html(&parse("Press :kbd[Ctrl+Shift+P] to open.").document);
+        assert!(html.contains("<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>"));
+    }
+
+    #[test]
+    fn renders_kbd_single_key() {
+        let html = render_html(&parse("Press :kbd[Enter] to confirm.").document);
+        assert!(html.contains("<kbd>Enter</kbd>"));
+    }
+
+    #[test]
+    fn renders_cite_directive() {
+        let html = render_html(&parse("As noted in :cite[The Art of War].").document);
+        assert!(html.contains("<cite>The Art of War</cite>"));
+    }
+
+    #[test]
+    fn renders_section_container() {
+        let html = render_html(&parse(":::section{title=\"Intro\"}\nContent.\n:::").document);
+        assert!(html.contains("<section"));
+        assert!(html.contains("aria-label=\"Intro\""));
+        assert!(html.contains("<p>Content.</p>"));
+    }
+
+    #[test]
+    fn renders_chapter_container() {
+        let html =
+            render_html(&parse(":::chapter{title=\"One\"}\nChapter text.\n:::/chapter").document);
+        assert!(html.contains("<section class=\"chapter\""));
+        assert!(html.contains("aria-label=\"One\""));
+    }
+
+    #[test]
+    fn renders_columns_layout() {
+        let input =
+            ":::columns{count=2}\n:::column\nLeft.\n:::\n:::column\nRight.\n:::\n:::/columns";
+        let html = render_html(&parse(input).document);
+        assert!(html.contains("<div class=\"columns\""));
+        assert!(html.contains("--columns-count: 2"));
+        assert!(html.contains("<div class=\"column\""));
+    }
+
+    #[test]
+    fn renders_columns_with_gap() {
+        let input = ":::columns{count=3 gap=\"2rem\"}\nContent.\n:::";
+        let html = render_html(&parse(input).document);
+        assert!(html.contains("--columns-count: 3"));
+        assert!(html.contains("--columns-gap: 2rem"));
+    }
+
+    #[test]
+    fn renders_standalone_pagebreak_and_toc_as_block_elements() {
+        let html = render_html(&parse(":pagebreak\n\n:toc").document);
+
+        assert!(html.contains("<div class=\"page-break\"></div>"));
+        assert!(
+            html.contains("<nav class=\"toc\" aria-label=\"Table of contents\"><ol></ol></nav>")
+        );
     }
 
     #[test]
@@ -916,9 +1632,9 @@ mod tests {
     #[test]
     fn renders_container_math_as_mathml() {
         let html = render_html(&parse(":::math\n\\alpha + \\beta\n:::").document);
-        assert!(html.contains(
-            "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">"
-        ));
+        assert!(
+            html.contains("<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">")
+        );
         assert!(html.contains("<mi>α</mi>"));
         assert!(!html.contains("data-etch-directive=\"math\""));
     }

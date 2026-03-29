@@ -1,0 +1,5 @@
+{~ Tests a spoiler block directive that should render as a details element. ~}
+
+::spoiler[Click to reveal]
+The missing compass was tucked inside the flour tin.
+::

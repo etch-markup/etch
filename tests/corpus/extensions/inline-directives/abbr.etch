@@ -1,0 +1,3 @@
+{~ Tests an inline abbreviation directive with a title attribute. ~}
+
+The common shorthand is :abbr[WHO]{title="World Health Organization"}.

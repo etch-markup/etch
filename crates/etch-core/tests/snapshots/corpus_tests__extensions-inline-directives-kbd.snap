@@ -1,0 +1,48 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 831
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "value": "Press "
+          },
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 19
+              }
+            },
+            "name": "kbd",
+            "content": [
+              {
+                "type": "Text",
+                "value": "Ctrl+S"
+              }
+            ],
+            "raw_content": "Ctrl+S"
+          },
+          {
+            "type": "Text",
+            "value": " to save the draft."
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

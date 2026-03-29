@@ -1,0 +1,7 @@
+{~ Tests a bare pagebreak inline directive used between paragraphs. ~}
+
+First section.
+
+:pagebreak
+
+Second section.

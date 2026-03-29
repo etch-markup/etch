@@ -1,0 +1,52 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 653
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 5,
+            "column": 3
+          }
+        },
+        "name": "note",
+        "label": [
+          {
+            "type": "Text",
+            "value": "Field note"
+          }
+        ],
+        "raw_label": "Field note",
+        "attrs": {
+          "pairs": {
+            "type": "warning"
+          }
+        },
+        "raw_body": "The ridge path closes early in winter.",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The ridge path closes early in winter."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

@@ -1,0 +1,5 @@
+{~ Tests a semantic details block directive with a visible summary label. ~}
+
+::details[More information]
+The hidden panel stays inside the details element until opened.
+::

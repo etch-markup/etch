@@ -1,0 +1,5 @@
+{~ Tests a note block directive with a type attribute that should survive parsing. ~}
+
+::note[Field note]{type=warning}
+The ridge path closes early in winter.
+::

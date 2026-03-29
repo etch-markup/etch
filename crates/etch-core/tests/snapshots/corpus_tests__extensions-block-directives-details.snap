@@ -1,0 +1,47 @@
+---
+source: crates/etch-core/tests/corpus_tests.rs
+assertion_line: 593
+expression: result
+---
+{
+  "document": {
+    "frontmatter": null,
+    "body": [
+      {
+        "type": "BlockDirective",
+        "directive_id": 1,
+        "span": {
+          "start": {
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "line": 5,
+            "column": 3
+          }
+        },
+        "name": "details",
+        "label": [
+          {
+            "type": "Text",
+            "value": "More information"
+          }
+        ],
+        "raw_label": "More information",
+        "raw_body": "The hidden panel stays inside the details element until opened.",
+        "body": [
+          {
+            "type": "Paragraph",
+            "content": [
+              {
+                "type": "Text",
+                "value": "The hidden panel stays inside the details element until opened."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

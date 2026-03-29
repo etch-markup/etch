@@ -1,0 +1,3 @@
+{~ Tests a bare table-of-contents inline directive on its own line. ~}
+
+:toc

@@ -93,9 +93,14 @@ macro_rules! corpus_test {
 // - extensions/block-directives/basic.etch
 // - extensions/block-directives/blank-lines-inside.etch
 // - extensions/block-directives/empty-body.etch
+// - extensions/block-directives/details.etch
 // - extensions/block-directives/math.etch
 // - extensions/block-directives/multiple.etch
+// - extensions/block-directives/note-with-type.etch
+// - extensions/block-directives/pagebreak.etch
 // - extensions/block-directives/rich-content.etch
+// - extensions/block-directives/spoiler.etch
+// - extensions/block-directives/toc.etch
 // - extensions/block-directives/with-attrs.etch
 // - extensions/block-directives/with-both.etch
 // - extensions/block-directives/with-label.etch
@@ -120,9 +125,12 @@ macro_rules! corpus_test {
 // - extensions/frontmatter/no-frontmatter.etch
 // - extensions/frontmatter/not-first-line.etch
 // - extensions/inline-directives/balanced-brackets.etch
+// - extensions/inline-directives/abbr.etch
 // - extensions/inline-directives/bare.etch
 // - extensions/inline-directives/content-with-formatting.etch
+// - extensions/inline-directives/cite.etch
 // - extensions/inline-directives/escaped-bracket.etch
+// - extensions/inline-directives/kbd.etch
 // - extensions/inline-directives/multiple-in-paragraph.etch
 // - extensions/inline-directives/not-a-directive.etch
 // - extensions/inline-directives/quoted-attr-values.etch
@@ -583,6 +591,11 @@ corpus_test!(
     "extensions-block-directives-empty-body"
 );
 corpus_test!(
+    extensions_block_directives_details,
+    "../../../tests/corpus/extensions/block-directives/details.etch",
+    "extensions-block-directives-details"
+);
+corpus_test!(
     extensions_block_directives_math,
     "../../../tests/corpus/extensions/block-directives/math.etch",
     "extensions-block-directives-math"
@@ -638,9 +651,29 @@ corpus_test!(
     "extensions-block-directives-multiple"
 );
 corpus_test!(
+    extensions_block_directives_note_with_type,
+    "../../../tests/corpus/extensions/block-directives/note-with-type.etch",
+    "extensions-block-directives-note-with-type"
+);
+corpus_test!(
+    extensions_block_directives_pagebreak,
+    "../../../tests/corpus/extensions/block-directives/pagebreak.etch",
+    "extensions-block-directives-pagebreak"
+);
+corpus_test!(
     extensions_block_directives_rich_content,
     "../../../tests/corpus/extensions/block-directives/rich-content.etch",
     "extensions-block-directives-rich-content"
+);
+corpus_test!(
+    extensions_block_directives_spoiler,
+    "../../../tests/corpus/extensions/block-directives/spoiler.etch",
+    "extensions-block-directives-spoiler"
+);
+corpus_test!(
+    extensions_block_directives_toc,
+    "../../../tests/corpus/extensions/block-directives/toc.etch",
+    "extensions-block-directives-toc"
 );
 corpus_test!(
     extensions_block_directives_with_attrs,
@@ -771,6 +804,11 @@ corpus_test!(
     "extensions-inline-directives-balanced-brackets"
 );
 corpus_test!(
+    extensions_inline_directives_abbr,
+    "../../../tests/corpus/extensions/inline-directives/abbr.etch",
+    "extensions-inline-directives-abbr"
+);
+corpus_test!(
     extensions_inline_directives_bare,
     "../../../tests/corpus/extensions/inline-directives/bare.etch",
     "extensions-inline-directives-bare"
@@ -781,9 +819,19 @@ corpus_test!(
     "extensions-inline-directives-content-with-formatting"
 );
 corpus_test!(
+    extensions_inline_directives_cite,
+    "../../../tests/corpus/extensions/inline-directives/cite.etch",
+    "extensions-inline-directives-cite"
+);
+corpus_test!(
     extensions_inline_directives_escaped_bracket,
     "../../../tests/corpus/extensions/inline-directives/escaped-bracket.etch",
     "extensions-inline-directives-escaped-bracket"
+);
+corpus_test!(
+    extensions_inline_directives_kbd,
+    "../../../tests/corpus/extensions/inline-directives/kbd.etch",
+    "extensions-inline-directives-kbd"
 );
 corpus_test!(
     extensions_inline_directives_multiple_in_paragraph,

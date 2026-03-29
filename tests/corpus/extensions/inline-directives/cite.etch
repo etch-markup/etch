@@ -1,0 +1,3 @@
+{~ Tests an inline citation directive with nested formatting. ~}
+
+The quote comes from :cite[*Etch*].

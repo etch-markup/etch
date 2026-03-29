@@ -1,0 +1,3 @@
+{~ Tests an inline keyboard shortcut directive. ~}
+
+Press :kbd[Ctrl+S] to save the draft.
