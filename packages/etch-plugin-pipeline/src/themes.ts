@@ -51,6 +51,24 @@ const SHARED_DIRECTIVE_CSS = `
   font-style: italic;
 }
 
+.chapter {
+  margin: 2.5rem 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--etch-border);
+}
+
+.chapter:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.chapter-title {
+  margin: 0 0 1rem;
+  font-size: 1.75em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
 .note > :first-child,
 .aside > :first-child,
 .details-content > :first-child,
@@ -114,17 +132,19 @@ details[open] > summary {
   color: transparent;
   border-radius: 0.25em;
   padding: 0.05em 0.35em;
+  filter: blur(0.35rem);
   user-select: none;
-  transition: color 180ms ease, background 180ms ease;
+  transition: color 200ms ease, filter 200ms ease, background 200ms ease;
 }
 
 .spoiler:hover .spoiler-content {
-  background: color-mix(in srgb, var(--etch-spoiler-bg) 70%, transparent);
+  filter: blur(0.25rem);
 }
 
 .spoiler .spoiler-toggle:checked + .spoiler-content {
   color: inherit;
   background: transparent;
+  filter: none;
   cursor: text;
   user-select: text;
 }
@@ -151,12 +171,17 @@ details[open] > summary {
 }
 
 .footnote-label {
-  margin: 0 0 0.5rem;
+  font-weight: 600;
   color: var(--etch-muted);
+  margin-right: 0.35em;
 }
 
-.footnote-label sup {
-  font-weight: 600;
+.footnote-label::before {
+  content: "[";
+}
+
+.footnote-label::after {
+  content: "]";
 }
 
 .columns {

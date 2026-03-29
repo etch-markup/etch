@@ -201,25 +201,20 @@ impl HtmlRenderer {
                 }
             }
             Block::FootnoteDefinition { label, content } => {
-                let reference = wrap_with_tag(
-                    "a",
-                    None,
-                    &[("href", format!("#{}", footnote_ref_id(label)))],
-                    &[],
-                    &escape_html_text(label),
-                );
-                let label_html = wrap_with_tag(
-                    "p",
+                let label_span = wrap_with_tag(
+                    "span",
                     None,
                     &[("class", "footnote-label".to_string())],
                     &[],
-                    &wrap_with_tag("sup", None, &[], &[], &reference),
+                    &escape_html_text(label),
                 );
                 let blocks = self.render_blocks(content);
+                // Inject the label span at the start of the first <p> so the
+                // label and description sit on the same line.
                 let inner = if blocks.is_empty() {
-                    label_html
+                    wrap_with_tag("p", None, &[], &[], &label_span)
                 } else {
-                    format!("{label_html}\n{blocks}")
+                    inject_before_first_paragraph(&blocks, &label_span)
                 };
 
                 wrap_with_tag(
@@ -511,18 +506,34 @@ impl HtmlRenderer {
         label: Option<&[Inline]>,
         body: &[Block],
     ) -> String {
+        let (attrs_without_title, title) = take_attr(attrs, "title");
         let mut extra_attrs = Vec::new();
 
-        if let Some(title) = attrs.and_then(|attrs| attrs.pairs.get("title")) {
+        if let Some(ref title) = title {
             extra_attrs.push(("aria-label", title.clone()));
         }
 
+        let mut inner = String::new();
+
+        if let Some(ref title) = title {
+            inner.push_str(&wrap_with_tag(
+                "h2",
+                None,
+                &[],
+                &["chapter-title"],
+                &escape_html_text(title),
+            ));
+            inner.push('\n');
+        }
+
+        inner.push_str(&self.render_labeled_blocks(label, "directive-label", body));
+
         wrap_with_tag(
             "section",
-            attrs,
+            attrs_without_title.as_ref(),
             &extra_attrs,
             &["chapter"],
-            &self.render_labeled_blocks(label, "directive-label", body),
+            &inner,
         )
     }
 
@@ -1212,6 +1223,25 @@ fn alignment_style(alignment: Option<&Alignment>) -> Option<&'static str> {
     }
 }
 
+/// Prepend `prefix` inside the first `<p>` tag in `html`. If no `<p>` is
+/// found, the prefix is prepended before the entire string.
+fn inject_before_first_paragraph(html: &str, prefix: &str) -> String {
+    if let Some(pos) = html.find("<p>") {
+        let after = pos + 3; // len of "<p>"
+        format!("{}{}{}{}", &html[..after], prefix, " ", &html[after..])
+    } else if let Some(pos) = html.find("<p ") {
+        // <p class="..."> — find the closing >
+        if let Some(end) = html[pos..].find('>') {
+            let after = pos + end + 1;
+            format!("{}{}{}{}", &html[..after], prefix, " ", &html[after..])
+        } else {
+            format!("{prefix} {html}")
+        }
+    } else {
+        format!("{prefix} {html}")
+    }
+}
+
 fn footnote_id(label: &str) -> String {
     format!("fn-{}", label)
 }
@@ -1454,7 +1484,7 @@ mod tests {
                 "<table><thead><tr><th style=\"text-align: center;\">Name</th></tr></thead><tbody><tr><td style=\"text-align: center;\"><a href=\"https://example.com\" title=\"Go\">Etch</a></td></tr></tbody></table>\n",
                 "<aside class=\"aside\"><p class=\"directive-label\">Note</p>\n<p>Directive body</p></aside>\n",
                 "<section class=\"chapter\"><p><sup><a id=\"fnref-a\" href=\"#fn-a\">a</a></sup></p></section>\n",
-                "<div id=\"fn-a\" class=\"footnote\" data-footnote-label=\"a\"><p class=\"footnote-label\"><sup><a href=\"#fnref-a\">a</a></sup></p>\n<p>Footnote</p></div>"
+                "<div id=\"fn-a\" class=\"footnote\" data-footnote-label=\"a\"><p><span class=\"footnote-label\">a</span> Footnote</p></div>"
             )
         );
 
@@ -1519,9 +1549,7 @@ mod tests {
         // Footnotes
         assert!(html.contains("<sup><a id=\"fnref-1\" href=\"#fn-1\">1</a></sup>"));
         assert!(html.contains("<div id=\"fn-1\" class=\"footnote\" data-footnote-label=\"1\">"));
-        assert!(
-            html.contains("<p class=\"footnote-label\"><sup><a href=\"#fnref-1\">1</a></sup></p>")
-        );
+        assert!(html.contains("<span class=\"footnote-label\">1</span>"));
     }
 
     #[test]
@@ -1599,11 +1627,13 @@ mod tests {
     }
 
     #[test]
-    fn renders_footnote_definition_with_reference_label() {
+    fn renders_footnote_definition_with_inline_label() {
         let html = render_html(&parse("Body[^type]\n\n[^type]: Footnote body.").document);
+        // Inline reference renders as superscript link
         assert!(html.contains("<sup><a id=\"fnref-type\" href=\"#fn-type\">type</a></sup>"));
+        // Definition renders label inline with content on the same line
         assert!(html.contains(
-            "<div id=\"fn-type\" class=\"footnote\" data-footnote-label=\"type\"><p class=\"footnote-label\"><sup><a href=\"#fnref-type\">type</a></sup></p>"
+            "<div id=\"fn-type\" class=\"footnote\" data-footnote-label=\"type\"><p><span class=\"footnote-label\">type</span> Footnote body.</p></div>"
         ));
     }
 
@@ -1689,6 +1719,7 @@ mod tests {
             render_html(&parse(":::chapter{title=\"One\"}\nChapter text.\n:::/chapter").document);
         assert!(html.contains("<section class=\"chapter\""));
         assert!(html.contains("aria-label=\"One\""));
+        assert!(html.contains("<h2 class=\"chapter-title\">One</h2>"));
     }
 
     #[test]

@@ -15,8 +15,7 @@ It is meant to stay readable while still acting as an adversarial smoke test.
 ~}
 # Everything Document {#everything .wide lang=en}
 
-::toc
-::
+:toc
 
 This paragraph has *italic*, **bold**, ***both***, ~~strike~~, `code`, x^2^, H~2~O, ==mark==, ++insert++, \*literal asterisks\*, a [reference link](https://docs.etch-lang.dev/reference), a bare autolink https://example.com, and a footnote.[^sink]
 

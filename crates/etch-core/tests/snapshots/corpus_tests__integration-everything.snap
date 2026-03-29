@@ -44,21 +44,24 @@ expression: result
         }
       },
       {
-        "type": "BlockDirective",
-        "directive_id": 1,
-        "span": {
-          "start": {
-            "line": 18,
-            "column": 1
-          },
-          "end": {
-            "line": 19,
-            "column": 3
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "InlineDirective",
+            "directive_id": 1,
+            "span": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 1,
+                "column": 5
+              }
+            },
+            "name": "toc"
           }
-        },
-        "name": "toc",
-        "raw_body": "",
-        "body": []
+        ]
       },
       {
         "type": "Paragraph",
@@ -323,11 +326,11 @@ expression: result
         "directive_id": 5,
         "span": {
           "start": {
-            "line": 27,
+            "line": 26,
             "column": 1
           },
           "end": {
-            "line": 29,
+            "line": 28,
             "column": 3
           }
         },
@@ -366,11 +369,11 @@ expression: result
         "directive_id": 6,
         "span": {
           "start": {
-            "line": 31,
+            "line": 30,
             "column": 1
           },
           "end": {
-            "line": 32,
+            "line": 31,
             "column": 3
           }
         },
@@ -691,11 +694,11 @@ expression: result
         "directive_id": 7,
         "span": {
           "start": {
-            "line": 70,
+            "line": 69,
             "column": 1
           },
           "end": {
-            "line": 76,
+            "line": 75,
             "column": 3
           }
         },
@@ -779,11 +782,11 @@ expression: result
         "directive_id": 9,
         "span": {
           "start": {
-            "line": 78,
+            "line": 77,
             "column": 1
           },
           "end": {
-            "line": 80,
+            "line": 79,
             "column": 3
           }
         },
@@ -818,11 +821,11 @@ expression: result
         "directive_id": 10,
         "span": {
           "start": {
-            "line": 82,
+            "line": 81,
             "column": 1
           },
           "end": {
-            "line": 84,
+            "line": 83,
             "column": 3
           }
         },
@@ -857,11 +860,11 @@ expression: result
         "directive_id": 11,
         "span": {
           "start": {
-            "line": 86,
+            "line": 85,
             "column": 1
           },
           "end": {
-            "line": 89,
+            "line": 88,
             "column": 3
           }
         },
@@ -920,11 +923,11 @@ expression: result
         "directive_id": 12,
         "span": {
           "start": {
-            "line": 93,
+            "line": 92,
             "column": 1
           },
           "end": {
-            "line": 95,
+            "line": 94,
             "column": 3
           }
         },
@@ -947,11 +950,11 @@ expression: result
         "directive_id": 13,
         "span": {
           "start": {
-            "line": 97,
+            "line": 96,
             "column": 1
           },
           "end": {
-            "line": 121,
+            "line": 120,
             "column": 12
           }
         },
@@ -987,11 +990,11 @@ expression: result
             "directive_id": 14,
             "span": {
               "start": {
-                "line": 103,
+                "line": 102,
                 "column": 1
               },
               "end": {
-                "line": 119,
+                "line": 118,
                 "column": 12
               }
             },
@@ -1017,11 +1020,11 @@ expression: result
                 "directive_id": 15,
                 "span": {
                   "start": {
-                    "line": 107,
+                    "line": 106,
                     "column": 1
                   },
                   "end": {
-                    "line": 117,
+                    "line": 116,
                     "column": 12
                   }
                 },
@@ -1039,11 +1042,11 @@ expression: result
                     "directive_id": 16,
                     "span": {
                       "start": {
-                        "line": 109,
+                        "line": 108,
                         "column": 1
                       },
                       "end": {
-                        "line": 111,
+                        "line": 110,
                         "column": 4
                       }
                     },
@@ -1067,11 +1070,11 @@ expression: result
                     "directive_id": 17,
                     "span": {
                       "start": {
-                        "line": 113,
+                        "line": 112,
                         "column": 1
                       },
                       "end": {
-                        "line": 115,
+                        "line": 114,
                         "column": 4
                       }
                     },
