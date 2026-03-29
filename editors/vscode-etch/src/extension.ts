@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { initialize } from './etch-kit/index.js';
+import { initialize } from './vendor/etch-kit/index.js';
 import { EtchPreviewManager } from './preview.js';
 
 const ETCH_LANGUAGE_ID = 'etch';

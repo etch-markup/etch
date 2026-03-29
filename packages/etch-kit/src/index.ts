@@ -4,6 +4,7 @@ import {
   initializeWasm,
   parseResultFromWasm,
   parseToJsonFromWasm,
+  renderDocumentFromWasm,
   renderHtmlFromWasm,
   renderStandaloneFromWasm,
 } from './wasm.js';
@@ -68,6 +69,10 @@ export function parseWithErrors(input: string): ParseResult {
 
 export function renderHtml(input: string): string {
   return renderHtmlFromWasm(input);
+}
+
+export function renderDocument(input: string): string {
+  return renderDocumentFromWasm(input);
 }
 
 export function renderStandalone(

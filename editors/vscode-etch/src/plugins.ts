@@ -2,7 +2,10 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { readFileSync } from 'node:fs';
 import * as vscode from 'vscode';
-import type { Document as EtchDocument, FrontmatterValue } from './etch-kit/index.js';
+import type {
+  Document as EtchDocument,
+  FrontmatterValue,
+} from './vendor/etch-kit/index.js';
 
 const PLUGIN_RELOAD_DEBOUNCE_MS = 150;
 

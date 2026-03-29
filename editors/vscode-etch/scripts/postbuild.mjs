@@ -8,6 +8,8 @@ const __dirname = path.dirname(__filename);
 const extensionRoot = path.resolve(__dirname, '..');
 const outVendorRoot = path.join(extensionRoot, 'out', 'vendor', 'etch-wasm');
 const wasmSourceRoot = path.resolve(extensionRoot, '..', '..', 'crates', 'etch-wasm', 'pkg');
+const etchKitEntry = path.join(extensionRoot, 'src', 'vendor', 'etch-kit', 'index.ts');
+const outEtchKitRoot = path.join(extensionRoot, 'out', 'vendor', 'etch-kit');
 const pipelineEntry = path.resolve(
   extensionRoot,
   '..',
@@ -26,6 +28,19 @@ await cp(
   path.join(wasmSourceRoot, 'etch_wasm_bg.wasm'),
   path.join(outVendorRoot, 'etch_wasm_bg.wasm')
 );
+await mkdir(outEtchKitRoot, { recursive: true });
+await build({
+  entryPoints: [etchKitEntry],
+  bundle: true,
+  format: 'esm',
+  platform: 'node',
+  outfile: path.join(outEtchKitRoot, 'index.js'),
+  minify: true,
+  legalComments: 'none',
+  sourcemap: false,
+  target: 'node20',
+  external: ['node:*'],
+});
 await mkdir(outPipelineRoot, { recursive: true });
 await build({
   entryPoints: [pipelineEntry],

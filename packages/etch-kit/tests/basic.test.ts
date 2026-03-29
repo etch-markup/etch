@@ -4,6 +4,7 @@ import {
   initialize,
   parse,
   parseWithErrors,
+  renderDocument,
   renderHtml,
   renderStandalone,
 } from '../src/index.js';
@@ -29,6 +30,10 @@ describe('etch-kit', () => {
 
   test('renderHtml() returns a heading fragment', () => {
     expect(renderHtml('# Hello')).toContain('<h1 id="hello">Hello</h1>');
+  });
+
+  test('renderDocument() returns a full HTML document', () => {
+    expect(renderDocument('# Hello').startsWith('<!DOCTYPE html>')).toBe(true);
   });
 
   test('parseWithErrors() reports mismatched named closes', () => {

@@ -6,6 +6,7 @@ import {
 } from 'etch-wasm';
 
 import type { ParseResult } from './types.js';
+import { createEtchKitRuntime } from './runtime.js';
 
 const NOT_INITIALIZED_ERROR =
   'Etch WASM is not initialized. Call initialize() before using parse() or renderHtml().';
@@ -423,116 +424,26 @@ math[display="block"] {
   }
 }`;
 
-let initialized = false;
-let initializePromise: Promise<void> | undefined;
-
-export async function initializeWasm(): Promise<void> {
-  if (initialized) {
-    return;
+const runtime = createEtchKitRuntime(
+  {
+    initialize() {
+      initWasm();
+    },
+    parse(input: string): ParseResult {
+      return wasmParse(input) as ParseResult;
+    },
+    renderHtml: wasmRenderHtml,
+    renderDocument: wasmRenderDocument,
+  },
+  {
+    defaultStandaloneStyles: DEFAULT_STANDALONE_STYLES,
+    notInitializedError: NOT_INITIALIZED_ERROR,
   }
+);
 
-  if (!initializePromise) {
-    initializePromise = doInitialize().catch((error: unknown) => {
-      initializePromise = undefined;
-      throw error;
-    });
-  }
-
-  await initializePromise;
-}
-
-export function parseResultFromWasm(input: string): ParseResult {
-  ensureInitialized();
-  return wasmParse(input) as ParseResult;
-}
-
-export function renderHtmlFromWasm(input: string): string {
-  ensureInitialized();
-  return wasmRenderHtml(input);
-}
-
-export function renderDocumentFromWasm(input: string): string {
-  ensureInitialized();
-  return wasmRenderDocument(input);
-}
-
-export function renderStandaloneFromWasm(
-  input: string,
-  styles: string = DEFAULT_STANDALONE_STYLES
-): string {
-  return injectStyles(renderDocumentFromWasm(input), styles);
-}
-
-export function parseToJsonFromWasm(input: string): string {
-  return JSON.stringify(serializeForJson(parseResultFromWasm(input)));
-}
-
-async function doInitialize(): Promise<void> {
-  initWasm();
-  initialized = true;
-}
-
-function ensureInitialized(): void {
-  if (!initialized) {
-    throw new Error(NOT_INITIALIZED_ERROR);
-  }
-}
-
-function injectStyles(documentHtml: string, styles: string): string {
-  const styledDocument = `<style>\n${styles}\n</style>\n`;
-
-  if (documentHtml.includes('</head>')) {
-    return wrapBodyInMain(documentHtml.replace('</head>', `${styledDocument}</head>`));
-  }
-
-  return wrapBodyInMain(`${styledDocument}${documentHtml}`);
-}
-
-function wrapBodyInMain(documentHtml: string): string {
-  const bodyMarker = '<body>\n';
-  const bodyStart = documentHtml.indexOf(bodyMarker);
-
-  if (bodyStart === -1) {
-    return documentHtml;
-  }
-
-  const insertAt = bodyStart + bodyMarker.length;
-  const withMainOpen =
-    documentHtml.slice(0, insertAt) + '<main>\n' + documentHtml.slice(insertAt);
-  const bodyEnd = withMainOpen.lastIndexOf('\n</body>');
-
-  if (bodyEnd !== -1) {
-    return withMainOpen.slice(0, bodyEnd) + '\n</main>' + withMainOpen.slice(bodyEnd);
-  }
-
-  const compactBodyEnd = withMainOpen.lastIndexOf('</body>');
-  if (compactBodyEnd !== -1) {
-    return (
-      withMainOpen.slice(0, compactBodyEnd) +
-      '</main>\n' +
-      withMainOpen.slice(compactBodyEnd)
-    );
-  }
-
-  return withMainOpen;
-}
-
-function serializeForJson(value: unknown): unknown {
-  if (value instanceof Map) {
-    return Object.fromEntries(
-      Array.from(value.entries(), ([key, entryValue]) => [key, serializeForJson(entryValue)])
-    );
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((entry) => serializeForJson(entry));
-  }
-
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, entryValue]) => [key, serializeForJson(entryValue)])
-    );
-  }
-
-  return value;
-}
+export const initializeWasm = runtime.initialize;
+export const parseResultFromWasm = runtime.parseWithErrors;
+export const renderHtmlFromWasm = runtime.renderHtml;
+export const renderDocumentFromWasm = runtime.renderDocument;
+export const renderStandaloneFromWasm = runtime.renderStandalone;
+export const parseToJsonFromWasm = runtime.parseToJson;

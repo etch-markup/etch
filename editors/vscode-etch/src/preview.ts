@@ -5,7 +5,7 @@ import {
   renderDocument,
   type ParseError,
   type Document as EtchDocument,
-} from './etch-kit/index.js';
+} from './vendor/etch-kit/index.js';
 
 const ETCH_LANGUAGE_ID = 'etch';
 const PREVIEW_DEBOUNCE_MS = 200;

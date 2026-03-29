@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { parseWithErrors, renderDocument } from '../../etch-kit/index.js';
+import { parseWithErrors, renderDocument } from '../../vendor/etch-kit/index.js';
 import { PluginManager } from '../../plugins.js';
 
 suite('Etch Extension', () => {
