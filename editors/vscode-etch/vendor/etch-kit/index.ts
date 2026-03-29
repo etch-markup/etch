@@ -1,58 +1,14 @@
 import { readFile } from 'node:fs/promises';
 
-import type { ParseResult } from '../../../../../packages/etch-kit/dist/index.js';
-import { createEtchKitRuntime } from '../../../../../packages/etch-kit/dist/runtime.js';
+import type { ParseResult } from '../../../../packages/etch-kit/dist/index.js';
+import { createEtchKitRuntime } from '../../../../packages/etch-kit/dist/runtime.js';
 import initWasm, {
   parse as wasmParse,
   render_html as wasmRenderHtml,
   render_html_document as wasmRenderDocument,
-} from '../etch-wasm/etch_wasm.js';
+} from '../../src/vendor/etch-wasm/etch_wasm.js';
 
 import { VSCODE_PREVIEW_STYLES } from './styles.js';
-
-export type {
-  Alignment,
-  Attributes,
-  AutoLink,
-  Block,
-  BlockDirective,
-  BlockQuote,
-  CodeBlock,
-  ContainerDirective,
-  DefinitionItem,
-  DefinitionList,
-  Document,
-  Emphasis,
-  EtchDocument,
-  FootnoteDefinition,
-  FootnoteReference,
-  Frontmatter,
-  FrontmatterValue,
-  HardBreak,
-  HeadingBlock,
-  Highlight,
-  Image,
-  Inline,
-  InlineCode,
-  InlineDirective,
-  Insert,
-  Link,
-  ListBlock,
-  ListItem,
-  ParagraphBlock,
-  ParseError,
-  ParseErrorKind,
-  ParseResult,
-  SoftBreak,
-  Strikethrough,
-  Strong,
-  Subscript,
-  Superscript,
-  TableBlock,
-  TableCell,
-  TextInline,
-  ThematicBreak,
-} from '../../../../../packages/etch-kit/dist/index.js';
 
 const runtime = createEtchKitRuntime(
   {
