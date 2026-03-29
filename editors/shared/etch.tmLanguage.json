@@ -659,11 +659,14 @@
         },
         {
           "include": "#insert"
+        },
+        {
+          "include": "#spoiler"
         }
       ]
     },
     "escape": {
-      "match": "\\\\[*~^=+\\[\\]\\\\]",
+      "match": "\\\\[*~^=+|\\[\\]\\\\]",
       "name": "constant.character.escape.etch"
     },
     "autolink": {
@@ -1040,6 +1043,26 @@
       "endCaptures": {
         "0": {
           "name": "punctuation.definition.insert.end.etch"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#inline"
+        }
+      ]
+    },
+    "spoiler": {
+      "name": "markup.spoiler.etch",
+      "begin": "(?<![|])\\|\\|(?=[^\\s|])",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.spoiler.begin.etch"
+        }
+      },
+      "end": "(?<=[^\\s|])\\|\\|(?![|])",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.spoiler.end.etch"
         }
       },
       "patterns": [
