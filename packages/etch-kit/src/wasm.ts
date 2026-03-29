@@ -17,12 +17,10 @@ export const DEFAULT_STANDALONE_STYLES = `html {
 body {
   margin: 0;
   padding: 3rem 1.5rem;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--etch-body-font, Georgia, "Times New Roman", serif);
   line-height: 1.7;
-  background:
-    radial-gradient(circle at top, rgba(160, 174, 192, 0.14), transparent 45%),
-    linear-gradient(180deg, #fcfcfd 0%, #f3f4f6 100%);
-  color: #1f2933;
+  background: var(--etch-bg, #fcfcfd);
+  color: var(--etch-text, #1f2933);
 }
 
 main {
@@ -31,6 +29,7 @@ main {
 }
 
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--etch-heading-font, Georgia, "Times New Roman", serif);
   line-height: 1.2;
   margin: 2rem 0 1rem;
 }
@@ -40,7 +39,7 @@ p, ul, ol, blockquote, pre, table, dl {
 }
 
 a {
-  color: #0f5ea8;
+  color: var(--etch-accent, #0f5ea8);
 }
 
 code, pre {
@@ -51,14 +50,14 @@ pre {
   padding: 1rem;
   overflow-x: auto;
   border-radius: 0.75rem;
-  background: rgba(15, 23, 42, 0.92);
-  color: #e5edf5;
+  background: var(--etch-code-bg, rgba(15, 23, 42, 0.92));
+  color: var(--etch-code-text, #e5edf5);
 }
 
 code {
   padding: 0.1rem 0.3rem;
   border-radius: 0.35rem;
-  background: rgba(148, 163, 184, 0.18);
+  background: color-mix(in srgb, var(--etch-code-bg, rgba(15, 23, 42, 0.92)) 85%, transparent);
 }
 
 pre code {
@@ -69,8 +68,8 @@ pre code {
 blockquote {
   margin-left: 0;
   padding-left: 1rem;
-  border-left: 4px solid rgba(15, 94, 168, 0.35);
-  color: #52606d;
+  border-left: 4px solid color-mix(in srgb, var(--etch-accent, #0f5ea8) 35%, transparent);
+  color: var(--etch-muted, #52606d);
 }
 
 table {
@@ -80,11 +79,11 @@ table {
 
 th, td {
   padding: 0.65rem 0.8rem;
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border: 1px solid var(--etch-border, rgba(148, 163, 184, 0.35));
 }
 
 th {
-  background: rgba(226, 232, 240, 0.7);
+  background: color-mix(in srgb, var(--etch-surface-strong, rgba(226, 232, 240, 0.7)) 80%, transparent);
 }
 
 img {
@@ -95,7 +94,7 @@ img {
 .footnote {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(148, 163, 184, 0.35);
+  border-top: 1px solid var(--etch-border, rgba(148, 163, 184, 0.35));
 }
 
 .directive-label {
@@ -103,33 +102,230 @@ img {
   letter-spacing: 0.02em;
 }
 
+.note {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid #2563eb;
+  background: #f0f7ff;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.note-label {
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.note--tip {
+  border-left-color: #16a34a;
+  background: #f0fdf4;
+}
+
+.note--warning {
+  border-left-color: #d97706;
+  background: #fffbeb;
+}
+
+.note--caution {
+  border-left-color: #ea580c;
+  background: #fff7ed;
+}
+
+.note--danger {
+  border-left-color: #dc2626;
+  background: #fef2f2;
+}
+
+.aside {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid #0f5ea8;
+  font-style: italic;
+}
+
+figure {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.9em;
+  opacity: 0.7;
+}
+
+details,
+.spoiler {
+  margin: 1rem 0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.5rem;
+}
+
+details > summary,
+.spoiler > summary {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+details[open] > summary,
+.spoiler[open] > summary {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+details > :not(summary),
+.spoiler > :not(summary) {
+  padding: 0 1rem;
+}
+
+.spoiler > summary {
+  background: #f5f5f5;
+  border-radius: 0.5rem;
+}
+
+.spoiler:not([open]) > summary::after {
+  content: " (click to reveal)";
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(var(--columns-count, 2), 1fr);
+  gap: var(--columns-gap, 1rem);
+}
+
+.toc {
+  margin: 1rem 0;
+}
+
+.toc ol {
+  padding-left: 1.5rem;
+}
+
+.toc a {
+  color: #0f5ea8;
+  text-decoration: none;
+}
+
+.toc a:hover {
+  text-decoration: underline;
+}
+
+.page-break {
+  break-after: page;
+}
+
+abbr {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+kbd {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.85em;
+  background: #f5f5f5;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 0 #d1d5db;
+}
+
+cite {
+  font-style: italic;
+}
+
+.etch-missing-plugin {
+  display: grid;
+  gap: 0.35rem;
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--etch-warning-border, rgba(255, 196, 0, 0.4));
+  border-radius: 0.75rem;
+  background: var(--etch-warning-bg, rgba(255, 196, 0, 0.12));
+  color: var(--etch-warning-text, var(--etch-text, #1f2933));
+}
+
+.etch-missing-plugin code {
+  background: color-mix(in srgb, var(--etch-code-bg, rgba(15, 23, 42, 0.92)) 92%, transparent);
+  color: var(--etch-code-text, var(--etch-text, #1f2933));
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+}
+
+math {
+  font-family: "STIX Two Math", "Cambria Math", serif;
+}
+
+math[display="block"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
 @media (prefers-color-scheme: dark) {
+  code {
+    background: color-mix(in srgb, var(--etch-code-bg, rgba(15, 23, 42, 0.92)) 82%, transparent);
+  }
+
   body {
-    background:
-      radial-gradient(circle at top, rgba(96, 165, 250, 0.12), transparent 45%),
-      linear-gradient(180deg, #0f172a 0%, #111827 100%);
-    color: #e5e7eb;
+    background: var(--etch-bg, #111827);
+    color: var(--etch-text, #e5e7eb);
   }
 
   a {
-    color: #7dd3fc;
-  }
-
-  code {
-    background: rgba(148, 163, 184, 0.2);
+    color: var(--etch-accent, #7dd3fc);
   }
 
   blockquote {
-    color: #cbd5e1;
-    border-left-color: rgba(125, 211, 252, 0.45);
+    color: var(--etch-muted, #cbd5e1);
+    border-left-color: color-mix(in srgb, var(--etch-accent, #7dd3fc) 45%, transparent);
+  }
+
+  .note {
+    background: #1a2332;
+    border-left-color: #3b82f6;
+  }
+
+  .note--tip {
+    background: #14231a;
+    border-left-color: #22c55e;
+  }
+
+  .note--warning {
+    background: #231f14;
+    border-left-color: #f59e0b;
+  }
+
+  .note--caution {
+    background: #231a14;
+    border-left-color: #f97316;
+  }
+
+  .note--danger {
+    background: #231414;
+    border-left-color: #ef4444;
+  }
+
+  .aside {
+    border-left-color: #7dd3fc;
+  }
+
+  .spoiler > summary {
+    background: #2a2a2a;
+  }
+
+  kbd {
+    background: #2a2a2a;
+    border-color: #4b5563;
+    box-shadow: 0 1px 0 #4b5563;
   }
 
   th {
-    background: rgba(30, 41, 59, 0.85);
+    background: color-mix(in srgb, var(--etch-surface-strong, rgba(30, 41, 59, 0.85)) 80%, transparent);
   }
 
   th, td, .footnote {
-    border-color: rgba(148, 163, 184, 0.25);
+    border-color: var(--etch-border, rgba(148, 163, 184, 0.25));
   }
 }`;
 

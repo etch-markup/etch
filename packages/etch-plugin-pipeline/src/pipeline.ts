@@ -14,7 +14,23 @@ import { renderFallback } from "./fallback.js";
 import type { ResolvedPlugin } from "./discovery.js";
 import { BUILTIN_THEMES, assembleThemeCSS } from "./themes.js";
 
-const RESERVED_DIRECTIVES = new Set(["math"]);
+const RESERVED_DIRECTIVES = new Set([
+  "math",
+  "note",
+  "aside",
+  "figure",
+  "details",
+  "spoiler",
+  "section",
+  "chapter",
+  "columns",
+  "column",
+  "pagebreak",
+  "toc",
+  "abbr",
+  "cite",
+  "kbd"
+]);
 
 export interface Pipeline {
   handlers: Map<string, { plugin: string; handler: DirectiveHandler }>;

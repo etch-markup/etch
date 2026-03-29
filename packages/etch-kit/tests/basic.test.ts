@@ -28,7 +28,7 @@ describe('etch-kit', () => {
   });
 
   test('renderHtml() returns a heading fragment', () => {
-    expect(renderHtml('# Hello')).toContain('<h1>Hello</h1>');
+    expect(renderHtml('# Hello')).toContain('<h1 id="hello">Hello</h1>');
   });
 
   test('parseWithErrors() reports mismatched named closes', () => {

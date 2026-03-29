@@ -3,7 +3,23 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { EtchPlugin } from "@etch-markup/etch-plugin-sdk";
 
-const RESERVED_DIRECTIVES = new Set(["math"]);
+const RESERVED_DIRECTIVES = new Set([
+  "math",
+  "note",
+  "aside",
+  "figure",
+  "details",
+  "spoiler",
+  "section",
+  "chapter",
+  "columns",
+  "column",
+  "pagebreak",
+  "toc",
+  "abbr",
+  "cite",
+  "kbd"
+]);
 
 export interface ResolvedPlugin {
   name: string;
