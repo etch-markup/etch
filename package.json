@@ -5,6 +5,9 @@
   "scripts": {
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm run test:fast",
+    "test:fast": "pnpm -r --filter=!etch-language --if-present test",
+    "test:integration": "pnpm --filter etch-language test",
+    "test:all": "pnpm run test:fast && pnpm run test:integration"
   }
 }

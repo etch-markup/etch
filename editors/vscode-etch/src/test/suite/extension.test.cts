@@ -4,8 +4,6 @@ import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { parseWithErrors, renderDocument } from '../../vendor/etch-kit/index.js';
-import { PluginManager } from '../../plugins.js';
 
 suite('Etch Extension', () => {
   const extensionId = 'etch-markup.etch-language';
@@ -80,6 +78,8 @@ suite('Etch Extension', () => {
   });
 
   test('renders math through the core bridge and replaces plugin directives', async () => {
+    const { parseWithErrors, renderDocument } = await loadEtchKit();
+    const pluginManager = await createPluginManager();
     const workspaceRoot = mkdtempSync(path.join(os.tmpdir(), 'etch-extension-'));
 
     try {
@@ -132,7 +132,6 @@ suite('Etch Extension', () => {
         };`
       );
 
-      const pluginManager = new PluginManager();
       await pluginManager.initialize(workspaceRoot);
 
       const source = 'Inline math :math[\\frac{1}{2}].\n\n::card\nhello\n::';
@@ -160,6 +159,8 @@ suite('Etch Extension', () => {
   });
 
   test('falls back when a plugin is missing', async () => {
+    const { parseWithErrors, renderDocument } = await loadEtchKit();
+    const pluginManager = await createPluginManager();
     const workspaceRoot = mkdtempSync(path.join(os.tmpdir(), 'etch-extension-'));
 
     try {
@@ -168,7 +169,6 @@ suite('Etch Extension', () => {
         JSON.stringify({ plugins: [], theme: 'default' }, null, 2)
       );
 
-      const pluginManager = new PluginManager();
       await pluginManager.initialize(workspaceRoot);
 
       const source = 'A :ghost[missing] directive.';
@@ -211,4 +211,20 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+async function loadEtchKit(): Promise<{
+  parseWithErrors: (input: string) => ReturnType<typeof import('../../vendor/etch-kit/index.js').parseWithErrors>;
+  renderDocument: (input: string) => string;
+}> {
+  const module = await import('../../vendor/etch-kit/index.js');
+  return {
+    parseWithErrors: module.parseWithErrors,
+    renderDocument: module.renderDocument,
+  };
+}
+
+async function createPluginManager(): Promise<InstanceType<typeof import('../../plugins.js').PluginManager>> {
+  const { PluginManager } = await import('../../plugins.js');
+  return new PluginManager();
 }
