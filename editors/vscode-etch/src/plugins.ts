@@ -330,292 +330,182 @@ cite {
 }
 `;
 
+const SYSTEM_FONT_STACK =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const SERIF_FONT_STACK =
+  "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif";
+const WARNING_BG = 'rgba(255, 196, 0, 0.12)';
+const WARNING_BORDER = 'rgba(255, 196, 0, 0.4)';
+const THEME_VALUE_COUNT = 27;
+
+function createThemeVariables(values: readonly string[]): Record<string, string> {
+  if (values.length !== THEME_VALUE_COUNT) {
+    throw new Error(
+      `Expected ${THEME_VALUE_COUNT} theme values, received ${values.length}`
+    );
+  }
+
+  const [
+    bg,
+    text,
+    headingFont,
+    bodyFont,
+    accent,
+    codeBg,
+    noteBg,
+    noteBorder,
+    noteTipBg,
+    noteTipBorder,
+    noteWarningBg,
+    noteWarningBorder,
+    noteCautionBg,
+    noteCautionBorder,
+    noteDangerBg,
+    noteDangerBorder,
+    spoilerBg,
+    kbdBg,
+    kbdBorder,
+    muted,
+    border,
+    surface,
+    surfaceStrong,
+    codeText,
+    warningBg,
+    warningBorder,
+    warningText,
+  ] = values;
+
+  return {
+    '--etch-bg': bg,
+    '--etch-text': text,
+    '--etch-heading-font': headingFont,
+    '--etch-body-font': bodyFont,
+    '--etch-accent': accent,
+    '--etch-code-bg': codeBg,
+    '--etch-note-bg': noteBg,
+    '--etch-note-border': noteBorder,
+    '--etch-note-tip-bg': noteTipBg,
+    '--etch-note-tip-border': noteTipBorder,
+    '--etch-note-warning-bg': noteWarningBg,
+    '--etch-note-warning-border': noteWarningBorder,
+    '--etch-note-caution-bg': noteCautionBg,
+    '--etch-note-caution-border': noteCautionBorder,
+    '--etch-note-danger-bg': noteDangerBg,
+    '--etch-note-danger-border': noteDangerBorder,
+    '--etch-spoiler-bg': spoilerBg,
+    '--etch-kbd-bg': kbdBg,
+    '--etch-kbd-border': kbdBorder,
+    '--etch-muted': muted,
+    '--etch-border': border,
+    '--etch-surface': surface,
+    '--etch-surface-strong': surfaceStrong,
+    '--etch-code-text': codeText,
+    '--etch-warning-bg': warningBg,
+    '--etch-warning-border': warningBorder,
+    '--etch-warning-text': warningText,
+  };
+}
+
+function defineTheme(
+  values: readonly string[],
+  options: {
+    css?: string;
+    darkValues?: readonly string[];
+    darkCss?: string;
+  } = {}
+): ThemeDefinition {
+  return {
+    variables: createThemeVariables(values),
+    ...(options.css ? { css: options.css } : {}),
+    ...(options.darkValues
+      ? {
+          darkMode: {
+            variables: createThemeVariables(options.darkValues),
+            ...(options.darkCss ? { css: options.darkCss } : {}),
+          },
+        }
+      : {}),
+  };
+}
+
+const DEFAULT_LIGHT = [
+  '#ffffff', '#1a1a1a', SYSTEM_FONT_STACK, SYSTEM_FONT_STACK, '#2563eb', '#f5f5f5',
+  '#f0f7ff', '#2563eb', '#f0fdf4', '#16a34a', '#fffbeb', '#d97706',
+  '#fff7ed', '#ea580c', '#fef2f2', '#dc2626', '#f5f5f5', '#f5f5f5', '#d1d5db',
+  '#52606d', 'rgba(148, 163, 184, 0.35)', 'rgba(148, 163, 184, 0.08)', 'rgba(148, 163, 184, 0.18)', '#1f2937', WARNING_BG, WARNING_BORDER, '#1a1a1a',
+] as const;
+const DEFAULT_DARK = [
+  '#1a1a1a', '#e0e0e0', SYSTEM_FONT_STACK, SYSTEM_FONT_STACK, '#2563eb', '#2a2a2a',
+  '#1a2332', '#3b82f6', '#14231a', '#22c55e', '#231f14', '#f59e0b',
+  '#231a14', '#f97316', '#231414', '#ef4444', '#2a2a2a', '#2a2a2a', '#4b5563',
+  '#cbd5e1', 'rgba(148, 163, 184, 0.25)', 'rgba(127, 127, 127, 0.12)', 'rgba(127, 127, 127, 0.18)', '#f8fafc', WARNING_BG, WARNING_BORDER, '#e0e0e0',
+] as const;
+const MINIMAL_LIGHT = [
+  '#ffffff', '#333333', SYSTEM_FONT_STACK, SYSTEM_FONT_STACK, '#0066cc', '#f0f0f0',
+  '#eef6ff', '#0066cc', '#eefaf1', '#15803d', '#fff8e6', '#ca8a04',
+  '#fff1e8', '#ea580c', '#fff1f2', '#dc2626', '#f0f0f0', '#f0f0f0', '#cbd5e1',
+  '#5f6b7a', 'rgba(148, 163, 184, 0.35)', 'rgba(148, 163, 184, 0.08)', 'rgba(148, 163, 184, 0.18)', '#111827', WARNING_BG, WARNING_BORDER, '#333333',
+] as const;
+const MINIMAL_DARK = [
+  '#1e1e1e', '#d4d4d4', SYSTEM_FONT_STACK, SYSTEM_FONT_STACK, '#0066cc', '#2d2d2d',
+  '#142033', '#60a5fa', '#132318', '#22c55e', '#2a2414', '#fbbf24',
+  '#2a1d16', '#fb923c', '#2b161b', '#f87171', '#2d2d2d', '#2d2d2d', '#475569',
+  '#cbd5e1', 'rgba(148, 163, 184, 0.25)', 'rgba(127, 127, 127, 0.12)', 'rgba(127, 127, 127, 0.18)', '#f8fafc', WARNING_BG, WARNING_BORDER, '#d4d4d4',
+] as const;
+const ACADEMIC_LIGHT = [
+  '#fcfcfa', '#171717', SERIF_FONT_STACK, SERIF_FONT_STACK, '#1f4d7a', '#f4f4f1',
+  '#f3f6fb', '#5a7ea6', '#f2f6f0', '#5d7a4a', '#fbf5e8', '#a9781f',
+  '#f9efe7', '#b36b3d', '#f8e9e8', '#a64b4b', '#ece9e1', '#ece9e1', '#c7c0b2',
+  '#5b6170', 'rgba(115, 130, 155, 0.3)', 'rgba(115, 130, 155, 0.08)', 'rgba(115, 130, 155, 0.16)', '#171717', WARNING_BG, WARNING_BORDER, '#171717',
+] as const;
+const ACADEMIC_DARK = [
+  '#191a1d', '#e6e7eb', SERIF_FONT_STACK, SERIF_FONT_STACK, '#1f4d7a', '#23252a',
+  '#1d2430', '#89a5c6', '#1a221d', '#8ba978', '#292317', '#d3a34a',
+  '#2b2018', '#d08a59', '#2b1d1d', '#d78888', '#23252a', '#23252a', '#5d6572',
+  '#c6ccd8', 'rgba(148, 163, 184, 0.24)', 'rgba(127, 127, 127, 0.12)', 'rgba(127, 127, 127, 0.18)', '#f5f4ef', WARNING_BG, WARNING_BORDER, '#e6e7eb',
+] as const;
+const PAPER_LIGHT = [
+  '#ffffff', '#111111', SERIF_FONT_STACK, SERIF_FONT_STACK, '#1c3d6e', '#f7f7f4',
+  '#f7f8fb', '#4f6f9a', '#f5f8f2', '#5d7a4a', '#fbf6ea', '#9e7629',
+  '#faf0e8', '#b56f42', '#f9eceb', '#a64f4f', '#ece9e1', '#f2f2ee', '#cfc8bc',
+  '#5a6068', 'rgba(17, 17, 17, 0.18)', 'rgba(17, 17, 17, 0.04)', 'rgba(17, 17, 17, 0.08)', '#111111', WARNING_BG, WARNING_BORDER, '#111111',
+] as const;
+const FANCY_LIGHT = [
+  '#fffff8', '#111111', SERIF_FONT_STACK, SERIF_FONT_STACK, '#8b0000', '#f5f2eb',
+  '#f8f1e7', '#8b0000', '#f3f1e7', '#5b6b3a', '#fbf3df', '#b7791f',
+  '#f8eadf', '#c05621', '#f8e3e0', '#9b2c2c', '#f1ece2', '#f1ece2', '#c9b79c',
+  '#52606d', 'rgba(148, 163, 184, 0.35)', 'rgba(148, 163, 184, 0.08)', 'rgba(148, 163, 184, 0.18)', '#111111', WARNING_BG, WARNING_BORDER, '#111111',
+] as const;
+const FANCY_DARK = [
+  '#1a1a18', '#d4d0c8', SERIF_FONT_STACK, SERIF_FONT_STACK, '#8b0000', '#2a2820',
+  '#2a221f', '#c77d7d', '#202319', '#8fbc8f', '#2b2416', '#d9a441',
+  '#2c1f18', '#d4884a', '#2c1c1c', '#e07a7a', '#2a2820', '#2a2820', '#6b6253',
+  '#c8c0b3', 'rgba(148, 163, 184, 0.25)', 'rgba(127, 127, 127, 0.12)', 'rgba(127, 127, 127, 0.18)', '#f5f2eb', WARNING_BG, WARNING_BORDER, '#d4d0c8',
+] as const;
+
 const BUILTIN_THEMES: Record<string, ThemeDefinition> = {
-  default: {
-    variables: {
-      '--etch-bg': '#ffffff',
-      '--etch-text': '#1a1a1a',
-      '--etch-heading-font':
-        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      '--etch-body-font':
-        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      '--etch-accent': '#2563eb',
-      '--etch-code-bg': '#f5f5f5',
-      '--etch-note-bg': '#f0f7ff',
-      '--etch-note-border': '#2563eb',
-      '--etch-note-tip-bg': '#f0fdf4',
-      '--etch-note-tip-border': '#16a34a',
-      '--etch-note-warning-bg': '#fffbeb',
-      '--etch-note-warning-border': '#d97706',
-      '--etch-note-caution-bg': '#fff7ed',
-      '--etch-note-caution-border': '#ea580c',
-      '--etch-note-danger-bg': '#fef2f2',
-      '--etch-note-danger-border': '#dc2626',
-      '--etch-spoiler-bg': '#f5f5f5',
-      '--etch-kbd-bg': '#f5f5f5',
-      '--etch-kbd-border': '#d1d5db',
-      '--etch-muted': '#52606d',
-      '--etch-border': 'rgba(148, 163, 184, 0.35)',
-      '--etch-surface': 'rgba(148, 163, 184, 0.08)',
-      '--etch-surface-strong': 'rgba(148, 163, 184, 0.18)',
-      '--etch-code-text': '#1f2937',
-      '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-      '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-      '--etch-warning-text': '#1a1a1a',
-    },
+  default: defineTheme(DEFAULT_LIGHT, {
     css: SHARED_DIRECTIVE_CSS,
-    darkMode: {
-      variables: {
-        '--etch-bg': '#1a1a1a',
-        '--etch-text': '#e0e0e0',
-        '--etch-code-bg': '#2a2a2a',
-        '--etch-note-bg': '#1a2332',
-        '--etch-note-border': '#3b82f6',
-        '--etch-note-tip-bg': '#14231a',
-        '--etch-note-tip-border': '#22c55e',
-        '--etch-note-warning-bg': '#231f14',
-        '--etch-note-warning-border': '#f59e0b',
-        '--etch-note-caution-bg': '#231a14',
-        '--etch-note-caution-border': '#f97316',
-        '--etch-note-danger-bg': '#231414',
-        '--etch-note-danger-border': '#ef4444',
-        '--etch-spoiler-bg': '#2a2a2a',
-        '--etch-kbd-bg': '#2a2a2a',
-        '--etch-kbd-border': '#4b5563',
-        '--etch-muted': '#cbd5e1',
-        '--etch-border': 'rgba(148, 163, 184, 0.25)',
-        '--etch-surface': 'rgba(127, 127, 127, 0.12)',
-        '--etch-surface-strong': 'rgba(127, 127, 127, 0.18)',
-        '--etch-code-text': '#f8fafc',
-        '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-        '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-        '--etch-warning-text': '#e0e0e0',
-      },
-    },
-  },
-  minimal: {
-    variables: {
-      '--etch-bg': '#ffffff',
-      '--etch-text': '#333333',
-      '--etch-heading-font':
-        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      '--etch-body-font':
-        "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      '--etch-accent': '#0066cc',
-      '--etch-code-bg': '#f0f0f0',
-      '--etch-note-bg': '#eef6ff',
-      '--etch-note-border': '#0066cc',
-      '--etch-note-tip-bg': '#eefaf1',
-      '--etch-note-tip-border': '#15803d',
-      '--etch-note-warning-bg': '#fff8e6',
-      '--etch-note-warning-border': '#ca8a04',
-      '--etch-note-caution-bg': '#fff1e8',
-      '--etch-note-caution-border': '#ea580c',
-      '--etch-note-danger-bg': '#fff1f2',
-      '--etch-note-danger-border': '#dc2626',
-      '--etch-spoiler-bg': '#f0f0f0',
-      '--etch-kbd-bg': '#f0f0f0',
-      '--etch-kbd-border': '#cbd5e1',
-      '--etch-muted': '#5f6b7a',
-      '--etch-border': 'rgba(148, 163, 184, 0.35)',
-      '--etch-surface': 'rgba(148, 163, 184, 0.08)',
-      '--etch-surface-strong': 'rgba(148, 163, 184, 0.18)',
-      '--etch-code-text': '#111827',
-      '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-      '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-      '--etch-warning-text': '#333333',
-    },
+    darkValues: DEFAULT_DARK,
+  }),
+  minimal: defineTheme(MINIMAL_LIGHT, {
     css: SHARED_DIRECTIVE_CSS,
-    darkMode: {
-      variables: {
-        '--etch-bg': '#1e1e1e',
-        '--etch-text': '#d4d4d4',
-        '--etch-code-bg': '#2d2d2d',
-        '--etch-note-bg': '#142033',
-        '--etch-note-border': '#60a5fa',
-        '--etch-note-tip-bg': '#132318',
-        '--etch-note-tip-border': '#22c55e',
-        '--etch-note-warning-bg': '#2a2414',
-        '--etch-note-warning-border': '#fbbf24',
-        '--etch-note-caution-bg': '#2a1d16',
-        '--etch-note-caution-border': '#fb923c',
-        '--etch-note-danger-bg': '#2b161b',
-        '--etch-note-danger-border': '#f87171',
-        '--etch-spoiler-bg': '#2d2d2d',
-        '--etch-kbd-bg': '#2d2d2d',
-        '--etch-kbd-border': '#475569',
-        '--etch-muted': '#cbd5e1',
-        '--etch-border': 'rgba(148, 163, 184, 0.25)',
-        '--etch-surface': 'rgba(127, 127, 127, 0.12)',
-        '--etch-surface-strong': 'rgba(127, 127, 127, 0.18)',
-        '--etch-code-text': '#f8fafc',
-        '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-        '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-        '--etch-warning-text': '#d4d4d4',
-      },
-    },
-  },
-  academic: {
-    variables: {
-      '--etch-bg': '#fcfcfa',
-      '--etch-text': '#171717',
-      '--etch-heading-font':
-        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
-      '--etch-body-font':
-        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
-      '--etch-accent': '#1f4d7a',
-      '--etch-code-bg': '#f4f4f1',
-      '--etch-note-bg': '#f3f6fb',
-      '--etch-note-border': '#5a7ea6',
-      '--etch-note-tip-bg': '#f2f6f0',
-      '--etch-note-tip-border': '#5d7a4a',
-      '--etch-note-warning-bg': '#fbf5e8',
-      '--etch-note-warning-border': '#a9781f',
-      '--etch-note-caution-bg': '#f9efe7',
-      '--etch-note-caution-border': '#b36b3d',
-      '--etch-note-danger-bg': '#f8e9e8',
-      '--etch-note-danger-border': '#a64b4b',
-      '--etch-spoiler-bg': '#ece9e1',
-      '--etch-kbd-bg': '#ece9e1',
-      '--etch-kbd-border': '#c7c0b2',
-      '--etch-muted': '#5b6170',
-      '--etch-border': 'rgba(115, 130, 155, 0.3)',
-      '--etch-surface': 'rgba(115, 130, 155, 0.08)',
-      '--etch-surface-strong': 'rgba(115, 130, 155, 0.16)',
-      '--etch-code-text': '#171717',
-      '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-      '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-      '--etch-warning-text': '#171717',
-    },
+    darkValues: MINIMAL_DARK,
+  }),
+  academic: defineTheme(ACADEMIC_LIGHT, {
     css: SHARED_DIRECTIVE_CSS,
-    darkMode: {
-      variables: {
-        '--etch-bg': '#191a1d',
-        '--etch-text': '#e6e7eb',
-        '--etch-code-bg': '#23252a',
-        '--etch-note-bg': '#1d2430',
-        '--etch-note-border': '#89a5c6',
-        '--etch-note-tip-bg': '#1a221d',
-        '--etch-note-tip-border': '#8ba978',
-        '--etch-note-warning-bg': '#292317',
-        '--etch-note-warning-border': '#d3a34a',
-        '--etch-note-caution-bg': '#2b2018',
-        '--etch-note-caution-border': '#d08a59',
-        '--etch-note-danger-bg': '#2b1d1d',
-        '--etch-note-danger-border': '#d78888',
-        '--etch-spoiler-bg': '#23252a',
-        '--etch-kbd-bg': '#23252a',
-        '--etch-kbd-border': '#5d6572',
-        '--etch-muted': '#c6ccd8',
-        '--etch-border': 'rgba(148, 163, 184, 0.24)',
-        '--etch-surface': 'rgba(127, 127, 127, 0.12)',
-        '--etch-surface-strong': 'rgba(127, 127, 127, 0.18)',
-        '--etch-code-text': '#f5f4ef',
-        '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-        '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-        '--etch-warning-text': '#e6e7eb',
-      },
-    },
-  },
-  paper: {
-    variables: {
-      '--etch-bg': '#ffffff',
-      '--etch-text': '#111111',
-      '--etch-heading-font':
-        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
-      '--etch-body-font':
-        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
-      '--etch-accent': '#1c3d6e',
-      '--etch-code-bg': '#f7f7f4',
-      '--etch-note-bg': '#f7f8fb',
-      '--etch-note-border': '#4f6f9a',
-      '--etch-note-tip-bg': '#f5f8f2',
-      '--etch-note-tip-border': '#5d7a4a',
-      '--etch-note-warning-bg': '#fbf6ea',
-      '--etch-note-warning-border': '#9e7629',
-      '--etch-note-caution-bg': '#faf0e8',
-      '--etch-note-caution-border': '#b56f42',
-      '--etch-note-danger-bg': '#f9eceb',
-      '--etch-note-danger-border': '#a64f4f',
-      '--etch-spoiler-bg': '#ece9e1',
-      '--etch-kbd-bg': '#f2f2ee',
-      '--etch-kbd-border': '#cfc8bc',
-      '--etch-muted': '#5a6068',
-      '--etch-border': 'rgba(17, 17, 17, 0.18)',
-      '--etch-surface': 'rgba(17, 17, 17, 0.04)',
-      '--etch-surface-strong': 'rgba(17, 17, 17, 0.08)',
-      '--etch-code-text': '#111111',
-      '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-      '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-      '--etch-warning-text': '#111111',
-    },
+    darkValues: ACADEMIC_DARK,
+  }),
+  paper: defineTheme(PAPER_LIGHT, {
     css: `${SHARED_DIRECTIVE_CSS}
 html {
   color-scheme: light;
 }`,
-  },
-  fancy: {
-    variables: {
-      '--etch-bg': '#fffff8',
-      '--etch-text': '#111111',
-      '--etch-heading-font':
-        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
-      '--etch-body-font':
-        "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif",
-      '--etch-accent': '#8b0000',
-      '--etch-code-bg': '#f5f2eb',
-      '--etch-note-bg': '#f8f1e7',
-      '--etch-note-border': '#8b0000',
-      '--etch-note-tip-bg': '#f3f1e7',
-      '--etch-note-tip-border': '#5b6b3a',
-      '--etch-note-warning-bg': '#fbf3df',
-      '--etch-note-warning-border': '#b7791f',
-      '--etch-note-caution-bg': '#f8eadf',
-      '--etch-note-caution-border': '#c05621',
-      '--etch-note-danger-bg': '#f8e3e0',
-      '--etch-note-danger-border': '#9b2c2c',
-      '--etch-spoiler-bg': '#f1ece2',
-      '--etch-kbd-bg': '#f1ece2',
-      '--etch-kbd-border': '#c9b79c',
-      '--etch-muted': '#52606d',
-      '--etch-border': 'rgba(148, 163, 184, 0.35)',
-      '--etch-surface': 'rgba(148, 163, 184, 0.08)',
-      '--etch-surface-strong': 'rgba(148, 163, 184, 0.18)',
-      '--etch-code-text': '#111111',
-      '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-      '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-      '--etch-warning-text': '#111111',
-    },
+  }),
+  fancy: defineTheme(FANCY_LIGHT, {
     css: SHARED_DIRECTIVE_CSS,
-    darkMode: {
-      variables: {
-        '--etch-bg': '#1a1a18',
-        '--etch-text': '#d4d0c8',
-        '--etch-code-bg': '#2a2820',
-        '--etch-note-bg': '#2a221f',
-        '--etch-note-border': '#c77d7d',
-        '--etch-note-tip-bg': '#202319',
-        '--etch-note-tip-border': '#8fbc8f',
-        '--etch-note-warning-bg': '#2b2416',
-        '--etch-note-warning-border': '#d9a441',
-        '--etch-note-caution-bg': '#2c1f18',
-        '--etch-note-caution-border': '#d4884a',
-        '--etch-note-danger-bg': '#2c1c1c',
-        '--etch-note-danger-border': '#e07a7a',
-        '--etch-spoiler-bg': '#2a2820',
-        '--etch-kbd-bg': '#2a2820',
-        '--etch-kbd-border': '#6b6253',
-        '--etch-muted': '#c8c0b3',
-        '--etch-border': 'rgba(148, 163, 184, 0.25)',
-        '--etch-surface': 'rgba(127, 127, 127, 0.12)',
-        '--etch-surface-strong': 'rgba(127, 127, 127, 0.18)',
-        '--etch-code-text': '#f5f2eb',
-        '--etch-warning-bg': 'rgba(255, 196, 0, 0.12)',
-        '--etch-warning-border': 'rgba(255, 196, 0, 0.4)',
-        '--etch-warning-text': '#d4d0c8',
-      },
-    },
-  },
+    darkValues: FANCY_DARK,
+  }),
 };
 
 export class PluginManager implements vscode.Disposable {

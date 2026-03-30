@@ -47,39 +47,8 @@ describe("config merging", () => {
 
 describe("pipeline runtime", () => {
   it("replaces placeholders and injects styles and theme css", async () => {
-    const plugin: EtchPlugin = {
-      name: "cards",
-      version: "1.0.0",
-      directives: {
-        card: {
-          type: "block",
-          styles: ".card{color:var(--etch-accent);}",
-          render(node, ctx) {
-            return `<div class="card">${node.content}|${ctx.renderChildren(node.children)}</div>`;
-          }
-        }
-      }
-    };
-
-    const pipeline = await createPipeline([
-      { name: "cards", source: "project", module: plugin }
-    ]);
-    const document: Document = {
-      body: [
-        {
-          type: "BlockDirective",
-          directive_id: 1,
-          name: "card",
-          raw_body: "hello",
-          attrs: { pairs: { tone: "warm" } },
-          body: [{ type: "Paragraph" }],
-          span: {
-            start: { line: 1, column: 1 },
-            end: { line: 3, column: 3 }
-          }
-        }
-      ]
-    };
+    const pipeline = await createCardsPipeline();
+    const document = createCardDocument();
 
     const html = `<!DOCTYPE html><html><head></head><body><div data-etch-directive="card" data-etch-kind="block" data-etch-id="1" data-etch-content="hello"><p>fallback</p></div></body></html>`;
     const result = await runPipeline(html, document, pipeline, {
@@ -94,39 +63,8 @@ describe("pipeline runtime", () => {
   });
 
   it("preserves core MathML output while replacing plugin placeholders", async () => {
-    const plugin: EtchPlugin = {
-      name: "cards",
-      version: "1.0.0",
-      directives: {
-        card: {
-          type: "block",
-          styles: ".card{color:var(--etch-accent);}",
-          render(node, ctx) {
-            return `<div class="card">${node.content}|${ctx.renderChildren(node.children)}</div>`;
-          }
-        }
-      }
-    };
-
-    const pipeline = await createPipeline([
-      { name: "cards", source: "project", module: plugin }
-    ]);
-    const document: Document = {
-      body: [
-        {
-          type: "BlockDirective",
-          directive_id: 1,
-          name: "card",
-          raw_body: "hello",
-          attrs: { pairs: { tone: "warm" } },
-          body: [{ type: "Paragraph" }],
-          span: {
-            start: { line: 1, column: 1 },
-            end: { line: 3, column: 3 }
-          }
-        }
-      ]
-    };
+    const pipeline = await createCardsPipeline();
+    const document = createCardDocument();
 
     const html = `<!DOCTYPE html><html><head></head><body><math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac><mn>1</mn><mn>2</mn></mfrac></math><div data-etch-directive="card" data-etch-kind="block" data-etch-id="1" data-etch-content="hello"><p>hello</p></div></body></html>`;
     const result = await runPipeline(html, document, pipeline, {
@@ -230,6 +168,47 @@ function makeTempRoot(): string {
   const root = mkdtempSync(join(tmpdir(), "etch-pipeline-"));
   tempRoots.push(root);
   return root;
+}
+
+async function createCardsPipeline() {
+  return createPipeline([
+    { name: "cards", source: "project", module: createCardPlugin() }
+  ]);
+}
+
+function createCardPlugin(): EtchPlugin {
+  return {
+    name: "cards",
+    version: "1.0.0",
+    directives: {
+      card: {
+        type: "block",
+        styles: ".card{color:var(--etch-accent);}",
+        render(node, ctx) {
+          return `<div class="card">${node.content}|${ctx.renderChildren(node.children)}</div>`;
+        }
+      }
+    }
+  };
+}
+
+function createCardDocument(): Document {
+  return {
+    body: [
+      {
+        type: "BlockDirective",
+        directive_id: 1,
+        name: "card",
+        raw_body: "hello",
+        attrs: { pairs: { tone: "warm" } },
+        body: [{ type: "Paragraph" }],
+        span: {
+          start: { line: 1, column: 1 },
+          end: { line: 3, column: 3 }
+        }
+      }
+    ]
+  };
 }
 
 function writePlugin(
