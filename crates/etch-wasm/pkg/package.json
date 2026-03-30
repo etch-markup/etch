@@ -1,0 +1,23 @@
+{
+  "name": "etch-wasm",
+  "type": "module",
+  "description": "WebAssembly bindings for the Etch markup parser and HTML renderer",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/etch-markup/etch"
+  },
+  "files": [
+    "etch_wasm_bg.wasm",
+    "etch_wasm.js",
+    "etch_wasm_bg.js",
+    "etch_wasm.d.ts"
+  ],
+  "main": "etch_wasm.js",
+  "types": "etch_wasm.d.ts",
+  "sideEffects": [
+    "./etch_wasm.js",
+    "./snippets/*"
+  ]
+}

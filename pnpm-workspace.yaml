@@ -1,5 +1,6 @@
 packages:
   - packages/*
+  - crates/etch-wasm/pkg
   - editors/vscode-etch
 onlyBuiltDependencies:
   - '@vscode/vsce-sign'

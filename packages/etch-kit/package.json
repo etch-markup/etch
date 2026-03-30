@@ -23,7 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "etch-wasm": "file:../../crates/etch-wasm/pkg"
+    "etch-wasm": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

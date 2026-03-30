@@ -1,9 +1,9 @@
 import {
-  init as initWasm,
+  default as initWasm,
   parse as wasmParse,
   render_html as wasmRenderHtml,
   render_html_document as wasmRenderDocument,
-} from 'etch-wasm';
+} from 'etch-wasm/etch_wasm_loader.js';
 
 import type { ParseResult } from './types.js';
 import { createEtchKitRuntime } from './runtime.js';
@@ -426,8 +426,19 @@ math[display="block"] {
 
 const runtime = createEtchKitRuntime(
   {
-    initialize() {
-      initWasm();
+    async initialize() {
+      if (typeof process !== 'undefined' && process.versions?.node) {
+        const { readFile } = await import('node:fs/promises');
+        const { createRequire } = await import('node:module');
+        const require = createRequire(import.meta.url);
+        const wasmUrl = new URL(`file://${require.resolve('etch-wasm/etch_wasm_bg.wasm')}`);
+        const bytes = await readFile(wasmUrl);
+
+        await initWasm({ module_or_path: bytes });
+        return;
+      }
+
+      await initWasm();
     },
     parse(input: string): ParseResult {
       return wasmParse(input) as ParseResult;
