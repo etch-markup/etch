@@ -4,7 +4,6 @@ import type {
   DirectiveHandler,
   DirectiveNode,
   Document,
-  EtchPlugin,
   EtchTheme,
   PluginContext,
   RenderContext
@@ -97,20 +96,24 @@ export async function runPipeline(
   const directiveIndex = buildDirectiveIndex(document.body);
 
   for (const element of root.querySelectorAll("[data-etch-directive]")) {
-    const name = element.getAttribute("data-etch-directive") ?? "";
-    const kind = (element.getAttribute("data-etch-kind") ?? "block") as
+    const name = element.attributes["data-etch-directive"] ?? "";
+    const etchKind = element.attributes["data-etch-kind"] ?? "block";
+    const etchId = element.attributes["data-etch-id"] ?? "0";
+    const etchContent = element.attributes["data-etch-content"] ?? "";
+    const etchAttrs = element.attributes["data-etch-attrs"];
+    const kind = etchKind as
       | "inline"
       | "block"
       | "container";
-    const directiveId = Number(element.getAttribute("data-etch-id") ?? "0");
+    const directiveId = Number(etchId);
     const originalInnerHtml = element.innerHTML;
     const indexedNode = directiveIndex.get(directiveId);
     const directiveNode: DirectiveNode = indexedNode ?? {
       id: directiveId,
       kind,
       name,
-      content: element.getAttribute("data-etch-content") ?? "",
-      attributes: parseAttributesJson(element.getAttribute("data-etch-attrs")),
+      content: etchContent,
+      attributes: parseAttributesJson(etchAttrs),
       children: [],
       span: {
         start: { line: 1, column: 1 },
@@ -161,51 +164,14 @@ function getPluginConfig(
 
 function buildDirectiveIndex(body: AstNode[]): Map<number, DirectiveNode> {
   const index = new Map<number, DirectiveNode>();
+
   const visit = (node: AstNode): void => {
-    if (isDirectiveNode(node)) {
-      index.set(node.directive_id, {
-        id: node.directive_id,
-        kind: node.type === "InlineDirective"
-          ? "inline"
-          : node.type === "BlockDirective"
-            ? "block"
-            : "container",
-        name: node.name,
-        content:
-          node.type === "InlineDirective"
-            ? node.raw_content ?? ""
-            : node.raw_body ?? "",
-        attributes: flattenAttributes(node.attrs),
-        children:
-          node.type === "InlineDirective"
-            ? []
-            : Array.isArray(node.body)
-              ? node.body
-              : [],
-        span: normalizeSpan(node.span)
-      });
+    const directiveNode = toDirectiveNode(node);
+    if (directiveNode) {
+      index.set(directiveNode.id, directiveNode);
     }
 
-    const nodeWithBody = node as unknown as { body?: AstNode[] };
-    if (Array.isArray(nodeWithBody.body)) {
-      for (const child of nodeWithBody.body) {
-        visit(child);
-      }
-    }
-
-    const nodeWithContent = node as unknown as { content?: AstNode[] };
-    if (Array.isArray(nodeWithContent.content)) {
-      for (const child of nodeWithContent.content) {
-        visit(child);
-      }
-    }
-
-    const nodeWithItems = node as unknown as { items?: AstNode[] };
-    if (Array.isArray(nodeWithItems.items)) {
-      for (const child of nodeWithItems.items) {
-        visit(child);
-      }
-    }
+    visitChildNodes(node, visit);
   };
 
   for (const node of body) {
@@ -213,6 +179,83 @@ function buildDirectiveIndex(body: AstNode[]): Map<number, DirectiveNode> {
   }
 
   return index;
+}
+
+type IndexedDirectiveAstNode = AstNode & {
+  type: "InlineDirective" | "BlockDirective" | "ContainerDirective";
+  directive_id: number;
+  name: string;
+  raw_content?: string;
+  raw_body?: string;
+  attrs?: {
+    id?: string;
+    classes?: string[];
+    pairs?: Record<string, string>;
+  };
+  body?: AstNode[];
+  span?: DirectiveNode["span"];
+};
+
+function toDirectiveNode(node: AstNode): DirectiveNode | undefined {
+  if (!isDirectiveNode(node)) {
+    return undefined;
+  }
+
+  return {
+    id: node.directive_id,
+    kind: getDirectiveKind(node.type),
+    name: node.name,
+    content: getDirectiveContent(node),
+    attributes: flattenAttributes(node.attrs),
+    children: getDirectiveChildren(node),
+    span: normalizeSpan(node.span)
+  };
+}
+
+function getDirectiveKind(type: IndexedDirectiveAstNode["type"]): DirectiveNode["kind"] {
+  if (type === "InlineDirective") {
+    return "inline";
+  }
+
+  if (type === "BlockDirective") {
+    return "block";
+  }
+
+  return "container";
+}
+
+function getDirectiveContent(node: IndexedDirectiveAstNode): string {
+  return node.type === "InlineDirective"
+    ? node.raw_content ?? ""
+    : node.raw_body ?? "";
+}
+
+function getDirectiveChildren(node: IndexedDirectiveAstNode): AstNode[] {
+  return node.type === "InlineDirective" || !Array.isArray(node.body)
+    ? []
+    : node.body;
+}
+
+function visitChildNodes(
+  node: AstNode,
+  visit: (node: AstNode) => void
+): void {
+  visitNodeArray((node as { body?: AstNode[] }).body, visit);
+  visitNodeArray((node as { content?: AstNode[] }).content, visit);
+  visitNodeArray((node as { items?: AstNode[] }).items, visit);
+}
+
+function visitNodeArray(
+  nodes: AstNode[] | undefined,
+  visit: (node: AstNode) => void
+): void {
+  if (!Array.isArray(nodes)) {
+    return;
+  }
+
+  for (const child of nodes) {
+    visit(child);
+  }
 }
 
 function isDirectiveNode(node: AstNode): node is AstNode & {

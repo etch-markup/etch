@@ -256,74 +256,49 @@ const SERIF_FONT_STACK =
   "'Computer Modern Serif', 'Latin Modern Roman', Georgia, serif";
 const WARNING_BG = "rgba(255, 196, 0, 0.12)";
 const WARNING_BORDER = "rgba(255, 196, 0, 0.4)";
-const THEME_VALUE_COUNT = 27;
+const THEME_VARIABLE_KEYS = [
+  "--etch-bg",
+  "--etch-text",
+  "--etch-heading-font",
+  "--etch-body-font",
+  "--etch-accent",
+  "--etch-code-bg",
+  "--etch-note-bg",
+  "--etch-note-border",
+  "--etch-note-tip-bg",
+  "--etch-note-tip-border",
+  "--etch-note-warning-bg",
+  "--etch-note-warning-border",
+  "--etch-note-caution-bg",
+  "--etch-note-caution-border",
+  "--etch-note-danger-bg",
+  "--etch-note-danger-border",
+  "--etch-spoiler-bg",
+  "--etch-kbd-bg",
+  "--etch-kbd-border",
+  "--etch-muted",
+  "--etch-border",
+  "--etch-surface",
+  "--etch-surface-strong",
+  "--etch-code-text",
+  "--etch-warning-bg",
+  "--etch-warning-border",
+  "--etch-warning-text"
+] as const;
 
-function createThemeVariables(values: readonly string[]): Record<string, string> {
-  if (values.length !== THEME_VALUE_COUNT) {
+type ThemeVariableKey = (typeof THEME_VARIABLE_KEYS)[number];
+type ThemeVariables = Record<ThemeVariableKey, string>;
+
+function createThemeVariables(values: readonly string[]): ThemeVariables {
+  if (values.length !== THEME_VARIABLE_KEYS.length) {
     throw new Error(
-      `Expected ${THEME_VALUE_COUNT} theme values, received ${values.length}`
+      `Expected ${THEME_VARIABLE_KEYS.length} theme values, received ${values.length}`
     );
   }
 
-  const [
-    bg,
-    text,
-    headingFont,
-    bodyFont,
-    accent,
-    codeBg,
-    noteBg,
-    noteBorder,
-    noteTipBg,
-    noteTipBorder,
-    noteWarningBg,
-    noteWarningBorder,
-    noteCautionBg,
-    noteCautionBorder,
-    noteDangerBg,
-    noteDangerBorder,
-    spoilerBg,
-    kbdBg,
-    kbdBorder,
-    muted,
-    border,
-    surface,
-    surfaceStrong,
-    codeText,
-    warningBg,
-    warningBorder,
-    warningText
-  ] = values;
-
-  return {
-    "--etch-bg": bg,
-    "--etch-text": text,
-    "--etch-heading-font": headingFont,
-    "--etch-body-font": bodyFont,
-    "--etch-accent": accent,
-    "--etch-code-bg": codeBg,
-    "--etch-note-bg": noteBg,
-    "--etch-note-border": noteBorder,
-    "--etch-note-tip-bg": noteTipBg,
-    "--etch-note-tip-border": noteTipBorder,
-    "--etch-note-warning-bg": noteWarningBg,
-    "--etch-note-warning-border": noteWarningBorder,
-    "--etch-note-caution-bg": noteCautionBg,
-    "--etch-note-caution-border": noteCautionBorder,
-    "--etch-note-danger-bg": noteDangerBg,
-    "--etch-note-danger-border": noteDangerBorder,
-    "--etch-spoiler-bg": spoilerBg,
-    "--etch-kbd-bg": kbdBg,
-    "--etch-kbd-border": kbdBorder,
-    "--etch-muted": muted,
-    "--etch-border": border,
-    "--etch-surface": surface,
-    "--etch-surface-strong": surfaceStrong,
-    "--etch-code-text": codeText,
-    "--etch-warning-bg": warningBg,
-    "--etch-warning-border": warningBorder,
-    "--etch-warning-text": warningText
-  };
+  return Object.fromEntries(
+    THEME_VARIABLE_KEYS.map((key, index) => [key, values[index]!])
+  ) as ThemeVariables;
 }
 
 function defineTheme(

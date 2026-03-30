@@ -61,57 +61,7 @@ function parseFrontmatterPlugins(value: unknown): PluginDeclarationObject[] {
     return [];
   }
 
-  const plugins: PluginDeclarationObject[] = [];
-
-  for (const entry of value) {
-    if (typeof entry === "string") {
-      plugins.push({ name: entry });
-      continue;
-    }
-
-    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-      continue;
-    }
-
-    const objectEntry = entry as Record<string, unknown>;
-    if (typeof objectEntry.name === "string") {
-      if (
-        objectEntry.config &&
-        typeof objectEntry.config === "object" &&
-        !Array.isArray(objectEntry.config)
-      ) {
-        plugins.push({
-          name: objectEntry.name,
-          config: objectEntry.config as Record<string, unknown>
-        });
-      } else {
-        plugins.push({ name: objectEntry.name });
-      }
-      continue;
-    }
-
-    const entries = Object.entries(objectEntry);
-    if (entries.length !== 1) {
-      continue;
-    }
-
-    const firstEntry = entries[0];
-    if (!firstEntry) {
-      return [];
-    }
-
-    const [name, pluginConfig] = firstEntry;
-    if (pluginConfig && typeof pluginConfig === "object" && !Array.isArray(pluginConfig)) {
-      plugins.push({
-        name,
-        config: pluginConfig as Record<string, unknown>
-      });
-    } else {
-      plugins.push({ name });
-    }
-  }
-
-  return plugins;
+  return value.flatMap(parseFrontmatterPluginEntry);
 }
 
 function normalizePluginDeclaration(plugin: PluginDeclaration): PluginDeclarationObject {
@@ -131,4 +81,72 @@ function normalizePluginDeclaration(plugin: PluginDeclaration): PluginDeclaratio
 
 function compactPluginDeclaration(plugin: PluginDeclarationObject): PluginDeclaration {
   return plugin.config ? plugin : plugin.name;
+}
+
+function parseFrontmatterPluginEntry(entry: unknown): PluginDeclarationObject[] {
+  if (typeof entry === "string") {
+    return [{ name: entry }];
+  }
+
+  const objectEntry = asRecord(entry);
+  if (!objectEntry) {
+    return [];
+  }
+
+  const namedPlugin = parseNamedPluginDeclaration(objectEntry);
+  if (namedPlugin) {
+    return [namedPlugin];
+  }
+
+  return parseMappedPluginDeclaration(objectEntry);
+}
+
+function parseNamedPluginDeclaration(
+  entry: Record<string, unknown>
+): PluginDeclarationObject | undefined {
+  if (typeof entry.name !== "string") {
+    return undefined;
+  }
+
+  const config = asRecord(entry.config);
+  return config
+    ? {
+        name: entry.name,
+        config
+      }
+    : {
+        name: entry.name
+      };
+}
+
+function parseMappedPluginDeclaration(
+  entry: Record<string, unknown>
+): PluginDeclarationObject[] {
+  const entries = Object.entries(entry);
+  if (entries.length !== 1) {
+    return [];
+  }
+
+  const [name, pluginConfig] = entries[0] ?? [];
+  if (typeof name !== "string") {
+    return [];
+  }
+
+  const config = asRecord(pluginConfig);
+  return [
+    config
+      ? {
+          name,
+          config
+        }
+      : {
+          name
+        }
+  ];
+}
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
 }

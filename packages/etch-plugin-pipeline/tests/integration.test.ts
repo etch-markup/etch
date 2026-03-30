@@ -9,7 +9,7 @@ describe("math and extensibility integration", () => {
   });
 
   it("preserves core MathML through the plugin pipeline", async () => {
-    const source = "The equation :math[\\frac{1}{2}] is simple.";
+    const source = String.raw`The equation :math[\frac{1}{2}] is simple.`;
     const pipeline = await createPipeline([]);
 
     const result = await runPipeline(
