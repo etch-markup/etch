@@ -307,9 +307,7 @@ fn parse_inline_value(
         return parse_array(input, line, column);
     }
 
-    let consumed = input
-        .find(|ch: char| ch == ',' || ch == ']')
-        .unwrap_or(input.len());
+    let consumed = input.find([',', ']']).unwrap_or(input.len());
     let value = input[..consumed].trim_end();
 
     if value.is_empty() {
@@ -335,10 +333,10 @@ fn parse_scalar(input: &str) -> FrontmatterValue {
                 return FrontmatterValue::Integer(number);
             }
 
-            if is_float_literal(value) {
-                if let Ok(number) = value.parse::<f64>() {
-                    return FrontmatterValue::Float(number);
-                }
+            if is_float_literal(value)
+                && let Ok(number) = value.parse::<f64>()
+            {
+                return FrontmatterValue::Float(number);
             }
 
             FrontmatterValue::String(value.to_string())

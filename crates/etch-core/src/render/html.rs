@@ -65,10 +65,11 @@ impl HtmlRenderer {
     fn render_block(&self, block: &Block) -> String {
         match block {
             Block::Paragraph { content, attrs } => {
-                if attrs.is_none() && content.len() == 1 {
-                    if let Some(html) = self.render_special_single_inline_paragraph(&content[0]) {
-                        return html;
-                    }
+                if attrs.is_none()
+                    && content.len() == 1
+                    && let Some(html) = self.render_special_single_inline_paragraph(&content[0])
+                {
+                    return html;
                 }
 
                 wrap_with_tag("p", attrs.as_ref(), &[], &[], &self.render_inlines(content))

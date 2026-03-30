@@ -128,9 +128,7 @@ where
             continue;
         }
 
-        let Some((_, next_line)) = lookahead.peek().copied() else {
-            return None;
-        };
+        let (_, next_line) = lookahead.peek().copied()?;
 
         return definition_opening_from_line(next_line).map(|_| (blank_lines, line));
     }

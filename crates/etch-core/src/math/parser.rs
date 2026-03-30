@@ -105,7 +105,7 @@ impl MathParser {
             "mathbb" | "mathcal" | "mathbf" => Some(self.parse_font(&name)),
             _ => lookup_symbol(&name)
                 .map(symbol_to_node)
-                .or_else(|| Some(MathNode::Identifier(name))),
+                .or(Some(MathNode::Identifier(name))),
         }
     }
 

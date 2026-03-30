@@ -166,10 +166,10 @@ pub(crate) fn split_trailing_block_attributes(input: &str) -> Option<(&str, Attr
             continue;
         }
 
-        if let Some((attrs, remainder)) = parse_attributes_segment(&input[index..]) {
-            if remainder.trim().is_empty() {
-                return Some((input[..index].trim_end(), attrs));
-            }
+        if let Some((attrs, remainder)) = parse_attributes_segment(&input[index..])
+            && remainder.trim().is_empty()
+        {
+            return Some((input[..index].trim_end(), attrs));
         }
     }
 

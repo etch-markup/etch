@@ -80,21 +80,21 @@ fn parse_segment(
     }
 
     while index < input.len() {
-        if let Some(delimiter) = stop {
-            if can_close(
+        if let Some(delimiter) = stop
+            && can_close(
                 input,
                 index,
                 delimiter,
                 nodes.is_empty() && text_start == index,
-            ) {
-                push_text(&mut nodes, &input[text_start..index]);
+            )
+        {
+            push_text(&mut nodes, &input[text_start..index]);
 
-                return ParseResult {
-                    nodes,
-                    next_index: index + delimiter.len(),
-                    closed: true,
-                };
-            }
+            return ParseResult {
+                nodes,
+                next_index: index + delimiter.len(),
+                closed: true,
+            };
         }
 
         let byte = input.as_bytes()[index];
@@ -128,15 +128,15 @@ fn parse_segment(
             continue;
         }
 
-        if byte == b'h' {
-            if let Some((inline, next_index)) = try_parse_autolink(input, index) {
-                push_text(&mut nodes, &input[text_start..index]);
-                nodes.push(inline);
-                position = advance_position(position, &input[index..next_index]);
-                index = next_index;
-                text_start = index;
-                continue;
-            }
+        if byte == b'h'
+            && let Some((inline, next_index)) = try_parse_autolink(input, index)
+        {
+            push_text(&mut nodes, &input[text_start..index]);
+            nodes.push(inline);
+            position = advance_position(position, &input[index..next_index]);
+            index = next_index;
+            text_start = index;
+            continue;
         }
 
         if byte == b'!' && input.as_bytes().get(index + 1).copied() == Some(b'[') {

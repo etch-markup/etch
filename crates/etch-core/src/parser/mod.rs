@@ -322,7 +322,7 @@ where
     (blocks, None)
 }
 
-fn flush_paragraph<'a>(blocks: &mut Vec<Block>, current: &mut Vec<&'a str>) {
+fn flush_paragraph(blocks: &mut Vec<Block>, current: &mut Vec<&str>) {
     if current.is_empty() {
         return;
     }

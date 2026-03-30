@@ -118,7 +118,7 @@ where
         column: 1,
     };
 
-    while let Some((line_index, line)) = lines.next() {
+    for (line_index, line) in lines.by_ref() {
         let line_number = line_offset + line_index + 1;
         match nested_directives.last() {
             Some(NestedDirective::Block) if line == "::" => {
@@ -246,7 +246,7 @@ where
 }
 
 fn collect_container_body_metadata<'a, I>(
-    mut lines: Peekable<I>,
+    lines: Peekable<I>,
     line_offset: usize,
     container_name: &str,
 ) -> (String, SourcePosition, bool)
@@ -261,7 +261,7 @@ where
     };
     let mut named_close = false;
 
-    while let Some((line_index, line)) = lines.next() {
+    for (line_index, line) in lines {
         let line_number = line_offset + line_index + 1;
 
         if line == ":::" {
