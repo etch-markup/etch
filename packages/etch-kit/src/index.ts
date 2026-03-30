@@ -1,6 +1,6 @@
 import type { EtchDocument, ParseResult } from './types.js';
 import {
-  DEFAULT_STANDALONE_STYLES,
+  DEFAULT_STANDALONE_STYLES as defaultStandaloneStyles,
   initializeWasm,
   parseResultFromWasm,
   parseToJsonFromWasm,
@@ -57,7 +57,7 @@ export async function initialize(): Promise<void> {
   await initializeWasm();
 }
 
-export { DEFAULT_STANDALONE_STYLES };
+export { DEFAULT_STANDALONE_STYLES } from './wasm.js';
 
 export function parse(input: string): EtchDocument {
   return parseWithErrors(input).document;
@@ -77,7 +77,7 @@ export function renderDocument(input: string): string {
 
 export function renderStandalone(
   input: string,
-  styles: string = DEFAULT_STANDALONE_STYLES
+  styles: string = defaultStandaloneStyles
 ): string {
   return renderStandaloneFromWasm(input, styles);
 }

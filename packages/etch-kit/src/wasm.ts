@@ -1,5 +1,4 @@
-import {
-  default as initWasm,
+import initWasm, {
   parse as wasmParse,
   render_html as wasmRenderHtml,
   render_html_document as wasmRenderDocument,

@@ -42,17 +42,15 @@ export function createEtchKitRuntime(
       return;
     }
 
-    if (!initializePromise) {
-      initializePromise = Promise.resolve(bindings.initialize()).then(
-        () => {
-          initialized = true;
-        },
-        (error: unknown) => {
-          initializePromise = undefined;
-          throw error;
-        }
-      );
-    }
+    initializePromise ??= Promise.resolve(bindings.initialize()).then(
+      () => {
+        initialized = true;
+      },
+      (error: unknown) => {
+        initializePromise = undefined;
+        throw error;
+      }
+    );
 
     await initializePromise;
   }
