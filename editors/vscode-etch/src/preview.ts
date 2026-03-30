@@ -44,16 +44,16 @@ export class EtchPreviewManager implements vscode.Disposable {
     const editor = vscode.window.activeTextEditor;
     const document = editor?.document;
 
-    if (!document || document.languageId !== ETCH_LANGUAGE_ID) {
-      void vscode.window.showInformationMessage(
+    if (document?.languageId !== ETCH_LANGUAGE_ID) {
+      vscode.window.showInformationMessage(
         'Open an Etch document to preview it.'
       );
       return;
     }
 
     const key = document.uri.toString();
-    const sourceColumn = this.resolveSourceColumn(editor.viewColumn);
-    const sourceKey = this.getColumnKey(sourceColumn);
+    const sourceColumn = this.resolveSourceColumn(editor?.viewColumn);
+    const sourceKey = String(sourceColumn);
     const existing = this.panelsBySourceColumn.get(sourceKey);
     const existingForDocument = this.panelsByDocument.get(key);
     const targetColumn = toSide ? this.getSideColumn(sourceColumn) : sourceColumn;
@@ -158,12 +158,12 @@ export class EtchPreviewManager implements vscode.Disposable {
   public handleActiveEditorChange(editor: vscode.TextEditor | undefined): void {
     const document = editor?.document;
 
-    if (!document || document.languageId !== ETCH_LANGUAGE_ID) {
+    if (document?.languageId !== ETCH_LANGUAGE_ID) {
       return;
     }
 
-    const sourceColumn = this.resolveSourceColumn(editor.viewColumn);
-    const entry = this.panelsBySourceColumn.get(this.getColumnKey(sourceColumn));
+    const sourceColumn = this.resolveSourceColumn(editor?.viewColumn);
+    const entry = this.panelsBySourceColumn.get(String(sourceColumn));
 
     if (!entry || entry.documentUri === document.uri.toString()) {
       return;
@@ -363,19 +363,18 @@ export class EtchPreviewManager implements vscode.Disposable {
       Math.max((error.column ?? 1) - 1, 0),
       line.range.end.character
     );
-    const endColumn =
-      error.column !== undefined
-        ? Math.min(startColumn + 1, line.range.end.character)
-        : line.range.end.character;
-    const range =
-      error.column !== undefined
-        ? new vscode.Range(
-            line.lineNumber,
-            startColumn,
-            line.lineNumber,
-            Math.max(endColumn, startColumn)
-          )
-        : line.range;
+    const hasColumn = typeof error.column === 'number';
+    const endColumn = hasColumn
+      ? Math.min(startColumn + 1, line.range.end.character)
+      : line.range.end.character;
+    const range = hasColumn
+      ? new vscode.Range(
+          line.lineNumber,
+          startColumn,
+          line.lineNumber,
+          Math.max(endColumn, startColumn)
+        )
+      : line.range;
 
     return new vscode.Diagnostic(
       range,
@@ -410,12 +409,12 @@ export class EtchPreviewManager implements vscode.Disposable {
 
   private registerPreview(entry: PreviewEntry): void {
     this.panelsByDocument.set(entry.documentUri, entry);
-    this.panelsBySourceColumn.set(this.getColumnKey(entry.sourceColumn), entry);
+    this.panelsBySourceColumn.set(String(entry.sourceColumn), entry);
   }
 
   private unregisterPreview(entry: PreviewEntry): void {
     this.panelsByDocument.delete(entry.documentUri);
-    this.panelsBySourceColumn.delete(this.getColumnKey(entry.sourceColumn));
+    this.panelsBySourceColumn.delete(String(entry.sourceColumn));
     this.renderVersions.delete(entry.documentUri);
   }
 
@@ -427,14 +426,14 @@ export class EtchPreviewManager implements vscode.Disposable {
   ): void {
     const nextKey = document.uri.toString();
     const previousDocumentUri = entry.documentUri;
-    const previousSourceKey = this.getColumnKey(entry.sourceColumn);
+    const previousSourceKey = String(entry.sourceColumn);
 
     if (previousDocumentUri !== nextKey) {
       this.panelsByDocument.delete(previousDocumentUri);
       this.renderVersions.delete(previousDocumentUri);
     }
 
-    if (previousSourceKey !== this.getColumnKey(sourceColumn)) {
+    if (previousSourceKey !== String(sourceColumn)) {
       this.panelsBySourceColumn.delete(previousSourceKey);
     }
 
@@ -455,10 +454,6 @@ export class EtchPreviewManager implements vscode.Disposable {
     column: vscode.ViewColumn | undefined
   ): vscode.ViewColumn {
     return column ?? vscode.ViewColumn.One;
-  }
-
-  private getColumnKey(column: vscode.ViewColumn): string {
-    return String(column);
   }
 
   private isLatestRender(

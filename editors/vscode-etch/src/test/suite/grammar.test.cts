@@ -7,7 +7,7 @@ suite('Etch Grammar', () => {
     const grammar = await loadEtchGrammar();
     const fixture = await loadFixture('inline-math-caret-bleed.etch');
     const nestedFixture = await loadFixture('inline-math-nested-brackets.etch');
-    const repository = grammar.repository as Repository;
+    const { repository } = grammar;
     const inlinePatterns = includesOf(repository.inline.patterns);
     const directiveBracketPatterns = includesOf(repository['directive-bracket-content'].patterns);
     const mathBracketPatterns = includesOf(repository['math-directive-bracket-content'].patterns);
@@ -24,15 +24,17 @@ suite('Etch Grammar', () => {
     );
     assert.ok(repository['math-inline-directive'], 'Expected a dedicated math inline directive rule.');
     assert.ok(
-      inlinePatterns.indexOf('#math-inline-directive') !== -1,
+      inlinePatterns.includes('#math-inline-directive'),
       'Expected the top-level inline grammar to include the dedicated math directive rule.'
     );
     assert.ok(
-      inlinePatterns.indexOf('#math-inline-directive') < inlinePatterns.indexOf('#inline-directive'),
+      inlinePatterns.indexOf('#math-inline-directive') <
+        inlinePatterns.indexOf('#inline-directive'),
       'Expected the math directive rule to run before the generic inline directive rule.'
     );
     assert.ok(
-      directiveBracketPatterns.indexOf('#math-inline-directive') < directiveBracketPatterns.indexOf('#inline-directive'),
+      directiveBracketPatterns.indexOf('#math-inline-directive') <
+        directiveBracketPatterns.indexOf('#inline-directive'),
       'Expected nested directive content to prefer math directives before generic directives.'
     );
     assert.strictEqual(

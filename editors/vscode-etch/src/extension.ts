@@ -58,7 +58,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 }
 
-export function deactivate(): void {}
+export function deactivate(): void {
+  return undefined;
+}
 
 async function createPluginManager(): Promise<PreviewPluginManager> {
   try {
@@ -71,7 +73,9 @@ async function createPluginManager(): Promise<PreviewPluginManager> {
 }
 
 class NoopPluginManager implements PreviewPluginManager {
-  public async initialize(_workspaceRoot: string): Promise<void> {}
+  public initialize(_workspaceRoot: string): Promise<void> {
+    return Promise.resolve();
+  }
 
   public async processHtml(html: string, _document: unknown): Promise<string> {
     return html;
@@ -81,5 +85,7 @@ class NoopPluginManager implements PreviewPluginManager {
     return new vscode.Disposable(() => undefined);
   }
 
-  public dispose(): void {}
+  public dispose(): void {
+    return undefined;
+  }
 }

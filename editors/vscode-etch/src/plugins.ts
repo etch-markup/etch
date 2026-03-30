@@ -21,8 +21,6 @@ type EtchConfig = {
   theme: string;
 };
 
-type Pipeline = unknown;
-
 type PipelineModule = {
   loadConfig(projectRoot: string): EtchConfig;
   mergeWithFrontmatter(
@@ -41,11 +39,11 @@ type PipelineModule = {
       pluginConfig?: Record<string, Record<string, unknown>>;
       log?: (message: string) => void;
     }
-  ): Promise<Pipeline>;
+  ): Promise<unknown>;
   runPipeline(
     html: string,
     document: unknown,
-    pipeline: Pipeline,
+    pipeline: unknown,
     config: EtchConfig
   ): Promise<string>;
 };
@@ -509,7 +507,7 @@ html {
 };
 
 export class PluginManager implements vscode.Disposable {
-  private pipeline: Pipeline | null = null;
+  private pipeline: unknown | null = null;
   private config: EtchConfig = { plugins: [], theme: 'default' };
   private workspaceRoot: string | null = null;
   private readonly globalRoot = path.join(os.homedir(), '.etch');
@@ -645,7 +643,7 @@ export class PluginManager implements vscode.Disposable {
   private async getPipelineModule(): Promise<PipelineModule> {
     if (!this.modulePromise) {
       const moduleUrl = new URL('./vendor/etch-plugin-pipeline/index.js', import.meta.url);
-      this.modulePromise = import(moduleUrl.href) as Promise<PipelineModule>;
+      this.modulePromise = import(moduleUrl.href);
     }
 
     return this.modulePromise;
