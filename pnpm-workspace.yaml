@@ -1,5 +1,6 @@
 packages:
   - packages/*
+  - apps/*
   - crates/etch-wasm/pkg
   - editors/vscode-etch
 onlyBuiltDependencies:
