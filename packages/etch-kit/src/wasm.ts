@@ -5,10 +5,15 @@ import initWasm, {
 } from 'etch-wasm/etch_wasm_loader.js';
 
 import type { ParseResult } from './types.js';
-import { createEtchKitRuntime } from './runtime.js';
+import {
+  createEtchKitRuntime,
+  type InitializeEtchWasmOptions,
+} from './runtime.js';
 
 const NOT_INITIALIZED_ERROR =
   'Etch WASM is not initialized. Call initialize() before using parse() or renderHtml().';
+const NODE_FS_PROMISES_MODULE = 'node:fs/promises';
+const NODE_MODULE_MODULE = 'node:module';
 
 export const DEFAULT_STANDALONE_STYLES = `html {
   color-scheme: light dark;
@@ -425,10 +430,15 @@ math[display="block"] {
 
 const runtime = createEtchKitRuntime(
   {
-    async initialize() {
+    async initialize(options?: InitializeEtchWasmOptions) {
+      if (options?.wasmUrl) {
+        await initWasm({ module_or_path: options.wasmUrl });
+        return;
+      }
+
       if (typeof process !== 'undefined' && process.versions?.node) {
-        const { readFile } = await import('node:fs/promises');
-        const { createRequire } = await import('node:module');
+        const { readFile } = await import(/* @vite-ignore */ NODE_FS_PROMISES_MODULE);
+        const { createRequire } = await import(/* @vite-ignore */ NODE_MODULE_MODULE);
         const require = createRequire(import.meta.url);
         const wasmUrl = new URL(`file://${require.resolve('etch-wasm/etch_wasm_bg.wasm')}`);
         const bytes = await readFile(wasmUrl);

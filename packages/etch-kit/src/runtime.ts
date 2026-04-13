@@ -3,8 +3,12 @@ import type { EtchDocument, ParseResult } from './types.js';
 const DEFAULT_NOT_INITIALIZED_ERROR =
   'Etch WASM is not initialized. Call initialize() before using parse() or renderHtml().';
 
+export type InitializeEtchWasmOptions = {
+  wasmUrl?: string | URL;
+};
+
 export type EtchWasmBindings = {
-  initialize: () => void | Promise<void>;
+  initialize: (options?: InitializeEtchWasmOptions) => void | Promise<void>;
   parse: (input: string) => ParseResult;
   renderHtml: (input: string) => string;
   renderDocument: (input: string) => string;
@@ -17,7 +21,7 @@ export type CreateEtchKitRuntimeOptions = {
 
 export type EtchKitRuntime = {
   DEFAULT_STANDALONE_STYLES: string;
-  initialize: () => Promise<void>;
+  initialize: (options?: InitializeEtchWasmOptions) => Promise<void>;
   parse: (input: string) => EtchDocument;
   parseWithErrors: (input: string) => ParseResult;
   renderHtml: (input: string) => string;
@@ -37,12 +41,12 @@ export function createEtchKitRuntime(
   let initialized = false;
   let initializePromise: Promise<void> | undefined;
 
-  async function initialize(): Promise<void> {
+  async function initialize(options?: InitializeEtchWasmOptions): Promise<void> {
     if (initialized) {
       return;
     }
 
-    initializePromise ??= Promise.resolve(bindings.initialize()).then(
+    initializePromise ??= Promise.resolve(bindings.initialize(options)).then(
       () => {
         initialized = true;
       },

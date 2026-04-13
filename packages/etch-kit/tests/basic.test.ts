@@ -18,6 +18,11 @@ describe('etch-kit', () => {
     await expect(initialize()).resolves.toBeUndefined();
   });
 
+  test('initialize() accepts an explicit wasm url', async () => {
+    const wasmUrl = new URL('../../crates/etch-wasm/pkg/etch_wasm_bg.wasm', import.meta.url);
+    await expect(initialize({ wasmUrl })).resolves.toBeUndefined();
+  });
+
   test('parse() returns a document with one heading', () => {
     const document = parse('# Hello');
 

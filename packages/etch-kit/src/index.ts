@@ -8,6 +8,7 @@ import {
   renderHtmlFromWasm,
   renderStandaloneFromWasm,
 } from './wasm.js';
+import type { InitializeEtchWasmOptions } from './runtime.js';
 
 export type {
   Alignment,
@@ -52,9 +53,12 @@ export type {
   TextInline,
   ThematicBreak,
 } from './types.js';
+export type { InitializeEtchWasmOptions } from './runtime.js';
 
-export async function initialize(): Promise<void> {
-  await initializeWasm();
+export async function initialize(
+  options?: InitializeEtchWasmOptions
+): Promise<void> {
+  await initializeWasm(options);
 }
 
 export { DEFAULT_STANDALONE_STYLES } from './wasm.js';
