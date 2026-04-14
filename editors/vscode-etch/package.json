@@ -28,6 +28,7 @@
     "publish:vsce": "vsce publish --no-dependencies",
     "vscode:prepublish": "pnpm run compile",
     "pretest": "pnpm run compile",
+    "test:sync": "pnpm run compile && mocha ./out/test/suite/sync.test.cjs --ui tdd --color",
     "test": "vscode-test",
     "test:integration": "node ./out/test/runTest.cjs"
   },
