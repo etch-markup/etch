@@ -1,3 +1,6 @@
+// This is the normalized render-time contract consumed by plugins and editor
+// integrations. It is intentionally looser than the full @etch-markup/etch-kit
+// AST and should not be treated as an exhaustive source-preserving document model.
 export type AstNode = {
   type: string;
   [key: string]: unknown;
@@ -26,9 +29,12 @@ export interface DirectiveNode {
   id: number;
   kind: "inline" | "block" | "container";
   name: string;
+  label?: AstNode[];
+  rawLabel?: string;
   content: string;
   attributes: Record<string, string>;
   children: AstNode[];
+  namedClose?: boolean;
   span: DirectiveSpan;
 }
 

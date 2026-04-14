@@ -2,7 +2,11 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { Document, EtchPlugin } from "@etch-markup/etch-plugin-sdk";
+import {
+  RESERVED_BUILTIN_DIRECTIVE_NAMES,
+  type Document,
+  type EtchPlugin
+} from "@etch-markup/etch-plugin-sdk";
 import { loadConfig, mergeWithFrontmatter } from "../src/config.js";
 import { discoverPlugins } from "../src/discovery.js";
 import { createPipeline, runPipeline } from "../src/pipeline.js";
@@ -110,6 +114,132 @@ describe("pipeline runtime", () => {
 
     expect(pipeline.handlers.has("math")).toBe(false);
     expect(pipeline.warnings).toContain("Ignored reserved directive handler: math");
+  });
+
+  it("keeps non-reserved directive names available to plugins", async () => {
+    const plugin: EtchPlugin = {
+      name: "spoilers",
+      version: "1.0.0",
+      directives: {
+        spoiler: {
+          type: "block",
+          render: () => '<div class="spoiler-card">revealed</div>'
+        }
+      }
+    };
+
+    const pipeline = await createPipeline([
+      { name: "spoilers", source: "project", module: plugin }
+    ]);
+
+    expect(pipeline.handlers.has("spoiler")).toBe(true);
+    expect(RESERVED_BUILTIN_DIRECTIVE_NAMES).not.toContain("spoiler");
+  });
+
+  it("passes raw labels, named closes, and nested directive nodes to plugin handlers", async () => {
+    let receivedNode:
+      | {
+          rawLabel?: string;
+          namedClose?: boolean;
+          label?: unknown[];
+          children: unknown[];
+        }
+      | undefined;
+
+    const plugin: EtchPlugin = {
+      name: "chapters",
+      version: "1.0.0",
+      directives: {
+        panel: {
+          type: "container",
+          render(node, ctx) {
+            receivedNode = node;
+            return `<section class="chapter">${node.rawLabel}|${node.namedClose}|${ctx.renderChildren(
+              node.children
+            )}</section>`;
+          }
+        }
+      }
+    };
+
+    const pipeline = await createPipeline([
+      { name: "chapters", source: "project", module: plugin }
+    ]);
+
+    const document: Document = {
+      body: [
+        {
+          type: "ContainerDirective",
+          directive_id: 7,
+          name: "panel",
+          label: [{ type: "Text", value: "Part One" }],
+          raw_label: "Part One",
+          raw_body: "Paragraph",
+          named_close: true,
+          body: [
+            {
+              type: "Table",
+              headers: [
+                {
+                  content: [
+                    {
+                      type: "InlineDirective",
+                      directive_id: 9,
+                      name: "callout",
+                      raw_content: "nested",
+                      attrs: { pairs: { tone: "warm" } },
+                      span: {
+                        start: { line: 2, column: 1 },
+                        end: { line: 2, column: 16 }
+                      }
+                    }
+                  ]
+                }
+              ],
+              rows: [],
+              alignments: []
+            }
+          ],
+          span: {
+            start: { line: 1, column: 1 },
+            end: { line: 3, column: 12 }
+          }
+        }
+      ]
+    };
+
+    const html =
+      '<!DOCTYPE html><html><head></head><body><section data-etch-directive="panel" data-etch-kind="container" data-etch-id="7" data-etch-content="Paragraph" data-etch-label="Part One"><p>fallback</p></section></body></html>';
+
+    const result = await runPipeline(html, document, pipeline, {
+      plugins: [],
+      theme: "default"
+    });
+
+    expect(result).toContain('<section class="chapter">Part One|true|<p>fallback</p></section>');
+    expect(receivedNode).toMatchObject({
+      id: 7,
+      kind: "container",
+      name: "panel",
+      rawLabel: "Part One",
+      namedClose: true,
+      label: [{ type: "Text", value: "Part One" }],
+      children: [
+        {
+          type: "Table",
+          headers: [
+            {
+              content: [
+                {
+                  type: "InlineDirective",
+                  directive_id: 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
   });
 });
 

@@ -67,7 +67,7 @@ export function createEtchKitRuntime(
 
   function parseWithErrors(input: string): ParseResult {
     ensureInitialized();
-    return bindings.parse(input);
+    return normalizeStructuredValue(bindings.parse(input)) as ParseResult;
   }
 
   function renderHtml(input: string): string {
@@ -88,7 +88,7 @@ export function createEtchKitRuntime(
   }
 
   function parseToJson(input: string): string {
-    return JSON.stringify(serializeForJson(parseWithErrors(input)));
+    return JSON.stringify(normalizeStructuredValue(parseWithErrors(input)));
   }
 
   return {
@@ -144,25 +144,25 @@ function wrapBodyInMain(documentHtml: string): string {
   return withMainOpen;
 }
 
-function serializeForJson(value: unknown): unknown {
+function normalizeStructuredValue(value: unknown): unknown {
   if (value instanceof Map) {
     return Object.fromEntries(
       Array.from(value.entries(), ([key, entryValue]) => [
         key,
-        serializeForJson(entryValue),
+        normalizeStructuredValue(entryValue),
       ])
     );
   }
 
   if (Array.isArray(value)) {
-    return value.map((entry) => serializeForJson(entry));
+    return value.map((entry) => normalizeStructuredValue(entry));
   }
 
   if (value && typeof value === 'object') {
     return Object.fromEntries(
       Object.entries(value).map(([key, entryValue]) => [
         key,
-        serializeForJson(entryValue),
+        normalizeStructuredValue(entryValue),
       ])
     );
   }

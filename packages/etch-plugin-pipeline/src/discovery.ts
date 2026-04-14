@@ -1,24 +1,10 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import type { EtchPlugin } from "@etch-markup/etch-plugin-sdk";
-
-const RESERVED_DIRECTIVES = new Set([
-  "math",
-  "note",
-  "aside",
-  "figure",
-  "details",
-  "section",
-  "chapter",
-  "columns",
-  "column",
-  "pagebreak",
-  "toc",
-  "abbr",
-  "cite",
-  "kbd"
-]);
+import {
+  isReservedBuiltinDirectiveName,
+  type EtchPlugin,
+} from "@etch-markup/etch-plugin-sdk";
 
 export interface ResolvedPlugin {
   name: string;
@@ -97,7 +83,7 @@ async function loadResolvedPlugin(
 
   const filteredDirectives = Object.fromEntries(
     Object.entries(plugin.directives).filter(([directiveName]) => {
-      if (RESERVED_DIRECTIVES.has(directiveName)) {
+      if (isReservedBuiltinDirectiveName(directiveName)) {
         return false;
       }
       return true;

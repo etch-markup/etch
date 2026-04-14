@@ -8,28 +8,11 @@ import type {
   PluginContext,
   RenderContext
 } from "@etch-markup/etch-plugin-sdk";
+import { isReservedBuiltinDirectiveName } from "@etch-markup/etch-plugin-sdk";
 import type { EtchConfig } from "./config.js";
 import { renderFallback } from "./fallback.js";
 import type { ResolvedPlugin } from "./discovery.js";
 import { BUILTIN_THEMES, assembleThemeCSS } from "./themes.js";
-
-const RESERVED_DIRECTIVES = new Set([
-  "math",
-  "note",
-  "aside",
-  "figure",
-  "details",
-  "spoiler",
-  "section",
-  "chapter",
-  "columns",
-  "column",
-  "pagebreak",
-  "toc",
-  "abbr",
-  "cite",
-  "kbd"
-]);
 
 export interface Pipeline {
   handlers: Map<string, { plugin: string; handler: DirectiveHandler }>;
@@ -63,7 +46,7 @@ export async function createPipeline(
     await module.setup?.(pluginContext);
 
     for (const [directiveName, handler] of Object.entries(module.directives)) {
-      if (RESERVED_DIRECTIVES.has(directiveName)) {
+      if (isReservedBuiltinDirectiveName(directiveName)) {
         warnings.push(`Ignored reserved directive handler: ${directiveName}`);
         continue;
       }
@@ -120,6 +103,11 @@ export async function runPipeline(
         end: { line: 1, column: 1 }
       }
     };
+
+    const rawLabel = element.attributes["data-etch-label"];
+    if (!indexedNode && typeof rawLabel === "string") {
+      directiveNode.rawLabel = rawLabel;
+    }
 
     const registered = pipeline.handlers.get(name);
     if (!registered) {
@@ -185,6 +173,8 @@ type IndexedDirectiveAstNode = AstNode & {
   type: "InlineDirective" | "BlockDirective" | "ContainerDirective";
   directive_id: number;
   name: string;
+  label?: AstNode[];
+  raw_label?: string;
   raw_content?: string;
   raw_body?: string;
   attrs?: {
@@ -193,6 +183,7 @@ type IndexedDirectiveAstNode = AstNode & {
     pairs?: Record<string, string>;
   };
   body?: AstNode[];
+  named_close?: boolean;
   span?: DirectiveNode["span"];
 };
 
@@ -201,7 +192,7 @@ function toDirectiveNode(node: AstNode): DirectiveNode | undefined {
     return undefined;
   }
 
-  return {
+  const directiveNode: DirectiveNode = {
     id: node.directive_id,
     kind: getDirectiveKind(node.type),
     name: node.name,
@@ -210,6 +201,20 @@ function toDirectiveNode(node: AstNode): DirectiveNode | undefined {
     children: getDirectiveChildren(node),
     span: normalizeSpan(node.span)
   };
+
+  if (Array.isArray(node.label)) {
+    directiveNode.label = node.label;
+  }
+
+  if (typeof node.raw_label === "string") {
+    directiveNode.rawLabel = node.raw_label;
+  }
+
+  if (node.type === "ContainerDirective" && typeof node.named_close === "boolean") {
+    directiveNode.namedClose = node.named_close;
+  }
+
+  return directiveNode;
 }
 
 function getDirectiveKind(type: IndexedDirectiveAstNode["type"]): DirectiveNode["kind"] {
@@ -240,22 +245,41 @@ function visitChildNodes(
   node: AstNode,
   visit: (node: AstNode) => void
 ): void {
-  visitNodeArray((node as { body?: AstNode[] }).body, visit);
-  visitNodeArray((node as { content?: AstNode[] }).content, visit);
-  visitNodeArray((node as { items?: AstNode[] }).items, visit);
+  visitNestedAstValue(node, visit, true);
 }
 
-function visitNodeArray(
-  nodes: AstNode[] | undefined,
-  visit: (node: AstNode) => void
+function visitNestedAstValue(
+  value: unknown,
+  visit: (node: AstNode) => void,
+  skipCurrentNode = false
 ): void {
-  if (!Array.isArray(nodes)) {
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      visitNestedAstValue(entry, visit);
+    }
     return;
   }
 
-  for (const child of nodes) {
-    visit(child);
+  if (!value || typeof value !== "object") {
+    return;
   }
+
+  if (isAstNodeLike(value) && !skipCurrentNode) {
+    visit(value);
+    return;
+  }
+
+  for (const entry of Object.values(value)) {
+    visitNestedAstValue(entry, visit);
+  }
+}
+
+function isAstNodeLike(value: unknown): value is AstNode {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    typeof (value as { type?: unknown }).type === "string"
+  );
 }
 
 function isDirectiveNode(node: AstNode): node is AstNode & {

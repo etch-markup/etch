@@ -1,6 +1,7 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import {
   createEtchEditorCore,
+  type CreateEtchEditorCoreOptions,
   type EtchEditorCore,
 } from '@etch-markup/etch-editor-core';
 
@@ -11,12 +12,22 @@ export interface UseEtchEditorOptions {
   wasmUrl?: string | URL | undefined;
 }
 
+export function resolveEtchEditorCoreOptions(
+  options: UseEtchEditorOptions = {}
+): CreateEtchEditorCoreOptions {
+  return {
+    initialSource: options.value ?? options.initialSource,
+    theme: options.theme,
+    wasmUrl: options.wasmUrl,
+  };
+}
+
 export function useEtchEditor(options: UseEtchEditorOptions = {}) {
   const coreRef = useRef<EtchEditorCore | null>(null);
   const disposeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (!coreRef.current) {
-    coreRef.current = createEtchEditorCore(options);
+    coreRef.current = createEtchEditorCore(resolveEtchEditorCoreOptions(options));
   }
 
   const core = coreRef.current;

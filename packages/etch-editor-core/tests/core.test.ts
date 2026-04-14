@@ -66,6 +66,24 @@ describe('etch-editor-core', () => {
     }
   });
 
+  test('renders the latest source written during initialization', async () => {
+    const core = createEtchEditorCore({ initialSource: '# Initial' });
+
+    try {
+      core.setSource('# Latest');
+
+      const state = await waitForState(
+        core,
+        (current) => !current.isInitializing && current.previewHtml.includes('<h1 id="latest">Latest</h1>')
+      );
+
+      expect(state.source).toBe('# Latest');
+      expect(state.previewHtml).not.toContain('Initial');
+    } finally {
+      core.dispose();
+    }
+  });
+
   test('surfaces parse diagnostics while preserving preview output', async () => {
     const core = createEtchEditorCore({ initialSource: ':::foo\n:::/bar' });
 
@@ -80,6 +98,22 @@ describe('etch-editor-core', () => {
     } finally {
       core.dispose();
     }
+  });
+
+  test('cancels queued renders when disposed', async () => {
+    vi.useFakeTimers();
+
+    const core = createEtchEditorCore({ initialSource: '# One' });
+
+    await waitForState(core, (state) => !state.isInitializing && state.previewHtml.includes('One'));
+    const previousPreviewHtml = core.getState().previewHtml;
+
+    core.setSource('# Two');
+    core.dispose();
+
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(core.getState().previewHtml).toBe(previousPreviewHtml);
   });
 });
 

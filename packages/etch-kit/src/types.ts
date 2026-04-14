@@ -8,10 +8,10 @@ export type FrontmatterValue =
   | boolean
   | null
   | FrontmatterValue[]
-  | FrontmatterRecord
-  | Map<string, FrontmatterValue>;
+  | FrontmatterRecord;
 
-export type FrontmatterFields = FrontmatterRecord | Map<string, FrontmatterValue>;
+// The Rust/WASM bridge serializes frontmatter objects as plain JS objects.
+export type FrontmatterFields = FrontmatterRecord;
 
 export interface Frontmatter {
   raw: string;
@@ -28,7 +28,8 @@ export interface SourceSpan {
   end: SourcePosition;
 }
 
-export type AttributePairs = Record<string, string> | Map<string, string>;
+// Serialized attributes always expose key/value pairs as plain JS objects.
+export type AttributePairs = Record<string, string>;
 
 export interface Attributes {
   id?: string;
