@@ -7,6 +7,8 @@ import { EtchToolbar } from './EtchToolbar.js';
 export interface EtchEditorProps {
   className?: string;
   initialSource?: string;
+  value?: string;
+  onChange?: (source: string) => void;
   theme?: string;
   wasmUrl?: string | URL;
 }
@@ -14,14 +16,22 @@ export interface EtchEditorProps {
 export function EtchEditor({
   className,
   initialSource,
+  value,
+  onChange,
   theme,
   wasmUrl,
 }: EtchEditorProps) {
   const { state, setSource, setTheme } = useEtchEditor({
     initialSource,
+    value,
     theme,
     wasmUrl,
   });
+
+  function handleSourceChange(source: string): void {
+    setSource(source);
+    onChange?.(source);
+  }
 
   return (
     <section
@@ -51,7 +61,7 @@ export function EtchEditor({
         }}
       >
         <div style={{ flex: '1 1 28rem', minWidth: 0, minHeight: '32rem' }}>
-          <EtchEditorPane value={state.source} onChange={setSource} />
+          <EtchEditorPane value={state.source} onChange={handleSourceChange} />
         </div>
         <div style={{ flex: '1 1 28rem', minWidth: 0, minHeight: '32rem' }}>
           <EtchPreview html={state.previewHtml} />

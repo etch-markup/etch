@@ -6,6 +6,7 @@ import {
 
 export interface UseEtchEditorOptions {
   initialSource?: string | undefined;
+  value?: string | undefined;
   theme?: string | undefined;
   wasmUrl?: string | URL | undefined;
 }
@@ -24,6 +25,12 @@ export function useEtchEditor(options: UseEtchEditorOptions = {}) {
     () => core.getState(),
     () => core.getState()
   );
+
+  useEffect(() => {
+    if (typeof options.value === 'string') {
+      core.setSource(options.value);
+    }
+  }, [core, options.value]);
 
   useEffect(() => {
     if (typeof options.theme === 'string') {

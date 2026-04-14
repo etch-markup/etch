@@ -44,6 +44,7 @@ export type {
   ParseErrorKind,
   ParseResult,
   SoftBreak,
+  Spoiler,
   Strikethrough,
   Strong,
   Subscript,

@@ -1,14 +1,21 @@
+export interface FrontmatterRecord {
+  [key: string]: FrontmatterValue;
+}
+
 export type FrontmatterValue =
   | string
   | number
   | boolean
   | null
   | FrontmatterValue[]
+  | FrontmatterRecord
   | Map<string, FrontmatterValue>;
+
+export type FrontmatterFields = FrontmatterRecord | Map<string, FrontmatterValue>;
 
 export interface Frontmatter {
   raw: string;
-  fields: Map<string, FrontmatterValue>;
+  fields: FrontmatterFields;
 }
 
 export interface SourcePosition {
@@ -21,10 +28,12 @@ export interface SourceSpan {
   end: SourcePosition;
 }
 
+export type AttributePairs = Record<string, string> | Map<string, string>;
+
 export interface Attributes {
   id?: string;
   classes?: string[];
-  pairs?: Map<string, string>;
+  pairs?: AttributePairs;
 }
 
 export interface TableCell {
@@ -188,6 +197,11 @@ export interface Insert {
   content: Inline[];
 }
 
+export interface Spoiler {
+  type: 'Spoiler';
+  content: Inline[];
+}
+
 export interface Link {
   type: 'Link';
   url: string;
@@ -242,6 +256,7 @@ export type Inline =
   | Subscript
   | Highlight
   | Insert
+  | Spoiler
   | Link
   | Image
   | AutoLink

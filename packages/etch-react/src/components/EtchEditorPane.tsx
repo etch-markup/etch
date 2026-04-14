@@ -16,6 +16,7 @@ export function EtchEditorPane({
   const hostRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const isApplyingExternalValueRef = useRef(false);
 
   onChangeRef.current = onChange;
 
@@ -31,6 +32,10 @@ export function EtchEditorPane({
           EditorView.lineWrapping,
           EditorView.updateListener.of((update) => {
             if (!update.docChanged) {
+              return;
+            }
+
+            if (isApplyingExternalValueRef.current) {
               return;
             }
 
@@ -100,6 +105,7 @@ export function EtchEditorPane({
       return;
     }
 
+    isApplyingExternalValueRef.current = true;
     view.dispatch({
       changes: {
         from: 0,
@@ -107,6 +113,7 @@ export function EtchEditorPane({
         insert: value,
       },
     });
+    isApplyingExternalValueRef.current = false;
   }, [value]);
 
   return (
